@@ -112,15 +112,16 @@
             </div>
 
             <div class="field">
-              <label for="branch">Preferred branch <i>(optional)</i></label>
+              <label for="branch">Preferred branch</label>
               <div class="input">
-                <select id="branch">
-                  <option value="">No preference</option>
+                <select id="branch" required>
+                  <option value="" disabled selected>Choose a branch</option>
                   <option>Amparo</option>
                   <option>Capitol Park Homes II</option>
-                  <option>Bristol</option>
+                  <option>Lagro</option>
                 </select>
               </div>
+              <p class="err" id="e-branch"></p>
             </div>
 
             <div class="grid">
@@ -187,6 +188,7 @@
         "dob",
         "mobile",
         "email",
+        "branch",
         "pw",
         "confirm",
       ];
@@ -221,6 +223,7 @@
             ? ""
             : "Enter a valid number, e.g. 917 123 4567.";
         },
+        branch: (v) => (v ? "" : "Choose your preferred branch."),
         email: (v) =>
           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
             ? ""
