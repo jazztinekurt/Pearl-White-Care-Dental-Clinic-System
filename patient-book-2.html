@@ -58,12 +58,26 @@
           <div class="choices" id="dent" role="radiogroup" aria-label="Dentist"></div>
           <p class="hint" id="dnote" style="margin-top: 10px" hidden></p>
 
-          <h2 class="sec">Date</h2>
-          <div class="chs" id="days" role="group" aria-label="Date"></div>
-
-          <h2 class="sec">Time</h2>
-          <p class="hint">Open times for this dentist and branch. Taken times are crossed out.</p>
-          <div class="chs" id="slots" role="group" aria-label="Time"></div>
+          <div class="when">
+            <div>
+              <h2 class="sec">Date</h2>
+              <div class="mcal" id="mcal">
+                <div class="mcal-head">
+                  <button type="button" id="m-prev" aria-label="Previous month">&larr;</button>
+                  <b id="m-title" aria-live="polite"></b>
+                  <button type="button" id="m-next" aria-label="Next month">&rarr;</button>
+                </div>
+                <div class="mcal-week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                <div class="mcal-days" id="days" role="group" aria-label="Date"></div>
+              </div>
+              <p class="hint" style="margin: 8px 0 0">Closed on Sundays. You can book up to 3 months ahead.</p>
+            </div>
+            <div>
+              <h2 class="sec" id="time-title">Time</h2>
+              <p class="hint">Open times for this dentist and branch. Taken times are crossed out.</p>
+              <div class="chs" id="slots" role="group" aria-label="Time"></div>
+            </div>
+          </div>
 
           <p class="err" id="err" role="alert"></p>
           <div class="ac">
@@ -143,31 +157,56 @@
           (bk.reschedule ? "." : '. <a href="patient-book-1.html">Change branch</a>');
       }
 
-      const days = PW.bookableDays(12);
+      // Bookable range: tomorrow up to 3 months ahead, Monday to Saturday
+      const MONTHS_AHEAD = 3;
+      const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const first = new Date(now);
+      first.setDate(first.getDate() + 1);
+      const last = new Date(now);
+      last.setMonth(last.getMonth() + MONTHS_AHEAD);
+      const minIso = iso(first);
+      const maxIso = iso(last);
+
       const daysEl = document.getElementById("days");
       const slotsEl = document.getElementById("slots");
-      let date = days.includes(bk.date) ? bk.date : null;
+      const dentistNow = () => document.querySelector("input[name=dentist]:checked").value;
+      const fullyBooked = (d) => PW.times.every((t, i) => PW.isTaken(branch.id, dentistNow(), d, i));
+      const bookable = (d) => d >= minIso && d <= maxIso && PW.toDate(d).getDay() !== 0 && !fullyBooked(d);
+
+      let date = bk.date && bookable(bk.date) ? bk.date : null;
       let time = date ? bk.time : null;
+      let view = date ? PW.toDate(date) : new Date(first);
+      view.setDate(1);
 
       function renderDays() {
-        daysEl.innerHTML = days
-          .map((d) => {
-            const dt = PW.toDate(d);
-            return (
-              '<button type="button" class="ch day" data-d="' + d + '" aria-pressed="' + (d === date) + '"><small>' +
-              dt.toLocaleDateString("en-US", { weekday: "short" }) + "</small><b>" + dt.getDate() + "</b><small>" +
-              dt.toLocaleDateString("en-US", { month: "short" }) + "</small></button>"
-            );
-          })
-          .join("");
+        const y = view.getFullYear();
+        const m = view.getMonth();
+        document.getElementById("m-title").textContent = view.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        document.getElementById("m-prev").disabled = y === first.getFullYear() && m === first.getMonth();
+        document.getElementById("m-next").disabled = y === last.getFullYear() && m === last.getMonth();
+        let html = "";
+        for (let i = 0; i < new Date(y, m, 1).getDay(); i++) html += "<span></span>";
+        const n = new Date(y, m + 1, 0).getDate();
+        for (let day = 1; day <= n; day++) {
+          const d = iso(new Date(y, m, day));
+          const ok = bookable(d);
+          const why = d < minIso ? "past" : d > maxIso ? "too far ahead" : PW.toDate(d).getDay() === 0 ? "closed on Sundays" : !ok ? "fully booked" : "";
+          html +=
+            '<button type="button" data-d="' + d + '" aria-pressed="' + (d === date) + '"' + (ok ? "" : " disabled") +
+            (d === iso(now) ? ' class="today"' : "") +
+            ' aria-label="' + PW.longDate(d) + (why ? ", " + why : "") + '">' + day + "</button>";
+        }
+        daysEl.innerHTML = html;
+        document.getElementById("time-title").textContent = date ? "Time on " + PW.toDate(date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Time";
       }
-
       function renderSlots() {
         if (!date) {
-          slotsEl.innerHTML = '<p class="hint" style="margin: 0">Pick a date first.</p>';
+          slotsEl.innerHTML = '<p class="hint" style="margin: 0">Pick a date on the calendar first.</p>';
           return;
         }
-        const d = document.querySelector("input[name=dentist]:checked").value;
+        const d = dentistNow();
         slotsEl.innerHTML = PW.times
           .map((t, i) => {
             const taken = PW.isTaken(branch.id, d, date, i);
@@ -179,6 +218,9 @@
           })
           .join("");
       }
+
+      document.getElementById("m-prev").onclick = () => { view.setMonth(view.getMonth() - 1); renderDays(); };
+      document.getElementById("m-next").onclick = () => { view.setMonth(view.getMonth() + 1); renderDays(); };
 
       daysEl.onclick = (e) => {
         const b = e.target.closest("button");
@@ -194,7 +236,12 @@
         time = b.dataset.t;
         renderSlots();
       };
-      dent.onchange = () => renderSlots();
+      dent.onchange = () => {
+        // A different dentist can be fully booked on the chosen day
+        if (date && !bookable(date)) { date = null; time = null; }
+        renderDays();
+        renderSlots();
+      };
 
       renderDays();
       renderSlots();

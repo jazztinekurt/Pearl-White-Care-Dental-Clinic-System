@@ -4871,3 +4871,86 @@ td a:where(:not(.auth *, .landing *)) {
     grid-template-columns: 1fr;
   }
 }
+
+/* Booking step 2: month calendar beside the time slots */
+.app .when {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 0 32px;
+  align-items: start;
+}
+.app .mcal {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+}
+.app .mcal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.app .mcal-head b {
+  font: 600 1.05rem var(--serif);
+}
+.app .mcal-head button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.app .mcal-head button:hover:not(:disabled) {
+  border-color: var(--lagoon);
+  background: var(--mist);
+}
+.app .mcal-head button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.app .mcal-week,
+.app .mcal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.app .mcal-week {
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.app .mcal-days button {
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font: 500 0.9rem var(--sans);
+  color: var(--ink);
+  cursor: pointer;
+}
+.app .mcal-days button:hover:not(:disabled) {
+  background: var(--mist);
+}
+.app .mcal-days button.today {
+  border-color: var(--line);
+}
+.app .mcal-days button[aria-pressed="true"] {
+  background: var(--lagoon);
+  color: #fff;
+  font-weight: 600;
+}
+.app .mcal-days button:disabled {
+  color: #b8c4da;
+  cursor: not-allowed;
+}
+@media (max-width: 760px) {
+  .app .when {
+    grid-template-columns: 1fr;
+  }
+}
