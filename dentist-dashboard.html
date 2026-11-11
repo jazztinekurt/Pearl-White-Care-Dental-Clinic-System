@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dentist | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv on" href="dentist-dashboard.html" aria-current="page">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv" href="dentist-patients.html">Patients</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Good morning, Dr. Santos</h1>
+            <p id="sub">You are at the Amparo branch today.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="stats">
+          <div class="st"><small>Patients today</small><b>6</b><p id="progress">2 done, 4 to go</p></div>
+          <div class="st"><small>Open slots today</small><b>3</b><p>1:00 PM, 2:00 PM and 5:30 PM. The front desk can fill them.</p></div>
+          <div class="st"><small>Follow-ups due this week</small><b>4</b><p>Braces patients past their adjustment date.</p></div>
+        </div>
+
+        <!-- Today's patients -->
+          <section class="cd">
+            <div class="hd">
+              <h2>Today's patients</h2>
+              <a href="dentist-schedule.html">Full schedule</a>
+            </div>
+            <div class="tw">
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>Patient</th><th>Procedure</th><th>Status</th><th><span class="sr">Record</span></th></tr>
+                </thead>
+                <tbody id="today"></tbody>
+              </table>
+            </div>
+          </section>
+
+        <!-- Treatments in progress -->
+        <section class="cd">
+          <div class="hd">
+            <h2>Ongoing treatments</h2>
+            <a href="dentist-patients.html">All patients</a>
+          </div>
+          <div class="plans" id="plans"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script>
+      // Greeting and today's date
+      (() => {
+        const h = new Date().getHours();
+        const g = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+        const t = document.getElementById("title");
+        t.textContent = g + t.textContent.slice(t.textContent.indexOf(","));
+        const s = document.getElementById("sub");
+        s.textContent =
+          new Date().toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric" }) +
+          ". " + s.textContent;
+      })();
+
+      const today = [
+        { t: "8:30 AM", p: "Carlo Reyes", proc: "Braces check", st: "Done", id: "P-0128" },
+        { t: "9:00 AM", p: "Isabel Cruz", proc: "Consultation", st: "Done", id: "P-0133" },
+        { t: "10:00 AM", p: "Maria Lopez", proc: "Orthodontics check", st: "In chair", id: "P-0142", note: "Braces 6 of 12. Retainer case reminder sent." },
+        { t: "11:00 AM", p: "Bea Santiago", proc: "Braces adjustment", st: "Waiting", id: "P-0119" },
+        { t: "3:00 PM", p: "Paolo Garcia", proc: "Braces adjustment", st: "Upcoming", id: "P-0107" },
+        { t: "4:00 PM", p: "Kevin Navarro", proc: "Orthodontics consult", st: "Upcoming", id: "P-0155", note: "New patient. Intake form and consent done online." },
+      ];
+      const plans = [
+        { p: "Maria Lopez", plan: "Braces", done: 6, of: 12, next: "Wire change in 3 weeks" },
+        { p: "Bea Santiago", plan: "Braces", done: 9, of: 12, next: "Adjustment today" },
+        { p: "Paolo Garcia", plan: "Braces", done: 3, of: 12, next: "Adjustment today" },
+        { p: "Carlo Reyes", plan: "Braces", done: 11, of: 12, next: "Retainer fitting next visit" },
+      ];
+      const cls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
+
+      document.getElementById("today").innerHTML = today
+        .map(
+          (a) =>
+            "<tr" + (a.st === "In chair" ? ' class="now"' : "") + "><td>" + a.t + "</td><td><b>" + a.p + "</b>" +
+            (a.note ? '<small class="sub">' + a.note + "</small>" : "") + "</td><td>" + a.proc +
+            '</td><td><span class="bd' + (cls[a.st] ? " " + cls[a.st] : "") + '">' + a.st + "</span></td>" +
+            '<td><a href="dentist-record.html?patient=' + a.id + '">Open record</a></td></tr>',
+        )
+        .join("");
+
+      document.getElementById("plans").innerHTML = plans
+        .map(
+          (x) =>
+            '<div class="plan"><div class="row" style="border: 0; padding: 0"><b>' + x.p + "</b><small>" + x.plan + " · " +
+            x.done + " of " + x.of + " visits</small></div>" +
+            '<div class="bar"><i style="width: ' + Math.round((x.done / x.of) * 100) + '%"></i></div>' +
+            '<small style="color: var(--muted)">' + x.next + "</small></div>",
+        )
+        .join("");
+    </script>
+  </body>
+</html>
