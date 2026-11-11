@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Appointment details | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv on" href="patient-appointments.html" aria-current="page">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Appointment details</h1>
+            <p id="sub"></p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="patient-appointments.html">&larr; All appointments</a>
+        <div class="split">
+          <section class="cd">
+            <div class="hd">
+              <h2 id="head">Details</h2>
+              <span id="status"></span>
+            </div>
+            <dl class="kv" id="sum"></dl>
+            <div class="ac" id="actions"></div>
+            <div class="banner warn" id="confirm" role="alertdialog" aria-labelledby="cq" hidden style="margin: 16px 0 0">
+              <span id="cq">Cancel this appointment? The time goes back to other patients.</span>
+              <span class="ac" style="margin: 0">
+                <button type="button" class="btn sm" id="yes">Yes, cancel it</button>
+                <button type="button" class="btn2 sm" id="no">Keep it</button>
+              </span>
+            </div>
+          </section>
+          <section class="cd" id="side"></section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const a = PW.appointment(PW.param("ref") || "PW-2026-0142");
+      if (!a) return location.replace("patient-appointments.html");
+
+      const s = PW.service(a.service);
+      const d = PW.dentist(a.dentist);
+      const b = PW.branch(a.branch);
+      document.getElementById("title").textContent = a.title;
+      document.getElementById("sub").textContent = PW.longDate(a.date) + " at " + a.time;
+      document.getElementById("status").innerHTML = PW.badge(a.status);
+
+      const rows = [
+        ["Reference", a.ref],
+        ["Service", s.name],
+        ["Date and time", PW.longDate(a.date) + ", " + a.time],
+        ["Dentist", d.name + " (" + PW.service(d.spec).name + ")"],
+        ["Branch", b.name + '<br /><small style="font-weight: 400; color: var(--muted)">' + b.address + "</small>"],
+      ];
+      if (a.concern) rows.push(["Your concern", PW.esc(a.concern)]);
+      if (a.note) rows.push(["Note", a.note]);
+      document.getElementById("sum").innerHTML = rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>").join("");
+
+      const actions = document.getElementById("actions");
+      const side = document.getElementById("side");
+
+      if (PW.isUpcoming(a)) {
+        actions.innerHTML =
+          '<a class="btn" href="patient-book-2.html?reschedule=' + a.ref + '">Reschedule</a>' +
+          '<button type="button" class="btn2 danger" id="cancel">Cancel appointment</button>';
+        side.innerHTML =
+          "<h2>Before your visit</h2>" +
+          '<div class="li"><i></i><div>Arrive 10 minutes early at the ' + b.name + " branch.</div></div>" +
+          '<div class="li"><i></i><div>Bring a valid ID' + (s.id === "ortho" ? " and your retainer case" : "") + ".</div></div>" +
+          '<div class="li"><i></i><div>You can pay by ' + b.pay.toLowerCase() + ".</div></div>" +
+          '<div class="li"><i></i><div>Can\'t make it? Cancel or reschedule at least 24 hours before.</div></div>';
+        document.getElementById("cancel").onclick = () => {
+          document.getElementById("confirm").hidden = false;
+          document.getElementById("yes").focus();
+        };
+        document.getElementById("no").onclick = () => (document.getElementById("confirm").hidden = true);
+        document.getElementById("yes").onclick = () => {
+          const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          PW.changeAppointment(a.ref, { status: "Cancelled", note: "Cancelled by you on " + today + "." });
+          location.href = "patient-appointments.html?cancelled=" + a.ref + "&view=past";
+        };
+      } else if (a.status === "Completed") {
+        const t = PW.treatments[a.ref];
+        side.innerHTML =
+          "<h2>Treatment notes</h2>" +
+          (t
+            ? '<dl class="kv"><dt>Procedure</dt><dd>' + t.procedure + "</dd><dt>Teeth</dt><dd>" + t.teeth +
+              "</dd><dt>Dentist's note</dt><dd>" + t.notes + "</dd></dl>"
+            : '<p style="color: var(--muted)">No notes for this visit.</p>') +
+          '<div class="ac"><a class="btn2" href="patient-history.html">Treatment history</a></div>';
+        actions.innerHTML = '<a class="btn" href="patient-book-1.html">Book a follow-up</a>';
+      } else {
+        side.innerHTML =
+          "<h2>Need another time?</h2>" +
+          '<p style="color: var(--muted)">This appointment is ' + a.status.toLowerCase() + ". You can book a new one any time.</p>";
+        actions.innerHTML = '<a class="btn" href="patient-book-1.html">Book again</a>';
+      }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My profile | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv on" href="patient-profile.html" aria-current="page">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">My profile</h1>
+            <p id="sub">Keep your details up to date so your dentist is ready before your visit.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="stats">
+          <div class="st">
+            <small>Profile</small><b id="pct">80% complete</b>
+            <div class="bar"><i id="pctbar" style="width: 80%"></i></div>
+            <p id="pcttext">Add your medical history so your dentist is ready.</p>
+          </div>
+          <div class="st">
+            <small>Privacy and consent</small><b>Consent given</b>
+            <p>Accepted Aug 6, 2026. Control who sees your records.</p>
+            <a href="patient-privacy.html">Privacy settings</a>
+          </div>
+        </div>
+
+        <form id="form" novalidate>
+          <section class="cd">
+            <h2>Personal details</h2>
+            <div class="fg">
+              <label class="f"><span>First name</span><input id="first" value="Maria" autocomplete="given-name" required /></label>
+              <label class="f"><span>Last name</span><input id="last" value="Lopez" autocomplete="family-name" required /></label>
+              <label class="f"><span>Date of birth</span><input id="dob" type="date" value="2004-03-18" /></label>
+              <label class="f"><span>Sex</span>
+                <select id="sex"><option>Female</option><option>Male</option><option>Prefer not to say</option></select></label>
+              <label class="f"><span>Mobile number</span><input id="mobile" type="tel" inputmode="numeric" value="0917 123 4567" autocomplete="tel" /></label>
+              <label class="f"><span>Email</span><input id="email" type="email" value="maria.lopez@email.com" autocomplete="email" /></label>
+              <label class="f s2"><span>Home address</span><input id="addr" value="Blk 4 Lot 12, Amparo Subdivision, North Caloocan City" autocomplete="street-address" /></label>
+              <label class="f"><span>Preferred branch</span>
+                <select id="branch"><option>Amparo</option><option>Capitol Park</option><option>Lagro</option></select></label>
+            </div>
+          </section>
+
+          <section class="cd">
+            <h2>Emergency contact</h2>
+            <div class="fg">
+              <label class="f"><span>Full name</span><input id="ecname" value="Rosa Lopez" /></label>
+              <label class="f"><span>Relationship</span><input id="ecrel" value="Mother" /></label>
+              <label class="f"><span>Mobile number</span><input id="ecmobile" type="tel" inputmode="numeric" value="0918 765 4321" /></label>
+            </div>
+          </section>
+
+          <section class="cd">
+            <h2>Medical history</h2>
+            <p class="hint" style="margin: -6px 0 8px">Tick anything you have now or had before. Only your dentists see this.</p>
+            <div class="ckgrid" id="conditions"></div>
+            <div class="fg" style="margin-top: 12px">
+              <label class="f"><span>Allergies to medicine <i>(e.g. penicillin)</i></span><input id="allergy" placeholder="None" /></label>
+              <label class="f"><span>Medicines you take now</span><input id="meds" placeholder="None" /></label>
+              <label class="f"><span>Pregnant or breastfeeding?</span>
+                <select id="preg"><option value="">Choose</option><option>No</option><option>Yes</option><option>Not applicable</option></select></label>
+            </div>
+          </section>
+
+          <section class="cd">
+            <h2>Dental history</h2>
+            <div class="fg">
+              <label class="f"><span>Last dental visit before Pearl White</span><input id="lastvisit" value="2024, cleaning" /></label>
+              <label class="f"><span>Do you wear dentures?</span>
+                <select id="dentures"><option>No</option><option>Complete denture</option><option>Partial denture</option><option>Crowns</option></select></label>
+              <label class="f s2"><span>Past procedures <i>(fillings, extractions, root canals)</i></span><input id="procs" value="Two fillings (2022)" /></label>
+            </div>
+          </section>
+
+          <div class="ac" style="margin-top: 0">
+            <button class="btn" type="submit">Save changes</button>
+            <a class="btn2" href="patient-dashboard.html">Cancel</a>
+          </div>
+          <p class="msg" id="msg" role="status"></p>
+        </form>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const conditions = [
+        "High blood pressure", "Low blood pressure", "Heart disease", "Diabetes", "Asthma", "Hepatitis",
+        "Bleeding problems", "Epilepsy", "Kidney or liver problems", "Thyroid problems", "Anemia", "Arthritis",
+      ];
+      document.getElementById("conditions").innerHTML = conditions
+        .map((c, i) => '<label class="ck"><input type="checkbox" value="' + c + '" /><span>' + c + "</span></label>")
+        .join("");
+
+      // Fill from what was saved this session
+      const saved = PW.load("pw_profile", null);
+      if (saved) {
+        Object.keys(saved.fields).forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = saved.fields[id];
+        });
+        document.querySelectorAll("#conditions input").forEach((c) => (c.checked = saved.conditions.includes(c.value)));
+      }
+
+      // Medical history counts as done once the pregnancy question and allergies are answered
+      function completeness() {
+        const medicalDone = document.getElementById("preg").value !== "" && document.getElementById("allergy").value.trim() !== "";
+        const pct = medicalDone ? 100 : 80;
+        document.getElementById("pct").textContent = pct + "% complete";
+        document.getElementById("pctbar").style.width = pct + "%";
+        document.getElementById("pcttext").textContent = medicalDone
+          ? "All set. Your dentist sees this before your visit."
+          : "Add your medical history so your dentist is ready.";
+      }
+      document.getElementById("form").addEventListener("input", completeness);
+      completeness();
+
+      document.getElementById("form").onsubmit = (e) => {
+        e.preventDefault();
+        const msg = document.getElementById("msg");
+        const mobile = document.getElementById("mobile").value.replace(/[\s-]/g, "").replace(/^\+?63/, "0");
+        const email = document.getElementById("email").value.trim();
+        let err = "";
+        if (!document.getElementById("first").value.trim() || !document.getElementById("last").value.trim()) err = "Enter your first and last name.";
+        else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "Enter a valid email address.";
+        if (err) {
+          msg.style.color = "var(--err)";
+          msg.textContent = err;
+          return;
+        }
+        const fields = {};
+        document.querySelectorAll("#form input:not([type=checkbox]), #form select").forEach((el) => (fields[el.id] = el.value));
+        const picked = [...document.querySelectorAll("#conditions input:checked")].map((c) => c.value);
+        PW.save("pw_profile", { fields, conditions: picked });
+        try {
+          sessionStorage.setItem("pw_first_name", fields.first.trim());
+        } catch (x) {}
+        msg.style.color = "";
+        msg.textContent = "Saved. Your dentists will see the updated details at your next visit.";
+      };
+      })();
+    </script>
+  </body>
+</html>

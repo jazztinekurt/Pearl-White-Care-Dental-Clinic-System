@@ -78,6 +78,7 @@
     </div>
 
     <script>
+      (() => {
       // Greeting and today's date
       (() => {
         const h = new Date().getHours();
@@ -125,6 +126,7 @@
             '<small style="color: var(--muted)">' + x.next + "</small></div>",
         )
         .join("");
+      })();
     </script>
   </body>
 </html>

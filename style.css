@@ -4189,3 +4189,8 @@ td a:where(:not(.auth *, .landing *)) {
 .app .tw {
   position: relative;
 }
+
+/* The hidden attribute always wins, even on flex rows like .ac */
+.app [hidden] {
+  display: none !important;
+}

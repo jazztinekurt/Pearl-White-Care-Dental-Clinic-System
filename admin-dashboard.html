@@ -91,6 +91,7 @@
     </div>
 
     <script>
+      (() => {
       // Greeting and today's date
       (() => {
         const h = new Date().getHours();
@@ -146,6 +147,7 @@
       document.getElementById("activity").innerHTML = activity
         .map((r) => "<tr><td>" + r[0] + "</td><td>" + r[1] + '</td><td><span class="bd">' + r[2] + "</span></td><td>" + r[3] + "</td></tr>")
         .join("");
+      })();
     </script>
   </body>
 </html>

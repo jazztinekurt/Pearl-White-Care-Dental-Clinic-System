@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Review your booking | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv on" href="patient-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 3 of 4: check the details, then send your request.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="done">Service and branch</li>
+          <li class="done">Dentist and time</li>
+          <li class="on" aria-current="step">Review</li>
+          <li>Submitted</li>
+        </ol>
+
+        <div class="split">
+          <section class="cd">
+            <div class="hd">
+              <h2 id="sumtitle">Your appointment</h2>
+              <a href="patient-book-2.html" id="edit">Change</a>
+            </div>
+            <dl class="kv" id="sum"></dl>
+          </section>
+          <section class="cd">
+            <h2>What happens next</h2>
+            <div class="li"><i></i><div>Your request goes to the clinic as <b>Pending</b>.</div></div>
+            <div class="li"><i></i><div>The receptionist checks the schedule and confirms it.</div></div>
+            <div class="li"><i></i><div>You get a text or email once it is confirmed.</div></div>
+            <label class="ck">
+              <input type="checkbox" id="remind" checked />
+              <span>Send me an SMS reminder the day before</span>
+            </label>
+            <div class="ac">
+              <button class="btn" type="button" id="send">Send request</button>
+              <a class="btn2" href="patient-book-2.html" id="back">Back</a>
+            </div>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const bk = PW.booking();
+      if (!bk.service || !bk.branch || !bk.dentist || !bk.date || !bk.time) return location.replace("patient-book-1.html");
+
+      const s = PW.service(bk.service);
+      const b = PW.branch(bk.branch);
+      const d = PW.dentist(bk.dentist);
+      const rows = [];
+
+      if (bk.reschedule) {
+        const a = PW.appointment(bk.reschedule);
+        document.getElementById("title").textContent = "Reschedule appointment";
+        document.getElementById("sub").textContent = "Check the new time, then send your request.";
+        document.querySelector(".stepper").innerHTML =
+          '<li class="done">New time</li><li class="on" aria-current="step">Review</li><li>Submitted</li>';
+        document.getElementById("sumtitle").textContent = a.title + " (" + a.ref + ")";
+        rows.push(["Current time", PW.longDate(a.date) + ", " + a.time]);
+        rows.push(["New time", "<b>" + PW.longDate(bk.date) + ", " + bk.time + "</b>"]);
+        document.getElementById("send").textContent = "Request new time";
+      } else {
+        rows.push(["Service", s.name + (s.plan ? ' <span class="bd wa">Payment plan</span>' : "")]);
+        rows.push(["Date", PW.longDate(bk.date)]);
+        rows.push(["Time", bk.time]);
+      }
+      rows.push(["Dentist", d.name + " (" + PW.service(d.spec).name + ")"]);
+      rows.push(["Branch", b.name + "<br /><small style='font-weight:400;color:var(--muted)'>" + b.address + "</small>"]);
+      if (bk.concern) rows.push(["Your concern", PW.esc(bk.concern)]);
+
+      document.getElementById("sum").innerHTML = rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>").join("");
+
+      document.getElementById("send").onclick = (e) => {
+        e.currentTarget.disabled = true;
+        const wasReschedule = !!bk.reschedule;
+        const ref = PW.submitBooking();
+        location.href = "patient-book-4.html?ref=" + ref + (wasReschedule ? "&rescheduled=1" : "");
+      };
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy and consent | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv on" href="patient-profile.html" aria-current="page">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Privacy and consent</h1>
+            <p id="sub">Control how your information is used, under the Data Privacy Act of 2012 (RA 10173).</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="patient-profile.html">&larr; My profile</a>
+
+        <div class="two">
+          <section class="cd">
+            <div class="hd"><h2>Your consent</h2><span class="bd ok">Given</span></div>
+            <p style="color: var(--muted)">
+              You accepted the data privacy notice when you signed up on Aug 6, 2026. We use your data only to book
+              and manage your visits, keep your dental records and bill you.
+            </p>
+            <p style="color: var(--muted); margin-top: 10px">
+              Admins manage accounts and reports and never see your clinical records.
+            </p>
+          </section>
+
+          <section class="cd">
+            <h2>Who can see your records</h2>
+            <label class="ck">
+              <input type="checkbox" id="share" checked />
+              <span><b>Dentists at all three branches</b><br />
+                <small style="color: var(--muted)">Lets any Pearl White dentist see your history if you visit another branch.
+                Off: only the dentists who have treated you.</small></span>
+            </label>
+            <div class="ac"><button type="button" class="btn sm" id="save-share">Save</button></div>
+            <p class="msg" id="msg-share" role="status"></p>
+          </section>
+        </div>
+
+        <section class="cd" id="contact">
+          <h2>How we contact you</h2>
+          <div class="ckgrid">
+            <label class="ck"><input type="checkbox" id="sms" checked /><span>SMS reminders before visits</span></label>
+            <label class="ck"><input type="checkbox" id="mail" checked /><span>Email updates on bookings and payments</span></label>
+          </div>
+          <p class="hint" style="margin: 4px 0 0">
+            Appointment confirmations and cancellations are always sent, so you never miss a change.
+          </p>
+          <div class="ac"><button type="button" class="btn sm" id="save-contact">Save</button></div>
+          <p class="msg" id="msg-contact" role="status"></p>
+        </section>
+
+        <section class="cd">
+          <h2>Archive or delete your records</h2>
+          <p style="color: var(--muted)">
+            You can ask the clinic to archive your records (kept, but no longer active) or delete them. Some billing
+            records may have to be kept for legal reasons. The clinic replies within 15 working days.
+          </p>
+          <div class="ac" id="req-actions">
+            <button type="button" class="btn2" data-kind="archive">Request archival</button>
+            <button type="button" class="btn2 danger" data-kind="delete">Request deletion</button>
+          </div>
+          <div class="banner warn" id="req-confirm" role="alertdialog" aria-labelledby="req-q" hidden style="margin: 16px 0 0">
+            <span id="req-q"></span>
+            <span class="ac" style="margin: 0">
+              <button type="button" class="btn sm" id="req-yes">Send request</button>
+              <button type="button" class="btn2 sm" id="req-no">Go back</button>
+            </span>
+          </div>
+          <div class="banner ok" id="req-done" role="status" hidden style="margin: 16px 0 0"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const prefs = PW.load("pw_privacy", { share: true, sms: true, mail: true, request: null });
+      document.getElementById("share").checked = prefs.share;
+      document.getElementById("sms").checked = prefs.sms;
+      document.getElementById("mail").checked = prefs.mail;
+
+      function store() {
+        PW.save("pw_privacy", prefs);
+      }
+      document.getElementById("save-share").onclick = () => {
+        prefs.share = document.getElementById("share").checked;
+        store();
+        document.getElementById("msg-share").textContent = prefs.share
+          ? "Saved. Dentists at all branches can see your records."
+          : "Saved. Only dentists who have treated you can see your records.";
+      };
+      document.getElementById("save-contact").onclick = () => {
+        prefs.sms = document.getElementById("sms").checked;
+        prefs.mail = document.getElementById("mail").checked;
+        store();
+        document.getElementById("msg-contact").textContent = "Saved.";
+      };
+
+      let kind = null;
+      const label = { archive: "archive", delete: "delete" };
+      function showDone() {
+        const r = prefs.request;
+        document.getElementById("req-actions").hidden = true;
+        const d = document.getElementById("req-done");
+        d.hidden = false;
+        d.textContent =
+          "Request to " + label[r.kind] + " your records sent (" + r.ref + "). The clinic will reply by email within 15 working days.";
+      }
+      document.getElementById("req-actions").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        kind = b.dataset.kind;
+        document.getElementById("req-q").textContent =
+          kind === "delete"
+            ? "Ask the clinic to delete your records? You would need to register again to book."
+            : "Ask the clinic to archive your records? You can ask to restore them later.";
+        document.getElementById("req-confirm").hidden = false;
+        document.getElementById("req-yes").focus();
+      };
+      document.getElementById("req-no").onclick = () => (document.getElementById("req-confirm").hidden = true);
+      document.getElementById("req-yes").onclick = () => {
+        prefs.request = { kind, ref: "PR-2026-0" + (12 + Math.floor(Math.random() * 80)) };
+        store();
+        document.getElementById("req-confirm").hidden = true;
+        showDone();
+      };
+      if (prefs.request) showDone();
+      })();
+    </script>
+  </body>
+</html>

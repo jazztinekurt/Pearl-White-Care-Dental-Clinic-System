@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Payments and balance | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv on" href="patient-payments.html" aria-current="page">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Payments and balance</h1>
+            <p id="sub">Your installment plan, what you have paid and what is left.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner">
+          <span>View only. Payments are recorded by the front desk when you pay at any branch.</span>
+          <a href="patient-history.html">Treatment history</a>
+        </div>
+
+        <div class="stats">
+          <div class="st">
+            <small>Balance due</small><b id="bal"></b>
+            <div class="bar"><i id="balbar"></i></div>
+            <p id="baltext"></p>
+          </div>
+          <div class="st"><small>Next payment</small><b id="next"></b><p id="nexttext"></p></div>
+          <div class="st"><small>Paid to the clinic so far</small><b id="paid"></b><p>All treatments and visits</p></div>
+        </div>
+
+        <section class="cd">
+          <h2 id="planname">Installment schedule</h2>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Due date</th><th>Payment</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody id="schedule"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="cd">
+          <h2>Payment history</h2>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Date</th><th>For</th><th>Method</th><th>Branch</th><th>Amount</th><th>Receipt</th></tr></thead>
+              <tbody id="history"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const pay = PW.payments;
+      const paidPlan = pay.schedule.filter((x) => x.status === "Paid").reduce((n, x) => n + x.amount, 0);
+      const left = pay.plan.total - paidPlan;
+      const next = pay.schedule.find((x) => x.status !== "Paid");
+
+      document.getElementById("bal").textContent = PW.peso(left);
+      document.getElementById("balbar").style.width = Math.round((paidPlan / pay.plan.total) * 100) + "%";
+      document.getElementById("baltext").textContent = PW.peso(paidPlan) + " of " + PW.peso(pay.plan.total) + " paid on your braces plan";
+      document.getElementById("next").textContent = PW.peso(next.amount);
+      document.getElementById("nexttext").textContent = "Due " + PW.longDate(next.due) + ", at your next visit";
+      document.getElementById("paid").textContent = PW.peso(pay.history.reduce((n, x) => n + x.amount, 0));
+      document.getElementById("planname").textContent = pay.plan.name + ": " + PW.peso(pay.plan.total);
+
+      document.getElementById("schedule").innerHTML = pay.schedule
+        .map((x) => "<tr><td>" + PW.longDate(x.due) + "</td><td>" + x.label + "</td><td>" + PW.peso(x.amount) + "</td><td>" + PW.badge(x.status) + "</td></tr>")
+        .join("");
+      document.getElementById("history").innerHTML = pay.history
+        .map(
+          (x) =>
+            "<tr><td>" + PW.longDate(x.date) + "</td><td>" + x.desc + "</td><td>" + x.method + "</td><td>" +
+            PW.branch(x.branch).name + "</td><td><b>" + PW.peso(x.amount) + "</b></td><td>" + x.receipt + "</td></tr>",
+        )
+        .join("");
+      })();
+    </script>
+  </body>
+</html>

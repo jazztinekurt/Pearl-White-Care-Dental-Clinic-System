@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Treatment history | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv on" href="patient-history.html" aria-current="page">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Treatment history</h1>
+            <p id="sub">Your past treatments, your dentist's notes and your X-rays.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="stats">
+          <div class="st">
+            <small>Braces progress</small><b>6 of 12 visits</b>
+            <div class="bar"><i style="width: 50%"></i></div>
+            <p>Started Aug 27 with Dr. Maria Santos</p>
+          </div>
+          <div class="st"><small>Completed visits</small><b id="n-visits">0</b><p>Since your first visit on Aug 6</p></div>
+          <div class="st">
+            <small>Payments for treatment</small><b>₱12,000 left</b>
+            <p>On your braces plan</p>
+            <a href="patient-payments.html">Payments and balance</a>
+          </div>
+        </div>
+
+        <section class="cd">
+          <h2>Visits</h2>
+          <div id="visits"></div>
+        </section>
+
+        <section class="cd">
+          <h2>X-rays and images</h2>
+          <p class="hint" style="margin: -6px 0 14px">Uploaded by your dentist. Sample placeholders in this prototype.</p>
+          <div class="gal" id="xrays"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const done = PW.appointments().filter((a) => a.status === "Completed");
+      document.getElementById("n-visits").textContent = done.length;
+
+      document.getElementById("visits").innerHTML = done
+        .map((a) => {
+          const t = PW.treatments[a.ref] || { procedure: a.title, notes: "", teeth: "" };
+          const dt = PW.toDate(a.date);
+          return (
+            '<div class="ap past static"><span class="ad"><b>' + dt.getDate() + "</b>" +
+            dt.toLocaleDateString("en-US", { month: "short" }) + "</span>" +
+            '<span class="at"><b>' + a.title + "</b><small>" + t.procedure + (t.teeth ? " · " + t.teeth : "") +
+            " · " + PW.dentist(a.dentist).name + " · " + PW.branch(a.branch).name + "</small>" +
+            (t.notes ? "<p>" + t.notes + "</p>" : "") + "</span></div>"
+          );
+        })
+        .join("");
+
+      const xrays = [];
+      done.forEach((a) => ((PW.treatments[a.ref] || {}).xrays || []).forEach((x) => xrays.push([x, a.date])));
+      document.getElementById("xrays").innerHTML = xrays
+        .map((x) => '<figure><div class="ph">X-ray</div><figcaption>' + x[0] + " · " + PW.shortDate(x[1]) + "</figcaption></figure>")
+        .join("");
+      })();
+    </script>
+  </body>
+</html>

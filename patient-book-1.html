@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Book an appointment | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv on" href="patient-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 1 of 4: choose a service and branch.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="on" aria-current="step">Service and branch</li>
+          <li>Dentist and time</li>
+          <li>Review</li>
+          <li>Submitted</li>
+        </ol>
+
+        <form class="cd" id="form" novalidate>
+          <div class="banner" id="pre" hidden></div>
+
+          <h2>What do you need?</h2>
+          <div class="choices" id="svc" role="radiogroup" aria-label="Service"></div>
+          <p class="err" id="e-svc" role="alert"></p>
+
+          <h2 class="sec">Which branch?</h2>
+          <div class="choices" id="br" role="radiogroup" aria-label="Branch"></div>
+          <p class="err" id="e-br" role="alert"></p>
+
+          <label class="f" style="margin-top: 10px">
+            <span>Tell us your concern <i>(optional)</i></span>
+            <textarea
+              id="concern"
+              rows="3"
+              placeholder="e.g. Pain on my lower left tooth when I drink something cold."
+            ></textarea>
+          </label>
+
+          <div class="ac">
+            <button class="btn" type="submit">Next: dentist and time</button>
+            <a class="btn2" href="patient-dashboard.html">Cancel</a>
+          </div>
+        </form>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      // Coming from "Book with Dr. ..." on the dentists page: start fresh with that dentist
+      const preDentist = PW.dentist(PW.param("dentist") || "");
+      if (preDentist) {
+        PW.clearBooking();
+        PW.setBooking({ dentist: preDentist.id, service: preDentist.spec });
+      }
+      // Reschedules start at step 2, so a leftover one doesn't belong here
+      if (PW.booking().reschedule) PW.clearBooking();
+
+      // Coming from "Try a booking" on the landing page: keep the branch, date and time
+      try {
+        const slot = JSON.parse(sessionStorage.getItem("pw_slot") || "null");
+        if (slot) {
+          const b = PW.branches[slot.branch];
+          const day = slot.day ? new Date(slot.day) : null;
+          PW.setBooking({
+            branch: b ? b.id : undefined,
+            date: day ? day.getFullYear() + "-" + String(day.getMonth() + 1).padStart(2, "0") + "-" + String(day.getDate()).padStart(2, "0") : undefined,
+            time: slot.time || undefined,
+          });
+          sessionStorage.removeItem("pw_slot");
+        }
+      } catch (e) {}
+
+      const bk = PW.booking();
+      const svc = document.getElementById("svc");
+      const br = document.getElementById("br");
+
+      PW.services.forEach((s) => {
+        svc.insertAdjacentHTML(
+          "beforeend",
+          '<label class="choice"><input type="radio" name="service" value="' + s.id + '"' +
+            (bk.service === s.id ? " checked" : "") + " /><b>" + s.name + "</b><small>" + s.desc + "</small>" +
+            (s.plan ? "<em>Payment plan</em>" : "") + "</label>",
+        );
+      });
+
+      PW.branches.forEach((b) => {
+        const off = preDentist && !preDentist.branches.includes(b.id);
+        br.insertAdjacentHTML(
+          "beforeend",
+          '<label class="choice"><input type="radio" name="branch" value="' + b.id + '"' +
+            (bk.branch === b.id && !off ? " checked" : "") + (off ? " disabled" : "") + " /><b>" +
+            b.name + (b.main ? " (Main)" : "") + "</b><small>" +
+            (off ? preDentist.name + " is not at this branch." : b.address) + "</small></label>",
+        );
+      });
+
+      if (preDentist) {
+        const pre = document.getElementById("pre");
+        pre.hidden = false;
+        pre.innerHTML =
+          "<span>Booking with <b>" + preDentist.name + "</b> (" + PW.service(preDentist.spec).name +
+          "). Pick a service and one of their branches.</span>" +
+          '<a href="patient-book-1.html" onclick="PW.clearBooking()">Any dentist</a>';
+      }
+      document.getElementById("concern").value = bk.concern || "";
+
+      document.getElementById("form").onsubmit = (e) => {
+        e.preventDefault();
+        const s = document.querySelector("input[name=service]:checked");
+        const b = document.querySelector("input[name=branch]:checked");
+        document.getElementById("e-svc").textContent = s ? "" : "Choose a service.";
+        document.getElementById("e-br").textContent = b ? "" : "Choose a branch.";
+        if (!s || !b) return;
+        const patch = { service: s.value, branch: b.value, concern: document.getElementById("concern").value.trim() };
+        const d = PW.dentist(PW.booking().dentist || "");
+        if (d && !d.branches.includes(b.value)) patch.dentist = undefined;
+        PW.setBooking(patch);
+        location.href = "patient-book-2.html";
+      };
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Our dentists | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv on" href="patient-dentists.html" aria-current="page">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Our dentists</h1>
+            <p id="sub">Find the right specialist for your concern, then book with them.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="chs" id="filter" role="group" aria-label="Filter by specialty">
+          <button type="button" class="ch" aria-pressed="true" data-spec="all">All</button>
+        </div>
+        <p class="hint" style="margin: 10px 0 16px">
+          Every dentist also does general dentistry: check-ups, cleaning and fillings.
+        </p>
+        <div class="dc" id="list"></div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const filter = document.getElementById("filter");
+      const list = document.getElementById("list");
+
+      // One filter chip per specialty
+      PW.dentists.forEach((d) => {
+        const s = PW.service(d.spec);
+        filter.insertAdjacentHTML(
+          "beforeend",
+          '<button type="button" class="ch" aria-pressed="false" data-spec="' + s.id + '">' + s.name + "</button>",
+        );
+      });
+
+      // One card per dentist
+      PW.dentists.forEach((d) => {
+        const where = d.branches.map((b) => PW.branch(b).name).join(" · ");
+        const last = d.name.split(" ").pop();
+        list.insertAdjacentHTML(
+          "beforeend",
+          '<article class="cd" data-spec="' + d.spec + '">' +
+            '<div class="av">' + d.ini + "</div>" +
+            "<h3>" + d.name + "</h3>" +
+            '<span class="bd">' + PW.service(d.spec).name + "</span>" +
+            "<p>" + d.bio + "<br />Sees patients at " + where + ".</p>" +
+            '<a class="btn" href="patient-book-1.html?dentist=' + d.id + '">Book with Dr. ' + last + "</a>" +
+          "</article>",
+        );
+      });
+
+      filter.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        filter.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
+        list.querySelectorAll("article").forEach((card) => {
+          card.hidden = btn.dataset.spec !== "all" && card.dataset.spec !== btn.dataset.spec;
+        });
+      });
+      })();
+    </script>
+  </body>
+</html>

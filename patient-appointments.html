@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My appointments | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv on" href="patient-appointments.html" aria-current="page">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">My appointments</h1>
+            <p id="sub">Upcoming and past visits at all three branches.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <section class="cd">
+          <div class="hd">
+            <div class="chs" id="tabs" role="group" aria-label="Show">
+              <button type="button" class="ch" aria-pressed="true" data-v="up">Upcoming</button>
+              <button type="button" class="ch" aria-pressed="false" data-v="past">Past</button>
+              <button type="button" class="ch" aria-pressed="false" data-v="all">All</button>
+            </div>
+            <a class="btn sm" href="patient-book-1.html">Book appointment</a>
+          </div>
+          <div id="list"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const all = PW.appointments();
+      const list = document.getElementById("list");
+      const tabs = document.getElementById("tabs");
+
+      // After a cancel on the details page
+      const cancelled = PW.appointment(PW.param("cancelled") || "");
+      if (cancelled) {
+        const m = document.getElementById("msg");
+        m.hidden = false;
+        m.textContent = cancelled.title + " on " + PW.longDate(cancelled.date) + " is cancelled. The time is free for other patients.";
+      }
+
+      const upcoming = all.filter(PW.isUpcoming).reverse(); // soonest first
+      const past = all.filter((a) => !PW.isUpcoming(a)); // newest first
+      tabs.querySelector('[data-v="up"]').textContent = "Upcoming (" + upcoming.length + ")";
+      tabs.querySelector('[data-v="past"]').textContent = "Past (" + past.length + ")";
+
+      function row(a) {
+        const dt = PW.toDate(a.date);
+        return (
+          '<a class="ap' + (PW.isUpcoming(a) ? "" : " past") + '" href="patient-appointment-details.html?ref=' + a.ref + '">' +
+          '<span class="ad"><b>' + dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) + "</span>" +
+          '<span class="at"><b>' + a.title + "</b><small>" + PW.longDate(a.date) + " · " + a.time + " · " +
+          PW.dentist(a.dentist).name + " · " + PW.branch(a.branch).name + "</small></span>" + PW.badge(a.status) + "</a>"
+        );
+      }
+
+      function show(v) {
+        tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === v));
+        const items = v === "up" ? upcoming : v === "past" ? past : upcoming.concat(past);
+        list.innerHTML = items.length
+          ? items.map(row).join("")
+          : '<p class="empty">No upcoming appointments. <a href="patient-book-1.html">Book one</a>.</p>';
+      }
+      tabs.onclick = (e) => {
+        const b = e.target.closest("button");
+        if (b) show(b.dataset.v);
+      };
+      show(PW.param("view") || "up");
+      })();
+    </script>
+  </body>
+</html>

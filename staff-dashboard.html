@@ -105,6 +105,7 @@
     </div>
 
     <script>
+      (() => {
       // Greeting and today's date
       (() => {
         const h = new Date().getHours();
@@ -223,6 +224,7 @@
 
       renderToday();
       renderRequests();
+      })();
     </script>
   </body>
 </html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Request submitted | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv on" href="patient-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 4 of 4: your request is with the clinic.</p>
+          </div>
+          <div class="me">
+            <i data-user-ini>ML</i
+            ><span><b data-user-name>Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="done">Service and branch</li>
+          <li class="done">Dentist and time</li>
+          <li class="done">Review</li>
+          <li class="on" aria-current="step">Submitted</li>
+        </ol>
+
+        <div class="split">
+          <section class="cd">
+            <div class="done-ic" aria-hidden="true">&#10003;</div>
+            <h2 id="head">Request submitted</h2>
+            <p style="color: var(--muted); margin-bottom: 16px" id="lead">
+              The clinic will confirm your appointment by text or email.
+            </p>
+            <dl class="kv" id="sum"></dl>
+            <div class="ac">
+              <a class="btn" href="patient-appointments.html">View my appointments</a>
+              <a class="btn2" href="patient-dashboard.html">Back to dashboard</a>
+            </div>
+          </section>
+          <section class="cd">
+            <h2>Reference number</h2>
+            <p class="refno" id="ref">PW-2026-0160</p>
+            <p style="color: var(--muted); margin-top: 6px">
+              Mention this number if you call or message the clinic.
+            </p>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const a = PW.appointment(PW.param("ref") || "");
+      if (!a) return location.replace("patient-appointments.html");
+
+      if (PW.param("rescheduled")) {
+        document.querySelector(".stepper").innerHTML =
+          '<li class="done">New time</li><li class="done">Review</li><li class="on" aria-current="step">Submitted</li>';
+        document.getElementById("title").textContent = "Reschedule appointment";
+        document.getElementById("sub").textContent = "Your new time is with the clinic.";
+        document.getElementById("head").textContent = "New time requested";
+        document.getElementById("lead").textContent =
+          "Your old time is released. The clinic will confirm the new one by text or email.";
+      }
+      document.getElementById("ref").textContent = a.ref;
+      document.getElementById("sum").innerHTML = [
+        ["Status", PW.badge(a.status)],
+        ["Appointment", a.title],
+        ["When", PW.longDate(a.date) + ", " + a.time],
+        ["Dentist", PW.dentist(a.dentist).name],
+        ["Branch", PW.branch(a.branch).name],
+      ].map((r) => "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>").join("");
+      })();
+    </script>
+  </body>
+</html>
