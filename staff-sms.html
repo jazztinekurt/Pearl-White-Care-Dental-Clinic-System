@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SMS reminders | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv" href="staff-patients.html">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv on" href="staff-sms.html" aria-current="page">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">SMS reminders</h1>
+            <p id="sub">Remind patients about tomorrow's visits. Sent through Semaphore.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <div class="split">
+          <section class="cd">
+            <div class="hd"><h2 id="who">Tomorrow's appointments</h2><a href="staff-calendar.html" id="callink">Open calendar</a></div>
+            <label class="ck" style="margin-top: 0"><input type="checkbox" id="all" checked /><span><b>Select everyone</b></span></label>
+            <div id="list"></div>
+          </section>
+
+          <section class="cd">
+            <h2>Message</h2>
+            <label class="f"><span>Template</span><textarea id="tpl" rows="5"></textarea></label>
+            <div class="chs" id="tags" style="margin-top: 8px" aria-label="Insert a field">
+              <button type="button" class="ch sm" data-t="{name}">+ Name</button>
+              <button type="button" class="ch sm" data-t="{date}">+ Date</button>
+              <button type="button" class="ch sm" data-t="{time}">+ Time</button>
+              <button type="button" class="ch sm" data-t="{dentist}">+ Dentist</button>
+              <button type="button" class="ch sm" data-t="{branch}">+ Branch</button>
+            </div>
+            <p class="lab">Preview</p>
+            <div class="sms" id="preview"></div>
+            <p class="hint" id="len" style="margin: 6px 0 0"></p>
+            <div class="ac">
+              <button type="button" class="btn" id="send">Send now</button>
+              <button type="button" class="btn2" id="schedule">Schedule for 6:00 PM</button>
+            </div>
+            <p class="hint" style="margin: 10px 0 0">Prototype: no real SMS is sent.</p>
+          </section>
+        </div>
+
+        <section class="cd">
+          <h2>Sent and scheduled</h2>
+          <div class="tw"><table><thead><tr><th>When</th><th>Message</th><th>Recipients</th><th>Status</th></tr></thead><tbody id="log"></tbody></table></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const day = ST.openDay(1);
+      const optedOut = ["P-0061", "P-0115"];
+      $("who").textContent = "Appointments on " + ST.shortDate(day);
+      $("callink").href = "staff-calendar.html?date=" + day;
+      // Default template comes from the owner's Settings (SMS templates)
+      $("tpl").value = ST.load("ad_sms", {}).reminder ||
+        "Hi {name}! Pearl White Dental reminder: {date}, {time} with {dentist} at {branch}. Call (02) 0000 0000 to reschedule.";
+
+      const appts = ST.appointments().filter((a) => a.date === day && ST.active(a)).sort(ST.sortByTime);
+      $("list").innerHTML = appts.length
+        ? appts.map((a, i) => {
+            const p = ST.patient(a.patient);
+            const off = optedOut.includes(p.id);
+            return '<label class="ck"><input type="checkbox" data-i="' + i + '"' + (off ? " disabled" : " checked") + " /><span><b>" + p.name +
+              "</b> · " + a.time + " · " + ST.branch(a.branch).name + (off ? ' <span class="bd">Reminders off</span>' : "") +
+              '<br /><small style="color: var(--muted)">' + p.mobile + " · " + a.service + " with " + ST.dentist(a.dentist).short + "</small></span></label>";
+          }).join("")
+        : '<p class="empty">No appointments that day.</p>';
+
+      const fill = (a) => {
+        const p = ST.patient(a.patient);
+        return $("tpl").value
+          .replaceAll("{name}", p.first)
+          .replaceAll("{date}", ST.shortDate(a.date))
+          .replaceAll("{time}", a.time)
+          .replaceAll("{dentist}", ST.dentist(a.dentist).short)
+          .replaceAll("{branch}", ST.branch(a.branch).name);
+      };
+      const picked = () => [...document.querySelectorAll("#list input:checked")].map((c) => appts[c.dataset.i]);
+
+      function preview() {
+        const sel = picked();
+        const sample = sel[0] || appts[0];
+        const text = sample ? fill(sample) : $("tpl").value;
+        $("preview").textContent = text;
+        const parts = text.length <= 160 ? 1 : Math.ceil(text.length / 153);
+        $("len").textContent = text.length + " characters · " + parts + " SMS per patient · " + sel.length + " selected" +
+          (parts > 1 ? ". Shorten it to fit one SMS and halve the cost." : "");
+        $("send").textContent = "Send now to " + sel.length;
+        $("send").disabled = $("schedule").disabled = !sel.length;
+      }
+      $("tpl").oninput = preview;
+      $("list").onchange = () => {
+        const boxes = [...document.querySelectorAll("#list input:not(:disabled)")];
+        $("all").checked = boxes.every((b) => b.checked);
+        preview();
+      };
+      $("all").onchange = () => {
+        document.querySelectorAll("#list input:not(:disabled)").forEach((b) => (b.checked = $("all").checked));
+        preview();
+      };
+      $("tags").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        const t = $("tpl");
+        const at = t.selectionStart;
+        t.value = t.value.slice(0, at) + b.dataset.t + t.value.slice(t.selectionEnd);
+        t.focus();
+        t.selectionStart = t.selectionEnd = at + b.dataset.t.length;
+        preview();
+      };
+
+      const baseLog = [
+        { when: "Today, 9:12 AM", what: "Booking confirmation", n: 3, status: "Delivered" },
+        { when: "Yesterday, 6:00 PM", what: "Reminders for today's visits", n: 18, status: "Delivered" },
+        { when: "2 days ago, 6:00 PM", what: "Reminders for the next day", n: 15, status: "Delivered" },
+      ];
+      function log() {
+        const rows = ST.load("st_sms", []).concat(baseLog);
+        $("log").innerHTML = rows.map((r) =>
+          "<tr><td>" + r.when + "</td><td>" + r.what + "</td><td>" + r.n + "</td><td>" +
+          '<span class="bd' + (r.status === "Delivered" ? " ok" : " wa") + '">' + r.status + "</span></td></tr>").join("");
+      }
+      function record(status, when) {
+        const n = picked().length;
+        ST.save("st_sms", [{ when, what: "Reminders for " + ST.shortDate(day), n, status }].concat(ST.load("st_sms", [])));
+        ST.log("front", "SMS", (status === "Scheduled" ? "Scheduled " : "Sent ") + n + " SMS reminders");
+        $("msg").hidden = false;
+        $("msg").textContent = status === "Scheduled"
+          ? n + " reminders scheduled for 6:00 PM today."
+          : n + " reminders sent through Semaphore.";
+        log();
+      }
+      $("send").onclick = () => record("Delivered", "Just now");
+      $("schedule").onclick = () => record("Scheduled", "Today, 6:00 PM");
+      preview();
+      log();
+      })();
+    </script>
+  </body>
+</html>

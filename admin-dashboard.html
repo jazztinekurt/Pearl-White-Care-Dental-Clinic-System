@@ -47,49 +47,35 @@
         </header>
 
         <div class="stats">
-          <div class="st"><small>Bookings today</small><b>23</b><p>Amparo 11 · Capitol Park 7 · Lagro 5</p></div>
-          <div class="st"><small>Revenue today</small><b>₱18,400</b><p>Up ₱2,100 on the same day last week</p></div>
-          <div class="st"><small>Revenue this month</small><b>₱214,600</b><p>Nov 1 to today, all branches</p></div>
-          <div class="st"><small>Active accounts</small><b>1,284</b><p>1,262 patients · 22 staff</p></div>
+          <div class="st"><small>Bookings today</small><b id="k-book"></b><p id="k-book-t"></p></div>
+          <div class="st"><small>Revenue today</small><b id="k-rev"></b><p id="k-rev-t"></p></div>
+          <div class="st"><small>Revenue this month</small><b id="k-month"></b><p id="k-month-t"></p></div>
+          <div class="st"><small>Active accounts</small><b id="k-acc"></b><p id="k-acc-t"></p></div>
         </div>
 
         <div class="split">
           <section class="cd">
-            <div class="hd">
-              <h2>Bookings this week</h2>
-              <a href="admin-reports.html">Open reports</a>
-            </div>
+            <div class="hd"><h2>Bookings this week</h2><a href="admin-reports.html">Open reports</a></div>
             <div class="bars one" id="week" role="img" aria-label="Bookings per day this week, all branches"></div>
+            <p class="hint" id="week-note" style="margin: 10px 0 0"></p>
           </section>
-
           <section class="cd">
             <h2>Today by branch</h2>
-            <div class="tw">
-              <table>
-                <thead><tr><th>Branch</th><th>Bookings</th><th>No-shows</th><th>Revenue</th></tr></thead>
-                <tbody id="branches"></tbody>
-              </table>
-            </div>
+            <div class="tw"><table><thead><tr><th>Branch</th><th>Bookings</th><th>No-shows</th><th>Revenue</th></tr></thead><tbody id="branches"></tbody></table></div>
           </section>
         </div>
 
         <section class="cd">
-          <div class="hd">
-            <h2>Recent activity</h2>
-            <a href="admin-audit.html">Full audit trail</a>
-          </div>
-          <div class="tw">
-            <table>
-              <thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th></tr></thead>
-              <tbody id="activity"></tbody>
-            </table>
-          </div>
+          <div class="hd"><h2>Recent activity</h2><a href="admin-audit.html">Full audit trail</a></div>
+          <div class="tw"><table><thead><tr><th>When</th><th>User</th><th>Role</th><th>Action</th></tr></thead><tbody id="activity"></tbody></table></div>
         </section>
 
         <p class="ft">Prototype page with sample data.</p>
       </main>
     </div>
 
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
     <script>
       (() => {
       // Greeting and today's date
@@ -104,49 +90,58 @@
           ". " + s.textContent;
       })();
 
-      // Bookings per day, Mon to Sat. Days after today show bookings made so far.
-      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const counts = [19, 22, 21, 17, 14, 9];
-      const todayIdx = new Date().getDay() - 1; // Mon = 0 ... Sat = 5, Sun = -1
-      if (todayIdx >= 0) counts[todayIdx] = 23; // matches "Bookings today"
-      const max = Math.max(...counts) + 3;
-      document.getElementById("week").innerHTML = days
-        .map((d, i) => {
-          const ahead = todayIdx >= 0 && i > todayIdx;
-          return (
-            "<div" + (ahead ? ' class="ahead"' : "") + "><b>" + counts[i] + "</b>" +
-            '<i style="height: ' + Math.round((counts[i] / max) * 100) + '%"></i>' + d + (i === todayIdx ? " (today)" : "") + "</div>"
-          );
-        })
-        .join("");
-      if (todayIdx >= 0 && todayIdx < 5) {
-        document.getElementById("week").insertAdjacentHTML(
-          "afterend",
-          '<p class="hint" style="margin: 10px 0 0">Outlined bars are days still ahead, showing bookings made so far.</p>',
-        );
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
       }
 
-      const branches = [
-        ["Amparo (Main)", 11, 1, "₱9,800"],
-        ["Capitol Park", 7, 0, "₱5,600"],
-        ["Lagro", 5, 1, "₱3,000"],
-      ];
-      document.getElementById("branches").innerHTML = branches
-        .map((r) => "<tr><td><b>" + r[0] + "</b></td><td>" + r[1] + "</td><td>" + r[2] + "</td><td>" + r[3] + "</td></tr>")
-        .join("");
+      const T = ST.today();
+      const today = AD.day(T) || {};
+      const sum = (o, k) => Object.values(o).reduce((n, v) => n + v[k], 0);
+      $("k-book").textContent = sum(today, "bookings");
+      $("k-book-t").textContent = ST.branches.map((b) => b.name + " " + (today[b.id] ? today[b.id].bookings : 0)).join(" · ");
+      const pays = ST.payments().filter((p) => p.date === T);
+      $("k-rev").textContent = ST.peso(pays.reduce((n, p) => n + p.amount, 0));
+      $("k-rev-t").textContent = pays.length + " payments so far";
+      const month = AD.range(T.slice(0, 8) + "01", T);
+      $("k-month").textContent = ST.peso(month.reduce((n, r) => n + sum(r.v, "revenue"), 0));
+      $("k-month-t").textContent = "From the 1st to today, all branches";
+      const staff = AD.users().filter((u) => u.status === "Active").length;
+      $("k-acc").textContent = (AD.PATIENT_ACCOUNTS + staff).toLocaleString("en-US");
+      $("k-acc-t").textContent = AD.PATIENT_ACCOUNTS.toLocaleString("en-US") + " patients · " + staff + " staff";
 
-      // Activity log: who did what, no clinical details
-      const activity = [
-        ["10:42 AM", "Liza Mendoza", "Receptionist", "Recorded a ₱3,000 payment (OR-00419)"],
-        ["10:15 AM", "Liza Mendoza", "Receptionist", "Confirmed appointment PW-2026-0155"],
-        ["9:58 AM", "Dr. Maria Santos", "Dentist", "Updated a patient record"],
-        ["9:30 AM", "Ramon Diaz", "Receptionist", "Registered a new walk-in patient"],
-        ["8:05 AM", "Dr. Jena Tan-Booth", "Clinic owner", "Logged in"],
-        ["Yesterday", "System", "—", "Sent 18 SMS reminders"],
-      ];
-      document.getElementById("activity").innerHTML = activity
-        .map((r) => "<tr><td>" + r[0] + "</td><td>" + r[1] + '</td><td><span class="bd">' + r[2] + "</span></td><td>" + r[3] + "</td></tr>")
-        .join("");
+      // This week, Mon to Sat. Days after today show bookings made so far.
+      const days = [0, 1, 2, 3, 4, 5].map((i) => plus(monday(T), i));
+      const counts = days.map((d) => { const v = AD.day(d); return v ? sum(v, "bookings") : 0; });
+      const max = Math.max(...counts, 1) * 1.15;
+      $("week").innerHTML = days.map((d, i) =>
+        "<div" + (d > T ? ' class="ahead"' : "") + "><b>" + counts[i] + "</b>" +
+        '<i style="height: ' + Math.round((counts[i] / max) * 100) + '%"></i>' +
+        ST.toDate(d).toLocaleDateString("en-US", { weekday: "short" }) + (d === T ? " (today)" : "") + "</div>").join("");
+      $("week-note").textContent = days.some((d) => d > T) ? "Outlined bars are days still ahead, showing bookings made so far." : "";
+
+      $("branches").innerHTML = ST.branches.map((b) => {
+        const v = today[b.id] || { bookings: 0, noshow: 0 };
+        const rev = pays.filter((p) => p.branch === b.id).reduce((n, p) => n + p.amount, 0);
+        return "<tr><td><b>" + b.name + (b.main ? " (Main)" : "") + "</b></td><td>" + v.bookings + "</td><td>" + v.noshow + "</td><td>" + ST.peso(rev) + "</td></tr>";
+      }).join("");
+
+      $("activity").innerHTML = AD.audit().slice(0, 6).map((e) =>
+        "<tr><td>" + when(e.at) + "</td><td>" + e.user + "</td><td>" + AD.roleBadge(e.role) + "</td><td>" + ST.esc(e.action) + "</td></tr>").join("");
       })();
     </script>
   </body>

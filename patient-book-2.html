@@ -24,7 +24,6 @@
         <p class="rl">Patient portal</p>
         <nav aria-label="Main">
           <a class="nv" href="patient-dashboard.html">Dashboard</a>
-          <a class="nv" href="patient-dentists.html">Dentists</a>
           <a class="nv on" href="patient-book-1.html" aria-current="page">Book appointment</a>
           <a class="nv" href="patient-appointments.html">My appointments</a>
           <a class="nv" href="patient-history.html">Treatment history</a>
@@ -127,8 +126,9 @@
           "beforeend",
           '<label class="choice"><input type="radio" name="dentist" value="' + d.id + '"' +
             (bk.dentist === d.id ? " checked" : "") + ' /><span class="av">' + d.ini + "</span><b>" + d.name +
-            "</b><small>" + PW.service(d.spec).name + "</small>" + (specialist ? "<em>Specialist for this</em>" : "") +
-            "</label>",
+            "</b><small>" + PW.service(d.spec).name + " · also general dentistry</small>" +
+            '<small class="bio">' + d.bio + " Sees patients at " + d.branches.map((b) => PW.branch(b).name).join(" and ") + ".</small>" +
+            (specialist ? "<em>Specialist for this</em>" : "") + "</label>",
         );
       });
 

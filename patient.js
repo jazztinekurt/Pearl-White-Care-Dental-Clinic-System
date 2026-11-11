@@ -248,16 +248,18 @@ const PW = (() => {
       teeth: "Full mouth",
       notes: "Records taken for the braces plan.",
       xrays: [
-        "Panoramic X-ray",
-        "Cephalometric X-ray",
-        "Periapical X-ray, tooth 36",
+        { label: "Panoramic X-ray", src: "images/x-ray/img1.jpg" },
+        { label: "Periapical X-ray, tooth 36", src: "images/x-ray/img2.jpg" },
+        { label: "Cephalometric X-ray", src: "images/x-ray/img4.jpg" },
       ],
     },
     "PW-2026-0071": {
       procedure: "Oral exam and consultation",
       teeth: "Full mouth",
       notes: "Crowding on upper and lower front teeth. Braces recommended.",
-      xrays: ["Periapical X-ray, tooth 11"],
+      xrays: [
+        { label: "Periapical X-ray, tooth 11", src: "images/x-ray/img3.jpg" },
+      ],
     },
   };
 

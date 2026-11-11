@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Users and staff | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv on" href="admin-users.html" aria-current="page">Users and staff</a>
+          <a class="nv" href="admin-schedule.html">Master schedule</a>
+          <a class="nv" href="admin-reports.html">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv" href="admin-archive.html">Archive</a>
+          <a class="nv" href="admin-settings.html">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Users and staff</h1>
+            <p id="sub">Staff accounts and patient portal accounts. Activate, deactivate or change roles.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <section class="cd">
+          <div class="hd">
+            <div class="chs" id="tabs" role="group" aria-label="Accounts">
+              <button type="button" class="ch" aria-pressed="true" data-v="staff">Staff</button>
+              <button type="button" class="ch" aria-pressed="false" data-v="patients">Patients</button>
+            </div>
+            <a class="btn sm" href="admin-user.html">Add staff account</a>
+          </div>
+          <div class="fg filters" style="margin-bottom: 8px">
+            <label class="f"><span>Search</span><input id="q" type="search" placeholder="Name, email or ID" autocomplete="off" /></label>
+            <label class="f" id="rolewrap"><span>Role</span><select id="role"><option value="">All roles</option><option>Clinic owner</option><option>Dentist</option><option>Receptionist</option></select></label>
+          </div>
+          <div class="tw"><table><thead id="head"></thead><tbody id="rows"></tbody></table></div>
+          <p class="hint" id="note" style="margin: 12px 0 0"></p>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      let view = ST.param("view") || "staff";
+      const saved = AD.user(ST.param("saved") || "");
+      if (saved) say("msg", (ST.param("new") ? "Added " : "Saved ") + saved.name + " (" + saved.role + ")." + (ST.param("new") ? " A temporary password was emailed to " + saved.email + "." : ""));
+
+      function render() {
+        $("tabs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === view));
+        $("rolewrap").hidden = view !== "staff";
+        const q = $("q").value.trim().toLowerCase();
+        if (view === "staff") {
+          const list = AD.users().filter((u) => (!q || (u.name + u.email + u.id).toLowerCase().includes(q)) && (!$("role").value || u.role === $("role").value));
+          $("head").innerHTML = "<tr><th>Name</th><th>Role</th><th>Branches</th><th>Last login</th><th>Status</th><th><span class='sr'>Actions</span></th></tr>";
+          $("rows").innerHTML = list.map((u) =>
+            "<tr><td><b>" + u.name + "</b><small class='sub'>" + u.email + "</small></td><td>" + AD.roleBadge(u.role) + (u.spec ? "<small class='sub'>" + u.spec + "</small>" : "") +
+            "</td><td>" + u.branches.map((b) => ST.branch(b).name).join(", ") + "</td><td>" + u.last + "</td><td>" + (u.status === "Active" ? '<span class="bd ok">Active</span>' : '<span class="bd no">Deactivated</span>') +
+            '</td><td class="acts"><a class="btn2 sm" href="admin-user.html?id=' + u.id + '">Edit</a>' +
+            (u.role === "Clinic owner" ? "" : '<button type="button" class="btn2 sm' + (u.status === "Active" ? " danger" : "") + '" data-u="' + u.id + '">' + (u.status === "Active" ? "Deactivate" : "Activate") + "</button>") +
+            "</td></tr>").join("") || '<tr><td colspan="6" class="empty">No accounts match.</td></tr>';
+          $("note").textContent = "Deactivated staff can't log in. Their past work stays in the records and the audit trail.";
+        } else {
+          const list = ST.patients().filter((p) => !q || (p.name + p.email + p.id).toLowerCase().includes(q));
+          $("head").innerHTML = "<tr><th>Patient</th><th>Email</th><th>Home branch</th><th>Since</th><th>Portal access</th><th><span class='sr'>Actions</span></th></tr>";
+          $("rows").innerHTML = list.map((p) => {
+            const off = AD.patientStatus(p.id);
+            return "<tr><td><b>" + p.name + "</b><small class='sub'>" + p.id + "</small></td><td>" + (p.email || "—") + "</td><td>" + ST.branch(p.branch).name +
+              "</td><td>" + ST.shortDate(p.since) + "</td><td>" + (off ? '<span class="bd no">Deactivated</span>' : '<span class="bd ok">Active</span>') +
+              '</td><td class="acts"><button type="button" class="btn2 sm' + (off ? "" : " danger") + '" data-p="' + p.id + '">' + (off ? "Activate" : "Deactivate") + "</button></td></tr>";
+          }).join("");
+          $("note").textContent = "Showing " + list.length + " sample patients of " + AD.PATIENT_ACCOUNTS.toLocaleString("en-US") + " portal accounts. Deactivating blocks portal login; the clinic keeps the records.";
+        }
+      }
+      $("tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) { view = b.dataset.v; render(); } };
+      $("q").oninput = render;
+      $("role").onchange = render;
+      $("rows").onclick = (e) => {
+        const u = e.target.closest("[data-u]");
+        const p = e.target.closest("[data-p]");
+        if (u) {
+          const acc = AD.user(u.dataset.u);
+          const on = acc.status !== "Active";
+          if (!on && !confirm("Deactivate " + acc.name + "? They will not be able to log in.")) return;
+          AD.saveUser({ id: acc.id, status: on ? "Active" : "Deactivated" });
+          ST.log("owner", "Account", (on ? "Activated" : "Deactivated") + " staff account " + acc.id + " (" + acc.name + ")");
+          say("msg", acc.name + (on ? " can log in again." : " is deactivated and can no longer log in."));
+        } else if (p) {
+          const pt = ST.patient(p.dataset.p);
+          const on = !!AD.patientStatus(pt.id);
+          AD.setPatientActive(pt.id, on);
+          ST.log("owner", "Account", (on ? "Activated" : "Deactivated") + " the portal account of " + pt.id);
+          say("msg", pt.name + "'s portal account is " + (on ? "active again." : "deactivated. Their records are kept."));
+        }
+        render();
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>

@@ -24,7 +24,6 @@
         <p class="rl">Patient portal</p>
         <nav aria-label="Main">
           <a class="nv" href="patient-dashboard.html">Dashboard</a>
-          <a class="nv" href="patient-dentists.html">Dentists</a>
           <a class="nv" href="patient-book-1.html">Book appointment</a>
           <a class="nv" href="patient-appointments.html">My appointments</a>
           <a class="nv on" href="patient-history.html" aria-current="page">Treatment history</a>
@@ -68,7 +67,7 @@
 
         <section class="cd">
           <h2>X-rays and images</h2>
-          <p class="hint" style="margin: -6px 0 14px">Uploaded by your dentist. Sample placeholders in this prototype.</p>
+          <p class="hint" style="margin: -6px 0 14px">Uploaded by your dentist. Click an image to see it full size.</p>
           <div class="gal" id="xrays"></div>
         </section>
 
@@ -97,9 +96,17 @@
         .join("");
 
       const xrays = [];
-      done.forEach((a) => ((PW.treatments[a.ref] || {}).xrays || []).forEach((x) => xrays.push([x, a.date])));
+      done.forEach((a) => ((PW.treatments[a.ref] || {}).xrays || []).forEach((x) => xrays.push(Object.assign({ date: a.date }, x))));
       document.getElementById("xrays").innerHTML = xrays
-        .map((x) => '<figure><div class="ph">X-ray</div><figcaption>' + x[0] + " · " + PW.shortDate(x[1]) + "</figcaption></figure>")
+        .map((x) => {
+          const caption = x.label + " · " + PW.shortDate(x.date);
+          return (
+            '<figure><a class="xray" href="' + x.src + '" target="_blank" rel="noopener" aria-label="Open ' + caption + ' full size">' +
+            '<img src="' + x.src + '" alt="' + caption + '" loading="lazy" ' +
+            "onerror=\"this.parentNode.classList.add('missing'); this.remove()\" /></a>" +
+            "<figcaption>" + caption + "</figcaption></figure>"
+          );
+        })
         .join("");
       })();
     </script>

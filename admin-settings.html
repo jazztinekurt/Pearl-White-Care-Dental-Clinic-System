@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv" href="admin-users.html">Users and staff</a>
+          <a class="nv" href="admin-schedule.html">Master schedule</a>
+          <a class="nv" href="admin-reports.html">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv" href="admin-archive.html">Archive</a>
+          <a class="nv on" href="admin-settings.html" aria-current="page">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Settings</h1>
+            <p id="sub">Branches, prices, dentist availability and SMS templates.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <div class="tabs" role="tablist" aria-label="Settings sections">
+          <button type="button" role="tab" data-tab="branches" aria-selected="true">Branches</button>
+          <button type="button" role="tab" data-tab="prices" aria-selected="false">Services and prices</button>
+          <button type="button" role="tab" data-tab="avail" aria-selected="false">Dentist availability</button>
+          <button type="button" role="tab" data-tab="sms" aria-selected="false">SMS templates</button>
+        </div>
+
+        <div class="panel" id="p-branches" role="tabpanel">
+          <div id="branchcards"></div>
+          <div class="ac"><button type="button" class="btn" id="save-branches">Save branches</button></div>
+        </div>
+
+        <div class="panel" id="p-prices" role="tabpanel" hidden>
+          <section class="cd">
+            <h2>Price list</h2>
+            <p class="hint">The front desk bills from this list. Changes apply to new bills right away.</p>
+            <div class="tw"><table class="lines"><thead><tr><th>Service</th><th>Price (₱)</th><th>Installments</th></tr></thead><tbody id="prices"></tbody></table></div>
+            <div class="ac"><button type="button" class="btn" id="save-prices">Save prices</button></div>
+          </section>
+        </div>
+
+        <div class="panel" id="p-avail" role="tabpanel" hidden>
+          <section class="cd">
+            <h2>Where each dentist works</h2>
+            <p class="hint">Patients and the front desk can only book a dentist at the branch set for that day.</p>
+            <div class="tw"><table class="lines"><thead><tr><th>Dentist</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody id="avail"></tbody></table></div>
+            <div class="ac"><button type="button" class="btn" id="save-avail">Save availability</button></div>
+          </section>
+        </div>
+
+        <div class="panel" id="p-sms" role="tabpanel" hidden>
+          <section class="cd">
+            <h2>SMS templates</h2>
+            <p class="hint">Fields in braces are filled in for each patient: {name} {date} {time} {dentist} {branch} {ref}. One SMS fits 160 characters.</p>
+            <div id="smslist"></div>
+            <div class="ac"><button type="button" class="btn" id="save-sms">Save templates</button></div>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      const tabs = [...document.querySelectorAll("[role=tab]")];
+      function show(n) {
+        tabs.forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === n));
+        document.querySelectorAll(".panel").forEach((p) => (p.hidden = p.id !== "p-" + n));
+        $("msg").hidden = true;
+      }
+      tabs.forEach((t) => (t.onclick = () => show(t.dataset.tab)));
+      const done = (text, what) => { say("msg", text); ST.log("owner", "Settings", what); };
+
+      // Branches
+      const bset = ST.load("ad_branches", {});
+      $("branchcards").innerHTML = ST.branches.map((b) => {
+        const v = Object.assign({ address: b.address, hours: AD.defaultHours, cash: true, qr: true, card: b.card }, bset[b.id] || {});
+        return '<section class="cd" data-b="' + b.id + '"><h2>' + b.name + (b.main ? ' <span class="bd wa">Main</span>' : "") + "</h2>" +
+          '<div class="fg"><label class="f s2"><span>Address</span><input data-f="address" value="' + ST.esc(v.address) + '" /></label>' +
+          '<label class="f"><span>Opening hours</span><input data-f="hours" value="' + ST.esc(v.hours) + '" /></label></div>' +
+          '<p class="lab">Payments accepted</p><div class="ckgrid">' +
+          [["cash", "Cash"], ["qr", "QR code (GCash, Maya)"], ["card", "Debit or credit card"]].map(([k, n]) =>
+            '<label class="ck"><input type="checkbox" data-f="' + k + '"' + (v[k] ? " checked" : "") + " /><span>" + n + "</span></label>").join("") + "</div></section>";
+      }).join("");
+      $("save-branches").onclick = () => {
+        const out = {};
+        document.querySelectorAll("[data-b]").forEach((c) => {
+          const o = {};
+          c.querySelectorAll("[data-f]").forEach((i) => (o[i.dataset.f] = i.type === "checkbox" ? i.checked : i.value.trim()));
+          out[c.dataset.b] = o;
+        });
+        ST.save("ad_branches", out);
+        done("Branch details saved.", "Updated branch details");
+      };
+
+      // Prices
+      $("prices").innerHTML = ST.priceList.map((x) =>
+        "<tr><td>" + x.name + '</td><td><input type="number" min="0" step="50" class="qty price" data-id="' + x.id + '" value="' + x.price + '" aria-label="Price of ' + x.name + '" /></td><td>' +
+        (x.plan ? '<span class="bd ok">Allowed</span>' : "—") + "</td></tr>").join("");
+      $("save-prices").onclick = () => {
+        const custom = ST.load("ad_prices", {});
+        const changed = [];
+        document.querySelectorAll(".price").forEach((i) => {
+          const item = ST.priceList.find((x) => x.id === i.dataset.id);
+          const v = Math.max(0, Number(i.value) || 0);
+          if (v !== item.price) { changed.push(item.name); custom[item.id] = v; item.price = v; }
+        });
+        ST.save("ad_prices", custom);
+        if (!changed.length) return say("msg", "No prices changed.", "");
+        done("Saved " + changed.length + (changed.length === 1 ? " price" : " prices") + ". New bills use them now.", "Changed the price of " + changed.join(", "));
+      };
+
+      // Dentist availability (Mon to Sat)
+      const defaults = { santos: ["amparo", "lagro", "amparo", "lagro", "amparo", "lagro"], reyes: ["capitol", "amparo", "capitol", "amparo", "capitol", "amparo"], cruz: ["lagro", "capitol", "lagro", "capitol", "lagro", "capitol"] };
+      const avail = Object.assign({}, defaults, ST.load("ad_avail", {}));
+      $("avail").innerHTML = ST.dentists.map((d) => "<tr><td><b>" + d.name + "</b><small class='sub'>" + d.spec + "</small></td>" +
+        avail[d.id].map((v, i) => '<td><select data-d="' + d.id + '" data-i="' + i + '" aria-label="' + d.name + ", day " + (i + 1) + '">' +
+          d.branches.map((b) => '<option value="' + b + '"' + (v === b ? " selected" : "") + ">" + ST.branch(b).name + "</option>").join("") +
+          '<option value="off"' + (v === "off" ? " selected" : "") + ">Off</option></select></td>").join("") + "</tr>").join("");
+      $("save-avail").onclick = () => {
+        const out = {};
+        document.querySelectorAll("#avail select").forEach((s) => { (out[s.dataset.d] = out[s.dataset.d] || [])[s.dataset.i] = s.value; });
+        ST.save("ad_avail", out);
+        done("Availability saved.", "Updated dentist availability");
+      };
+
+      // SMS templates with live preview
+      const names = { confirm: "Booking confirmed", reminder: "Reminder before a visit", reschedule: "Appointment moved", reject: "Request not confirmed" };
+      const t = AD.sms();
+      const sample = { name: "Maria", date: "Fri, Nov 13", time: "10:00 AM", dentist: "Dr. Santos", branch: "Amparo", ref: "PW-2026-0142" };
+      $("smslist").innerHTML = Object.keys(names).map((k) =>
+        '<div class="smsrow"><label class="f"><span>' + names[k] + '</span><textarea rows="3" data-k="' + k + '">' + ST.esc(t[k]) + "</textarea></label>" +
+        '<div><div class="sms" data-pv="' + k + '"></div><p class="hint" data-len="' + k + '" style="margin: 6px 0 0"></p></div></div>').join("");
+      function preview(k) {
+        const v = document.querySelector('[data-k="' + k + '"]').value;
+        const text = v.replace(/\{(\w+)\}/g, (m, f) => sample[f] || m);
+        document.querySelector('[data-pv="' + k + '"]').textContent = text;
+        const parts = text.length <= 160 ? 1 : Math.ceil(text.length / 153);
+        document.querySelector('[data-len="' + k + '"]').textContent = text.length + " characters · " + parts + (parts === 1 ? " SMS" : " SMS, consider shortening");
+      }
+      Object.keys(names).forEach(preview);
+      $("smslist").oninput = (e) => e.target.dataset.k && preview(e.target.dataset.k);
+      $("save-sms").onclick = () => {
+        const out = {};
+        document.querySelectorAll("[data-k]").forEach((x) => (out[x.dataset.k] = x.value.trim()));
+        ST.save("ad_sms", out);
+        done("Templates saved. The front desk's reminder page uses the new reminder text.", "Updated SMS templates");
+      };
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My patients | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv on" href="dentist-patients.html" aria-current="page">Patients</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">My patients</h1>
+            <p id="sub">Patients you have seen or are booked to see.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <section class="cd">
+          <label class="f"><span>Search</span><input id="q" type="search" placeholder="Name or patient ID" autocomplete="off" /></label>
+          <div class="tw" style="margin-top: 14px">
+            <table>
+              <thead><tr><th>Patient</th><th>Age</th><th>Alerts</th><th>Treatment plan</th><th>Last visit</th><th>Next visit</th></tr></thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      function dentistStatus(list) {
+        let chair = false;
+        return list.map((a) => {
+          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
+          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
+          return Object.assign({}, a, { dstatus: s });
+        });
+      }
+      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
+      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
+      function alertsOf(pid) {
+        const m = DN.record(pid).medical;
+        if (!m) return "";
+        const bits = m.conditions.slice();
+        if (m.allergies && !/^none/i.test(m.allergies)) bits.unshift("Allergy: " + m.allergies);
+        return bits.join(" · ");
+      }
+
+      const appts = DN.mine().filter(ST.active).sort(ST.sortByTime);
+      const today = ST.today();
+      function render() {
+        const q = document.getElementById("q").value.trim().toLowerCase();
+        const list = DN.myPatients().filter((p) => !q || (p.name + p.id).toLowerCase().includes(q)).sort((a, b) => a.last.localeCompare(b.last));
+        document.getElementById("rows").innerHTML = list.map((p) => {
+          const r = DN.record(p.id);
+          const mine = appts.filter((a) => a.patient === p.id);
+          const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Done")).pop();
+          const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Done"));
+          const al = alertsOf(p.id);
+          return '<tr class="link" data-id="' + p.id + '"><td><a href="dentist-record.html?patient=' + p.id + '"><b>' + p.name + "</b></a><small class='sub'>" + p.id + "</small></td>" +
+            "<td>" + (DN.age(p.dob) ?? "—") + "</td><td>" + (al ? '<span class="alert-text">' + al + "</span>" : r.medical ? "—" : '<span class="hint">No history yet</span>') + "</td>" +
+            "<td>" + (r.plan ? r.plan.name + " · " + r.plan.done + "/" + r.plan.of : "—") + "</td>" +
+            "<td>" + (last ? ST.shortDate(last.date) : "—") + "</td><td>" + (next ? ST.shortDate(next.date) + ", " + next.time : "—") + "</td></tr>";
+        }).join("") || '<tr><td colspan="6" class="empty">No patients match.</td></tr>';
+      }
+      document.getElementById("q").oninput = render;
+      document.getElementById("rows").onclick = (e) => {
+        const tr = e.target.closest("tr[data-id]");
+        if (tr && !e.target.closest("a")) location.href = "dentist-record.html?patient=" + tr.dataset.id;
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>

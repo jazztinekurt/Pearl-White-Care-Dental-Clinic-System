@@ -50,8 +50,8 @@
         <!-- Today's numbers -->
         <div class="stats">
           <div class="st"><small>Appointments today</small><b id="n-today">0</b><p id="n-left"></p></div>
-          <div class="st"><small>Pending online requests</small><b id="n-pending">0</b><p>Confirm them so patients get an SMS.</p></div>
-          <div class="st"><small>Collected today</small><b>₱7,500</b><p>4 payments: cash ₱4,500, QR ₱3,000</p></div>
+          <div class="st"><small>Pending online requests</small><b id="n-pending">0</b><p>Confirm them so patients get an SMS.</p><a href="staff-requests.html">Open requests</a></div>
+          <div class="st"><small>Collected today</small><b id="n-paid">₱0</b><p id="n-paid-text"></p></div>
         </div>
 
         <!-- Today's schedule -->
@@ -62,9 +62,9 @@
             </div>
             <div class="chs" id="branches" role="group" aria-label="Filter by branch" style="margin-bottom: 8px">
               <button type="button" class="ch" aria-pressed="true" data-b="all">All branches</button>
-              <button type="button" class="ch" aria-pressed="false" data-b="Amparo">Amparo</button>
-              <button type="button" class="ch" aria-pressed="false" data-b="Capitol Park">Capitol Park</button>
-              <button type="button" class="ch" aria-pressed="false" data-b="Lagro">Lagro</button>
+              <button type="button" class="ch" aria-pressed="false" data-b="amparo">Amparo</button>
+              <button type="button" class="ch" aria-pressed="false" data-b="capitol">Capitol Park</button>
+              <button type="button" class="ch" aria-pressed="false" data-b="lagro">Lagro</button>
             </div>
             <div class="tw">
               <table>
@@ -93,9 +93,8 @@
               <a href="staff-sms.html">Open SMS reminders</a>
             </div>
             <p style="color: var(--muted)">
-              <b style="color: var(--ink)">14 patients</b> have appointments tomorrow.
+              <b style="color: var(--ink)" id="n-tmrw">0 patients</b> have appointments on the next clinic day.
               SMS reminders go out automatically at 6:00 PM through Semaphore.
-              2 patients turned reminders off.
             </p>
           </section>
         </div>
@@ -104,6 +103,7 @@
       </main>
     </div>
 
+    <script src="staff.js"></script>
     <script>
       (() => {
       // Greeting and today's date
@@ -118,77 +118,64 @@
           ". " + s.textContent;
       })();
 
-      // Sample data: today's appointments at all branches
-      const today = [
-        { t: "9:00 AM", p: "Carlo Reyes", s: "Cleaning", d: "Dr. Juan Reyes", b: "Amparo", st: "Done" },
-        { t: "9:30 AM", p: "Ana Villanueva", s: "Extraction", d: "Dr. Ana Cruz", b: "Capitol Park", st: "Done" },
-        { t: "10:00 AM", p: "Maria Lopez", s: "Orthodontics check", d: "Dr. Maria Santos", b: "Amparo", st: "Checked in", id: "P-0142" },
-        { t: "10:30 AM", p: "Jomar Dela Cruz", s: "Root canal (visit 2)", d: "Dr. Juan Reyes", b: "Capitol Park", st: "Waiting" },
-        { t: "11:00 AM", p: "Bea Santiago", s: "Braces adjustment", d: "Dr. Maria Santos", b: "Amparo", st: "Waiting" },
-        { t: "1:00 PM", p: "Walk-in: Rico Tan", s: "Check-up", d: "Dr. Juan Reyes", b: "Amparo", st: "Booked" },
-        { t: "2:00 PM", p: "Grace Lim", s: "Denture fitting", d: "Dr. Ana Cruz", b: "Lagro", st: "Booked" },
-        { t: "3:00 PM", p: "Paolo Garcia", s: "Braces adjustment", d: "Dr. Maria Santos", b: "Lagro", st: "Booked" },
-        { t: "4:00 PM", p: "Liane Ramos", s: "Wisdom tooth removal", d: "Dr. Ana Cruz", b: "Capitol Park", st: "Booked" },
-      ];
-      const requests = [
-        { ref: "PW-2026-0151", p: "Maria Lopez", s: "Cleaning", when: "Fri, Nov 20 · 2:00 PM", d: "Dr. Juan Reyes", b: "Amparo", via: "Online" },
-        { ref: "PW-2026-0155", p: "Kevin Navarro", s: "Orthodontics consult", when: "Sat, Nov 14 · 10:00 AM", d: "Dr. Maria Santos", b: "Lagro", via: "Online" },
-        { ref: "PW-2026-0157", p: "Joy Bautista", s: "Extraction", when: "Mon, Nov 16 · 3:00 PM", d: "Dr. Ana Cruz", b: "Capitol Park", via: "Online" },
-      ];
-
-      const cls = { Done: "", "Checked in": "ok", Waiting: "wa", Booked: "" };
+      // Everything comes from staff.js, so the other front desk pages stay in step
       let branch = "all";
+      const today = ST.today();
+      const cls = { Done: "", "Checked in": "ok", Booked: "" };
+
+      function say(text, kind) {
+        const m = document.getElementById("msg");
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
 
       function renderToday() {
-        const rows = today.filter((a) => branch === "all" || a.b === branch);
-        document.getElementById("today").innerHTML = rows
-          .map((a, i) => {
-            const idx = today.indexOf(a);
-            const action =
-              a.st === "Booked" || a.st === "Waiting"
-                ? '<button type="button" class="btn2 sm" data-in="' + idx + '">Check in</button>'
-                : a.st === "Done"
-                  ? '<a class="btn2 sm" href="staff-billing.html">Bill</a>'
-                  : "";
-            return (
-              "<tr><td>" + a.t + "</td><td><b>" + a.p + "</b></td><td>" + a.s + "</td><td>" + a.d +
-              "</td><td>" + a.b + '</td><td><span class="bd' + (cls[a.st] ? " " + cls[a.st] : "") + '">' + a.st +
-              "</span></td><td>" + action + "</td></tr>"
-            );
-          })
-          .join("");
-        const left = today.filter((a) => a.st !== "Done").length;
-        document.getElementById("n-today").textContent = today.length;
-        document.getElementById("n-left").textContent = today.length - left + " done, " + left + " still to come";
+        const all = ST.appointments().filter((a) => a.date === today && ST.active(a)).sort(ST.sortByTime);
+        const rows = all.filter((a) => branch === "all" || a.branch === branch);
+        document.getElementById("today").innerHTML = rows.map((a) => {
+          const p = ST.patient(a.patient);
+          const action = a.status === "Booked"
+            ? '<button type="button" class="btn2 sm" data-in="' + a.ref + '">Check in</button>'
+            : a.status === "Done"
+              ? '<a class="btn2 sm" href="staff-billing.html?patient=' + p.id + '">Bill</a>'
+              : "";
+          return "<tr><td>" + a.time + '</td><td><a href="staff-patient.html?id=' + p.id + '"><b>' + (a.source === "Walk-in" ? "Walk-in: " : "") + p.name +
+            "</b></a></td><td>" + a.service + "</td><td>" + ST.dentist(a.dentist).name + "</td><td>" + ST.branch(a.branch).name +
+            '</td><td><span class="bd' + (cls[a.status] ? " " + cls[a.status] : "") + '">' + a.status + "</span></td><td>" + action + "</td></tr>";
+        }).join("") || '<tr><td colspan="7" class="empty">No appointments here today.</td></tr>';
+        const done = all.filter((a) => a.status === "Done").length;
+        document.getElementById("n-today").textContent = all.length;
+        document.getElementById("n-left").textContent = done + " done, " + (all.length - done) + " still to come";
       }
 
       function renderRequests() {
         const box = document.getElementById("requests");
-        const open = requests.filter((r) => !r.done);
+        const open = ST.pending();
         document.getElementById("n-pending").textContent = open.length;
-        if (!open.length) {
-          box.innerHTML = '<p class="empty">No pending requests. Nice work.</p>';
-          return;
-        }
-        box.innerHTML = open
-          .map(
-            (r) =>
-              '<div class="li"><i></i><div><b>' + r.p + "</b> · " + r.s +
-              "<small>" + r.when + " · " + r.d + " · " + r.b + " · " + r.ref + "</small>" +
-              '<div class="ac" style="margin-top: 8px">' +
-              '<button type="button" class="btn sm" data-ok="' + r.ref + '">Confirm</button>' +
-              '<a class="btn2 sm" href="staff-appointment.html?ref=' + r.ref + '">Reschedule</a>' +
-              '<button type="button" class="btn2 sm danger" data-no="' + r.ref + '">Reject</button>' +
-              "</div></div></div>",
-          )
-          .join("");
+        box.innerHTML = open.length
+          ? open.slice(0, 3).map((r) => {
+              const p = ST.patient(r.patient);
+              return '<div class="li"><i></i><div><b>' + p.name + "</b> · " + r.service +
+                "<small>" + ST.shortDate(r.date) + " · " + r.time + " · " + ST.dentist(r.dentist).name + " · " + ST.branch(r.branch).name + " · " + r.ref + "</small>" +
+                '<div class="ac" style="margin-top: 8px">' +
+                '<button type="button" class="btn sm" data-ok="' + r.ref + '">Confirm</button>' +
+                '<a class="btn2 sm" href="staff-appointment.html?req=' + r.ref + '">Reschedule</a>' +
+                '<a class="btn2 sm" href="staff-requests.html">Reject…</a>' +
+                "</div></div></div>";
+            }).join("")
+          : '<p class="empty">No pending requests. Nice work.</p>';
       }
 
-      function say(text) {
-        const m = document.getElementById("msg");
-        m.hidden = false;
-        m.className = "banner ok";
-        m.textContent = text;
+      function renderMoney() {
+        const pays = ST.payments().filter((x) => x.date === today);
+        const by = {};
+        pays.forEach((x) => (by[x.method] = (by[x.method] || 0) + x.amount));
+        document.getElementById("n-paid").textContent = ST.peso(pays.reduce((n, x) => n + x.amount, 0));
+        document.getElementById("n-paid-text").textContent = pays.length + " payments: " +
+          Object.keys(by).map((k) => k.toLowerCase() + " " + ST.peso(by[k])).join(", ");
+        const n = ST.appointments().filter((a) => a.date === ST.openDay(1) && ST.active(a)).length;
+        document.getElementById("n-tmrw").textContent = n + " patients";
       }
 
       document.getElementById("branches").onclick = (e) => {
@@ -202,28 +189,27 @@
       document.getElementById("today").onclick = (e) => {
         const b = e.target.closest("button[data-in]");
         if (!b) return;
-        const a = today[b.dataset.in];
-        a.st = "Checked in";
+        const a = ST.appointment(b.dataset.in);
+        ST.updateAppointment(a.ref, { status: "Checked in" });
         renderToday();
-        say(a.p + " is checked in. " + a.d + " has been notified.");
+        say(ST.patient(a.patient).name + " is checked in. " + ST.dentist(a.dentist).name + " has been notified.");
       };
 
       document.getElementById("requests").onclick = (e) => {
         const ok = e.target.closest("[data-ok]");
-        const no = e.target.closest("[data-no]");
-        if (!ok && !no) return;
-        const r = requests.find((x) => x.ref === (ok || no).dataset[ok ? "ok" : "no"]);
-        r.done = true;
+        if (!ok) return;
+        const res = ST.confirmRequest(ok.dataset.ok);
+        const p = ST.patient(res.request.patient);
+        if (res.ok) say(res.request.ref + " confirmed. " + p.name + " gets an SMS and email, and it is on the master calendar.");
+        else say("Can't confirm " + res.request.ref + ": " + ST.dentist(res.request.dentist).short + " is already booked then. " +
+          '<a href="staff-appointment.html?req=' + res.request.ref + '">Pick another time</a>', "warn");
         renderRequests();
-        say(
-          ok
-            ? r.ref + " confirmed. " + r.p + " gets an SMS and email now, and it is on the master calendar."
-            : r.ref + " rejected. " + r.p + " gets an SMS asking them to pick another time.",
-        );
+        ST.refreshCount();
       };
 
       renderToday();
       renderRequests();
+      renderMoney();
       })();
     </script>
   </body>

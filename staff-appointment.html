@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Appointment | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv on" href="staff-calendar.html" aria-current="page">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv" href="staff-patients.html">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">New appointment</h1>
+            <p id="sub">For walk-ins, phone calls and Messenger bookings.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="staff-calendar.html" id="back">&larr; Master calendar</a>
+        <div class="banner" id="ctx" hidden></div>
+        <form class="cd" id="form" novalidate>
+          <div id="srcwrap">
+            <h2>How did they book?</h2>
+            <div class="chs" id="src" role="group" aria-label="Booking source">
+              <button type="button" class="ch" aria-pressed="true" data-s="Walk-in">Walk-in</button>
+              <button type="button" class="ch" aria-pressed="false" data-s="Phone">Phone call</button>
+              <button type="button" class="ch" aria-pressed="false" data-s="Messenger">Messenger</button>
+            </div>
+          </div>
+
+          <h2 class="sec" id="pt-h">Patient</h2>
+          <div id="picked" class="banner" hidden></div>
+          <div id="finder">
+            <label class="f"><span>Search by name, patient ID or mobile number</span>
+              <input id="pq" autocomplete="off" placeholder="e.g. Lopez, P-0142 or 0917" /></label>
+            <div id="results" class="results" role="listbox" aria-label="Matching patients"></div>
+            <p class="hint" style="margin: 8px 0 0">Not registered yet? <a href="staff-patient-new.html?back=appointment" style="color: var(--lagoon); font-weight: 600">Register a new patient</a></p>
+          </div>
+          <p class="err" id="e-pt" role="alert"></p>
+
+          <h2 class="sec">Visit</h2>
+          <div class="fg">
+            <label class="f"><span>Service</span>
+              <select id="service">
+                <option value="">Choose a service</option>
+                <option>Consultation</option><option>Check-up</option><option>Cleaning</option><option>Filling</option>
+                <option>Extraction</option><option>Wisdom tooth removal</option><option>Root canal</option>
+                <option>Orthodontics consult</option><option>Braces adjustment</option><option>Braces check</option>
+                <option>Denture fitting</option>
+              </select></label>
+            <label class="f"><span>Date</span><input type="date" id="date" /></label>
+          </div>
+          <p class="err" id="e-visit" role="alert"></p>
+
+          <h2 class="sec">Branch and dentist</h2>
+          <div class="chs" id="br" role="group" aria-label="Branch"></div>
+          <div class="chs" id="dent" role="group" aria-label="Dentist" style="margin-top: 10px"></div>
+
+          <h2 class="sec">Time</h2>
+          <p class="hint">Times the dentist is already booked, at any branch, are crossed out.</p>
+          <div class="chs" id="slots" role="group" aria-label="Time"></div>
+          <p class="err" id="e-time" role="alert"></p>
+
+          <label class="f" style="margin-top: 12px"><span>Notes for the dentist <i>(optional)</i></span>
+            <textarea id="notes" rows="2" placeholder="e.g. Toothache since Monday"></textarea></label>
+
+          <div class="ac">
+            <button class="btn" type="submit" id="save">Book appointment</button>
+            <a class="btn2" href="staff-calendar.html" id="cancel-link">Cancel</a>
+            <button type="button" class="btn2 danger" id="cancel-appt" hidden>Cancel this appointment</button>
+          </div>
+        </form>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const editing = ST.appointment(ST.param("ref") || "");
+      const request = ST.requests().find((r) => r.ref === ST.param("req") && !r.state);
+      const st = {
+        source: "Walk-in",
+        patient: ST.param("patient") || null,
+        service: "",
+        date: ST.param("date") || ST.today(),
+        branch: ST.param("branch") || "amparo",
+        dentist: ST.param("dentist") || null,
+        time: ST.param("time") || null,
+        notes: "",
+      };
+      const base = editing || request;
+      if (base) Object.assign(st, { patient: base.patient, service: base.service, date: base.date, branch: base.branch, dentist: base.dentist, time: base.time, source: base.source || "Online" });
+
+      const $ = (id) => document.getElementById(id);
+      if (editing || request) {
+        $("title").textContent = editing ? "Edit appointment" : "Reschedule request";
+        $("sub").textContent = editing
+          ? editing.ref + " · booked by " + editing.source.toLowerCase() + " · " + editing.status
+          : request.ref + " · online request. Pick a time that works, then confirm it.";
+        $("srcwrap").hidden = true;
+        $("pt-h").classList.remove("sec");
+        $("save").textContent = editing ? "Save changes" : "Confirm at this time";
+        if (request) {
+          $("back").href = $("cancel-link").href = "staff-requests.html";
+          $("back").innerHTML = "&larr; Appointment requests";
+        }
+        if (editing && editing.status === "Booked") $("cancel-appt").hidden = false;
+        if (editing && editing.status === "Done") {
+          const c = $("ctx");
+          c.hidden = false;
+          c.innerHTML = "<span>This visit is done. Changes here do not affect billing.</span>" +
+            '<a href="staff-billing.html?patient=' + editing.patient + '">Go to billing</a>';
+        }
+      }
+      $("date").min = ST.today();
+      $("date").value = st.date;
+      $("service").value = st.service;
+
+      // ---------- Patient finder ----------
+      function showPatient() {
+        const p = ST.patient(st.patient || "");
+        $("finder").hidden = !!p;
+        $("picked").hidden = !p;
+        if (p)
+          $("picked").innerHTML =
+            "<span><b>" + p.name + "</b> · " + p.id + " · " + p.mobile + (p.plan ? " · " + p.plan.name : "") + "</span>" +
+            (editing || request ? "" : '<a href="#" id="change">Change</a>');
+        const ch = document.getElementById("change");
+        if (ch) ch.onclick = (e) => { e.preventDefault(); st.patient = null; showPatient(); $("pq").focus(); };
+      }
+      $("pq").oninput = () => {
+        const q = $("pq").value.trim().toLowerCase().replace(/\s/g, "");
+        const list = q.length < 2 ? [] : ST.patients().filter((p) =>
+          (p.name + p.id + p.mobile).toLowerCase().replace(/\s/g, "").includes(q)).slice(0, 6);
+        $("results").innerHTML = list.map((p) =>
+          '<button type="button" role="option" data-id="' + p.id + '"><b>' + p.name + "</b><small>" + p.id + " · " + p.mobile +
+          " · " + ST.branch(p.branch).name + "</small></button>").join("") ||
+          (q.length >= 2 ? '<p class="hint" style="margin: 6px 0 0">No match. Check the spelling, or register them.</p>' : "");
+      };
+      $("results").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        st.patient = b.dataset.id;
+        $("pq").value = "";
+        $("results").innerHTML = "";
+        $("e-pt").textContent = "";
+        showPatient();
+      };
+
+      // ---------- Source, branch, dentist, time ----------
+      $("src").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        st.source = b.dataset.s;
+        $("src").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+      };
+      function render() {
+        $("br").innerHTML = ST.branches.map((b) =>
+          '<button type="button" class="ch" data-b="' + b.id + '" aria-pressed="' + (b.id === st.branch) + '">' + b.name + "</button>").join("");
+        const here = ST.dentists.filter((d) => d.branches.includes(st.branch));
+        if (!here.some((d) => d.id === st.dentist)) st.dentist = here[0].id;
+        $("dent").innerHTML = here.map((d) =>
+          '<button type="button" class="ch" data-d="' + d.id + '" aria-pressed="' + (d.id === st.dentist) + '">' + d.name +
+          " · " + d.spec + "</button>").join("");
+        const closed = ST.toDate(st.date).getDay() === 0;
+        $("slots").innerHTML = closed
+          ? '<p class="hint" style="margin: 0">The clinic is closed on Sundays. Pick another date.</p>'
+          : ST.times.map((t) => {
+              const c = ST.conflict(st.dentist, st.date, t, editing && editing.ref);
+              if (c && t === st.time) st.time = null;
+              return '<button type="button" class="ch" data-t="' + t + '" aria-pressed="' + (t === st.time) + '"' +
+                (c ? ' disabled title="Booked at ' + ST.branch(c.branch).name + '"' : "") + ">" + t + "</button>";
+            }).join("");
+      }
+      $("br").onclick = (e) => { const b = e.target.closest("button"); if (b) { st.branch = b.dataset.b; render(); } };
+      $("dent").onclick = (e) => { const b = e.target.closest("button"); if (b) { st.dentist = b.dataset.d; render(); } };
+      $("slots").onclick = (e) => { const b = e.target.closest("button"); if (b && !b.disabled) { st.time = b.dataset.t; $("e-time").textContent = ""; render(); } };
+      $("date").onchange = () => { st.date = $("date").value || ST.today(); render(); };
+
+      $("cancel-appt").onclick = () => {
+        if (!confirm("Cancel this appointment? The patient gets an SMS.")) return;
+        ST.updateAppointment(editing.ref, { status: "Cancelled" });
+        location.href = "staff-calendar.html?date=" + editing.date;
+      };
+
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        st.service = $("service").value;
+        st.notes = $("notes").value.trim();
+        $("e-pt").textContent = st.patient ? "" : "Find the patient, or register them first.";
+        $("e-visit").textContent = st.service ? "" : "Choose a service.";
+        $("e-time").textContent = st.time ? "" : "Pick an open time.";
+        if (!st.patient || !st.service || !st.time) return;
+        // Final double-booking check, in case someone else booked the slot meanwhile
+        const c = ST.conflict(st.dentist, st.date, st.time, editing && editing.ref);
+        if (c) {
+          $("e-time").textContent = ST.dentist(st.dentist).short + " is already booked at " + ST.branch(c.branch).name + " at " + st.time + ". Pick another time.";
+          render();
+          return;
+        }
+        const fields = { patient: st.patient, service: st.service, date: st.date, time: st.time, branch: st.branch, dentist: st.dentist, notes: st.notes };
+        let ref;
+        if (editing) {
+          ST.updateAppointment(editing.ref, fields);
+          ref = editing.ref;
+        } else if (request) {
+          ST.save("st_handled", Object.assign(ST.load("st_handled", {}), { [request.ref]: { state: "Confirmed", at: "now", moved: true } }));
+          ref = ST.addAppointment(Object.assign({ ref: request.ref, source: "Online" }, fields)).ref;
+        } else {
+          ref = ST.addAppointment(Object.assign({ source: st.source }, fields)).ref;
+        }
+        location.href = "staff-calendar.html?date=" + st.date + "&saved=" + ref + (editing ? "&edited=1" : "");
+      };
+
+      showPatient();
+      render();
+      })();
+    </script>
+  </body>
+</html>

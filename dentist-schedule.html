@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My schedule | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv on" href="dentist-schedule.html" aria-current="page">My schedule</a>
+          <a class="nv" href="dentist-patients.html">Patients</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">My schedule</h1>
+            <p id="sub">Your appointments at every branch. Click a patient to open their record.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <section class="cd">
+          <div class="hd calbar">
+            <div class="ac" style="margin: 0">
+              <button type="button" class="btn2 sm" id="prev" aria-label="Previous">&larr;</button>
+              <button type="button" class="btn2 sm" id="today">Today</button>
+              <button type="button" class="btn2 sm" id="next" aria-label="Next">&rarr;</button>
+            </div>
+            <div class="chs" id="view" role="group" aria-label="View">
+              <button type="button" class="ch sm" aria-pressed="true" data-v="week">Week</button>
+              <button type="button" class="ch sm" aria-pressed="false" data-v="day">Day</button>
+            </div>
+          </div>
+          <h2 id="range" style="margin: 14px 0 12px"></h2>
+          <div id="out"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      function dentistStatus(list) {
+        let chair = false;
+        return list.map((a) => {
+          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
+          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
+          return Object.assign({}, a, { dstatus: s });
+        });
+      }
+      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
+      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
+      function alertsOf(pid) {
+        const m = DN.record(pid).medical;
+        if (!m) return "";
+        const bits = m.conditions.slice();
+        if (m.allergies && !/^none/i.test(m.allergies)) bits.unshift("Allergy: " + m.allergies);
+        return bits.join(" · ");
+      }
+
+      let anchor = ST.today();
+      let view = window.innerWidth < 700 ? "day" : "week";
+      const out = document.getElementById("out");
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const all = DN.mine().filter(ST.active);
+
+      function monday(iso) {
+        const d = ST.toDate(iso);
+        const k = (d.getDay() + 6) % 7;
+        d.setDate(d.getDate() - k);
+        return fmt(d);
+      }
+
+      function cell(a) {
+        if (!a) return '<td class="slot c-free-dn"></td>';
+        const p = ST.patient(a.patient);
+        return '<td class="slot ' + (a.status === "Done" ? "c-done" : a.status === "Checked in" ? "c-in" : "c-bk") + '"><a href="dentist-record.html?patient=' + p.id + '"><b>' +
+          p.name + "</b><small>" + a.service + " · " + ST.branch(a.branch).name + "</small></a></td>";
+      }
+
+      function render() {
+        document.querySelectorAll("#view button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === view));
+        if (view === "week") {
+          const start = monday(anchor);
+          const days = [0, 1, 2, 3, 4, 5].map((i) => plus(start, i));
+          document.getElementById("range").textContent = "Week of " + ST.shortDate(start);
+          let html = '<div class="tw"><table class="sch cal wk"><thead><tr><th>Time</th>' + days.map((d) => {
+            const here = all.find((a) => a.date === d);
+            return "<th" + (d === ST.today() ? ' class="is-today"' : "") + ">" + ST.shortDate(d) + "<small>" + (here ? ST.branch(here.branch).name : "No bookings") + "</small></th>";
+          }).join("") + "</tr></thead><tbody>";
+          ST.times.forEach((t) => {
+            html += "<tr><td>" + t + "</td>" + days.map((d) => cell(all.find((a) => a.date === d && a.time === t))).join("") + "</tr>";
+          });
+          out.innerHTML = html + "</tbody></table></div>";
+        } else {
+          document.getElementById("range").textContent = ST.toDate(anchor).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) + (anchor === ST.today() ? " (today)" : "");
+          const list = dentistStatus(all.filter((a) => a.date === anchor).sort(ST.sortByTime));
+          out.innerHTML = ST.toDate(anchor).getDay() === 0
+            ? '<p class="empty">The clinic is closed on Sundays.</p>'
+            : list.length
+              ? list.map((a) => {
+                  const p = ST.patient(a.patient);
+                  return '<a class="ap" href="dentist-record.html?patient=' + p.id + '"><span class="ad"><b>' + a.time.split(" ")[0] + "</b>" + a.time.split(" ")[1] +
+                    '</span><span class="at"><b>' + p.name + "</b><small>" + a.service + " · " + ST.branch(a.branch).name + "</small></span>" +
+                    (anchor === ST.today() ? dbadge(a.dstatus) : ST.badge(a.status)) + "</a>";
+                }).join("")
+              : '<p class="empty">No appointments this day.</p>';
+        }
+      }
+      document.getElementById("prev").onclick = () => { anchor = plus(anchor, view === "week" ? -7 : -1); render(); };
+      document.getElementById("next").onclick = () => { anchor = plus(anchor, view === "week" ? 7 : 1); render(); };
+      document.getElementById("today").onclick = () => { anchor = ST.today(); render(); };
+      document.getElementById("view").onclick = (e) => { const b = e.target.closest("button"); if (b) { view = b.dataset.v; render(); } };
+      render();
+      })();
+    </script>
+  </body>
+</html>

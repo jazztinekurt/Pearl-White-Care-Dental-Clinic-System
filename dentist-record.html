@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient record | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv on" href="dentist-patients.html" aria-current="page">Patients</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Patient record</h1>
+            <p id="sub"></p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="dentist-patients.html">&larr; My patients</a>
+        <div class="banner warn" id="alerts" hidden></div>
+        <div class="banner" id="visit" hidden></div>
+
+        <div class="tabs" role="tablist" aria-label="Record sections">
+          <button type="button" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+          <button type="button" role="tab" data-tab="history" aria-selected="false">History</button>
+          <button type="button" role="tab" data-tab="chart" aria-selected="false">Dental chart</button>
+          <button type="button" role="tab" data-tab="notes" aria-selected="false">Notes and plan</button>
+          <button type="button" role="tab" data-tab="xrays" aria-selected="false">X-rays</button>
+        </div>
+
+        <!-- Overview -->
+        <div class="panel" id="p-overview" role="tabpanel">
+          <div class="two">
+            <section class="cd"><h2>Patient</h2><dl class="kv" id="info"></dl></section>
+            <section class="cd"><h2>Medical history</h2><dl class="kv" id="med"></dl></section>
+          </div>
+          <div class="two">
+            <section class="cd" id="plancard"></section>
+            <section class="cd"><h2>Upcoming with you</h2><div id="upcoming"></div></section>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="panel" id="p-history" role="tabpanel" hidden>
+          <section class="cd"><h2>Visits</h2><div id="visits"></div></section>
+        </div>
+
+        <!-- Dental chart -->
+        <div class="panel" id="p-chart" role="tabpanel" hidden>
+          <section class="cd">
+            <div class="hd"><h2>Dental chart</h2><small class="hint" style="margin: 0">Click a tooth to record its condition.</small></div>
+            <p class="jaw-label">Upper</p>
+            <div class="tooth jaw" id="upper"></div>
+            <div class="tooth jaw" id="lower"></div>
+            <p class="jaw-label">Lower</p>
+            <div class="editor" id="editor" hidden>
+              <h3 id="ed-title">Tooth</h3>
+              <div class="fg">
+                <label class="f"><span>Condition</span><select id="ed-code"><option value="">Healthy, nothing to record</option></select></label>
+                <label class="f"><span>Note</span><input id="ed-note" placeholder="e.g. Watch, refer for filling" /></label>
+              </div>
+              <p class="lab">Cavity or restoration location</p>
+              <div class="chs" id="ed-surf"></div>
+              <div class="ac">
+                <button type="button" class="btn sm" id="ed-save">Save tooth</button>
+                <button type="button" class="btn2 sm" id="ed-close">Close</button>
+              </div>
+            </div>
+            <ul class="legend codes" id="legend" aria-label="Chart legend"></ul>
+          </section>
+        </div>
+
+        <!-- Notes and treatment plan -->
+        <div class="panel" id="p-notes" role="tabpanel" hidden>
+          <div class="banner ok" id="saved" role="status" hidden></div>
+          <form class="cd" id="noteform" novalidate>
+            <h2>Today's notes</h2>
+            <div class="fg">
+              <label class="f"><span>Diagnosis</span><input id="n-dx" placeholder="e.g. Class I crowding, upper and lower" /></label>
+              <label class="f"><span>Procedure done</span><input id="n-proc" placeholder="e.g. Wire changed to 0.018 NiTi" /></label>
+              <label class="f"><span>Teeth</span><input id="n-teeth" placeholder="e.g. Upper and lower arch, or 36" /></label>
+              <label class="f"><span>Follow-up date</span><input id="n-follow" type="date" /></label>
+              <label class="f s2"><span>Notes</span><textarea id="n-notes" rows="3" placeholder="What you saw, what you told the patient"></textarea></label>
+              <label class="f s2"><span>Treatment plan</span><textarea id="n-plan" rows="2" placeholder="Next steps over the coming visits"></textarea></label>
+            </div>
+
+            <h2 class="sec">Charges for today</h2>
+            <p class="hint">These go to the front desk's billing list when you finish the visit.</p>
+            <div class="tw"><table class="lines"><tbody id="charges"></tbody></table></div>
+            <div class="fg" style="margin-top: 10px">
+              <label class="f"><span>Add a charge</span><select id="addcharge"><option value="">Choose…</option></select></label>
+            </div>
+
+            <p class="err" id="n-err" role="alert"></p>
+            <div class="ac">
+              <button type="submit" class="btn" id="finish">Save notes and send charges</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- X-rays -->
+        <div class="panel" id="p-xrays" role="tabpanel" hidden>
+          <section class="cd">
+            <h2>Upload X-rays and photos</h2>
+            <label class="drop" id="drop">
+              <input type="file" id="file" accept="image/jpeg,image/png" multiple hidden />
+              <b>Drop JPEG or PNG files here</b><br />or click to choose. Scanned X-rays work too.
+            </label>
+            <div class="fg" style="margin-top: 12px">
+              <label class="f"><span>Label for the next upload</span><input id="x-label" placeholder="e.g. Periapical X-ray, tooth 46" /></label>
+            </div>
+            <p class="err" id="x-err" role="alert"></p>
+          </section>
+          <section class="cd">
+            <h2>Gallery</h2>
+            <div class="gal" id="gal"></div>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      function dentistStatus(list) {
+        let chair = false;
+        return list.map((a) => {
+          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
+          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
+          return Object.assign({}, a, { dstatus: s });
+        });
+      }
+      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
+      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
+      function alertsOf(pid) {
+        const m = DN.record(pid).medical;
+        if (!m) return "";
+        const bits = m.conditions.slice();
+        if (m.allergies && !/^none/i.test(m.allergies)) bits.unshift("Allergy: " + m.allergies);
+        return bits.join(" · ");
+      }
+
+      const $ = (id) => document.getElementById(id);
+      const p = ST.patient(ST.param("patient") || "P-0142");
+      if (!p) return location.replace("dentist-patients.html");
+      let r = DN.record(p.id);
+
+      $("title").textContent = p.name;
+      $("sub").textContent = p.id + " · " + (DN.age(p.dob) ?? "—") + " years · " + ({ F: "Female", M: "Male" }[p.sex] || "") + " · patient since " + ST.longDate(p.since);
+      document.title = p.name + " | Pearl White Dental Clinic";
+
+      // Medical alerts stay at the top on every tab
+      const al = alertsOf(p.id);
+      if (al) { $("alerts").hidden = false; $("alerts").innerHTML = "<span><b>Medical alert:</b> " + al + "</span>"; }
+
+      // Today's visit with this dentist
+      const todayAppt = DN.mine().find((a) => a.patient === p.id && a.date === ST.today() && ST.active(a));
+      function showVisit() {
+        const a = todayAppt && ST.appointment(todayAppt.ref);
+        if (!a) return;
+        $("visit").hidden = false;
+        $("visit").innerHTML = a.status === "Done"
+          ? "<span>Today's visit is finished: " + a.service + ", " + a.time + ".</span>"
+          : "<span><b>Today:</b> " + a.service + " at " + a.time + ", " + ST.branch(a.branch).name + (a.status === "Checked in" ? " · checked in" : "") + "</span>" +
+            '<a href="#notes" data-go="notes">Write today\'s notes</a>';
+      }
+      showVisit();
+
+      // ---------- Tabs ----------
+      const tabs = [...document.querySelectorAll("[role=tab]")];
+      function show(name) {
+        tabs.forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === name));
+        document.querySelectorAll(".panel").forEach((pn) => (pn.hidden = pn.id !== "p-" + name));
+        history.replaceState(null, "", "#" + name);
+      }
+      tabs.forEach((t) => (t.onclick = () => show(t.dataset.tab)));
+      document.addEventListener("click", (e) => {
+        const g = e.target.closest("[data-go]");
+        if (g) { e.preventDefault(); show(g.dataset.go); }
+      });
+
+      // ---------- Overview ----------
+      $("info").innerHTML = [
+        ["Mobile", p.mobile], ["Email", p.email || "—"], ["Home branch", ST.branch(p.branch).name],
+        ["Emergency contact", p.contact || "—"], ["Dental history", r.dental || "—"],
+      ].map((x) => "<dt>" + x[0] + "</dt><dd>" + ST.esc(x[1]) + "</dd>").join("");
+      $("med").innerHTML = r.medical
+        ? [["Conditions", r.medical.conditions.join(", ") || "None"], ["Allergies", r.medical.allergies], ["Medicines", r.medical.meds], ["Pregnant or breastfeeding", r.medical.pregnant]]
+            .map((x) => "<dt>" + x[0] + "</dt><dd>" + ST.esc(x[1]) + "</dd>").join("")
+        : '<p class="empty" style="grid-column: 1 / -1">Not filled in yet. Ask the patient before treatment.</p>';
+      function planCard() {
+        r = DN.record(p.id);
+        $("plancard").innerHTML = r.plan
+          ? "<h2>Treatment plan</h2><p><b>" + r.plan.name + "</b> · started " + ST.longDate(r.plan.started) + "</p>" +
+            '<div class="bar"><i style="width: ' + Math.round((r.plan.done / r.plan.of) * 100) + '%"></i></div>' +
+            "<p style='color: var(--muted)'>" + r.plan.done + " of " + r.plan.of + " visits done. " + r.plan.next + "</p>"
+          : "<h2>Treatment plan</h2><p class='empty'>No plan yet. Add one in Notes and plan.</p>";
+      }
+      planCard();
+      const up = DN.mine().filter((a) => a.patient === p.id && ST.active(a) && (a.date > ST.today() || (a.date === ST.today() && a.status !== "Done"))).sort(ST.sortByTime);
+      $("upcoming").innerHTML = up.length
+        ? up.map((a) => { const dt = ST.toDate(a.date); return '<div class="ap static"><span class="ad"><b>' + dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) +
+            '</span><span class="at"><b>' + a.service + "</b><small>" + a.time + " · " + ST.branch(a.branch).name + "</small></span>" + ST.badge(a.status) + "</div>"; }).join("")
+        : '<p class="empty">Nothing booked with you.</p>';
+
+      // ---------- History ----------
+      function history_() {
+        r = DN.record(p.id);
+        $("visits").innerHTML = r.visits.length
+          ? r.visits.map((v) => { const dt = ST.toDate(v.date); return '<div class="ap past static"><span class="ad"><b>' + dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) +
+              '</span><span class="at"><b>' + v.title + "</b><small>" + v.procedure + (v.teeth ? " · " + v.teeth : "") + "</small>" +
+              (v.notes ? "<p>" + ST.esc(v.notes) + "</p>" : "") + (v.dx ? "<p><b>Diagnosis:</b> " + ST.esc(v.dx) + "</p>" : "") + "</span></div>"; }).join("")
+          : '<p class="empty">No visits recorded yet.</p>';
+      }
+      history_();
+
+      // ---------- Dental chart (D5) ----------
+      let editing = null;
+      DN.legend.forEach((l) => $("ed-code").insertAdjacentHTML("beforeend", '<option value="' + l.code + '">' + l.code + " · " + l.name + "</option>"));
+      $("ed-surf").innerHTML = DN.surfaces.map(([c, n]) => '<button type="button" class="ch sm" aria-pressed="false" data-s="' + c + '" title="' + n + '">' + c + " · " + n + "</button>").join("");
+      $("legend").innerHTML = DN.legend.map((l) => '<li><span class="code k-' + l.kind + '">' + l.code + "</span>" + l.name + "</li>").join("");
+      function chart() {
+        r = DN.record(p.id);
+        const tooth = (n) => {
+          const e = r.chart[n];
+          const l = e && e.code ? DN.legendItem(e.code) : null;
+          const label = "Tooth " + n + (l ? ", " + l.name : e && e.note ? ", note" : ", healthy");
+          return '<button type="button" class="th ' + (l ? "k-" + l.kind : "") + (e && e.note && !l ? " noted" : "") + (editing === n ? " sel" : "") +
+            '" data-t="' + n + '" aria-label="' + label + '" title="' + label + (e && e.note ? ": " + e.note : "") + '"><small>' + n + "</small><b>" + (l ? l.code : e && e.note ? "•" : "") +
+            "</b>" + (e && e.surfaces && e.surfaces.length ? "<i>" + e.surfaces.join("") + "</i>" : "") + "</button>";
+        };
+        $("upper").innerHTML = DN.upper.map(tooth).join("");
+        $("lower").innerHTML = DN.lower.map(tooth).join("");
+      }
+      function openTooth(n) {
+        editing = n;
+        const e = r.chart[n] || { code: "", surfaces: [], note: "" };
+        $("editor").hidden = false;
+        $("ed-title").textContent = "Tooth " + n;
+        $("ed-code").value = e.code || "";
+        $("ed-note").value = e.note || "";
+        $("ed-surf").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", (e.surfaces || []).includes(b.dataset.s)));
+        chart();
+      }
+      document.querySelectorAll(".jaw").forEach((j) => (j.onclick = (e) => { const b = e.target.closest("[data-t]"); if (b) openTooth(Number(b.dataset.t)); }));
+      $("ed-surf").onclick = (e) => { const b = e.target.closest("button"); if (b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); };
+      $("ed-save").onclick = () => {
+        const code = $("ed-code").value;
+        const note = $("ed-note").value.trim();
+        const surf = [...$("ed-surf").querySelectorAll("[aria-pressed=true]")].map((b) => b.dataset.s);
+        DN.setTooth(p.id, editing, code || note || surf.length ? { code, note, surfaces: surf } : null);
+        editing = null;
+        $("editor").hidden = true;
+        chart();
+      };
+      $("ed-close").onclick = () => { editing = null; $("editor").hidden = true; chart(); };
+      chart();
+
+      // ---------- Notes and plan (D6) ----------
+      const plan = ST.plan(p.id);
+      let lines = [];
+      if (plan && plan.left > 0) $("addcharge").insertAdjacentHTML("beforeend", '<option value="plan">' + plan.name + " installment · " + ST.peso(Math.min(3000, plan.left)) + "</option>");
+      ST.priceList.forEach((x) => $("addcharge").insertAdjacentHTML("beforeend", '<option value="' + x.id + '">' + x.name + " · " + ST.peso(x.price) + "</option>"));
+      function charges() {
+        $("charges").innerHTML = lines.length
+          ? lines.map((l, i) => "<tr><td>" + l.name + (l.plan ? ' <span class="bd">Plan</span>' : "") + "</td><td><b>" + ST.peso(l.amount) +
+              '</b></td><td><button type="button" class="btn2 sm" data-x="' + i + '">Remove</button></td></tr>').join("") +
+            "<tr><td><b>Total</b></td><td colspan='2'><b>" + ST.peso(lines.reduce((n, l) => n + l.amount, 0)) + "</b></td></tr>"
+          : '<tr><td class="empty">No charges yet.</td></tr>';
+      }
+      $("addcharge").onchange = () => {
+        const v = $("addcharge").value;
+        if (v === "plan") lines.push({ name: plan.name + " installment", amount: Math.min(3000, plan.left), plan: true });
+        else { const it = ST.priceList.find((x) => x.id === v); if (it) lines.push({ name: it.name, amount: it.price }); }
+        $("addcharge").value = "";
+        charges();
+      };
+      $("charges").onclick = (e) => { const x = e.target.closest("[data-x]"); if (x) { lines.splice(Number(x.dataset.x), 1); charges(); } };
+      if (plan && plan.left > 0 && todayAppt) lines.push({ name: plan.name + " installment", amount: Math.min(3000, plan.left), plan: true });
+      charges();
+      $("n-follow").min = ST.today();
+      $("finish").textContent = todayAppt && todayAppt.status !== "Done" ? "Finish visit and send charges" : "Save notes and send charges";
+
+      $("noteform").onsubmit = (e) => {
+        e.preventDefault();
+        const v = (id) => $(id).value.trim();
+        if (!v("n-proc") && !v("n-notes")) return ($("n-err").textContent = "Write the procedure done or a note.");
+        $("n-err").textContent = "";
+        DN.addNote(p.id, {
+          date: ST.today(), title: todayAppt ? todayAppt.service : "Visit", procedure: v("n-proc") || "—", teeth: v("n-teeth"),
+          notes: [v("n-notes"), v("n-plan") ? "Plan: " + v("n-plan") : "", v("n-follow") ? "Follow-up " + ST.longDate(v("n-follow")) + "." : ""].filter(Boolean).join(" "),
+          dx: v("n-dx"),
+        });
+        if (r.plan && todayAppt && todayAppt.status !== "Done") {
+          ST.save("dn_plan_" + p.id, { done: Math.min(r.plan.of, r.plan.done + 1), next: v("n-follow") ? "Next visit " + ST.shortDate(v("n-follow")) : r.plan.next });
+        }
+        let msg = "Notes saved to " + p.first + "'s record.";
+        if (todayAppt && ST.appointment(todayAppt.ref).status !== "Done") {
+          ST.updateAppointment(todayAppt.ref, { status: "Done" });
+          msg += " Visit marked done.";
+        }
+        if (lines.length) {
+          ST.addCharge({ patient: p.id, appt: todayAppt ? todayAppt.ref : null, dentist: DN.ME, items: lines.map((l) => ({ name: l.name, amount: l.amount })), plan: lines.some((l) => l.plan) });
+          msg += " " + ST.peso(lines.reduce((n, l) => n + l.amount, 0)) + " in charges sent to the front desk for billing.";
+          lines = [];
+        }
+        $("noteform").reset();
+        charges();
+        $("saved").hidden = false;
+        $("saved").textContent = msg;
+        $("finish").textContent = "Save notes and send charges";
+        history_();
+        planCard();
+        showVisit();
+      };
+
+      // ---------- X-rays (D7) ----------
+      function gallery() {
+        r = DN.record(p.id);
+        $("gal").innerHTML = r.xrays.length
+          ? r.xrays.map((x) => {
+              const cap = ST.esc(x.label) + " · " + ST.shortDate(x.date);
+              return '<figure><a class="xray" href="' + x.src + '" target="_blank" rel="noopener"><img src="' + x.src + '" alt="' + cap + '" loading="lazy" ' +
+                "onerror=\"this.parentNode.classList.add('missing'); this.remove()\" /></a><figcaption>" + cap + "</figcaption></figure>";
+            }).join("")
+          : '<p class="empty">No X-rays or photos yet.</p>';
+      }
+      function take(files) {
+        $("x-err").textContent = "";
+        const label = $("x-label").value.trim(); // read now: the file loads after the box is cleared
+        [...files].forEach((f) => {
+          if (!/^image\/(jpeg|png)$/.test(f.type)) return ($("x-err").textContent = f.name + " is not a JPEG or PNG.");
+          if (f.size > 1.5 * 1024 * 1024) return ($("x-err").textContent = f.name + " is over 1.5 MB, too big for the prototype. The real system stores full-size files.");
+          const rd = new FileReader();
+          rd.onload = () => {
+            const ok = DN.addXray(p.id, { label: label || f.name.replace(/\.[^.]+$/, ""), date: ST.today(), src: rd.result });
+            if (!ok) $("x-err").textContent = "The prototype's storage is full. Close the tab to clear it.";
+            gallery();
+          };
+          rd.readAsDataURL(f);
+        });
+        $("x-label").value = "";
+      }
+      $("file").onchange = (e) => take(e.target.files);
+      const drop = $("drop");
+      ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+      ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+      drop.addEventListener("drop", (e) => take(e.dataTransfer.files));
+      gallery();
+
+      // Open the tab named in the address (e.g. #notes from the dashboard)
+      const start = location.hash.slice(1);
+      show(["overview", "history", "chart", "notes", "xrays"].includes(start) ? start : "overview");
+      })();
+    </script>
+  </body>
+</html>

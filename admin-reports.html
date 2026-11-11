@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reports | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv" href="admin-users.html">Users and staff</a>
+          <a class="nv" href="admin-schedule.html">Master schedule</a>
+          <a class="nv on" href="admin-reports.html" aria-current="page">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv" href="admin-archive.html">Archive</a>
+          <a class="nv" href="admin-settings.html">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Reports</h1>
+            <p id="sub">Appointments, patients and revenue for each branch.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <section class="cd noprint">
+          <div class="hd" style="margin-bottom: 0">
+            <div class="chs" id="period" role="group" aria-label="Period">
+              <button type="button" class="ch sm" aria-pressed="false" data-p="week">This week</button>
+              <button type="button" class="ch sm" aria-pressed="true" data-p="month">This month</button>
+              <button type="button" class="ch sm" aria-pressed="false" data-p="last">Last month</button>
+              <button type="button" class="ch sm" aria-pressed="false" data-p="six">Last 6 months</button>
+            </div>
+            <div class="ac" style="margin: 0">
+              <label class="f inline"><span class="sr">Branch</span><select id="branch"><option value="">All branches</option></select></label>
+              <button type="button" class="btn2 sm" id="csv">Export CSV</button>
+              <button type="button" class="btn2 sm" id="print">Print</button>
+            </div>
+          </div>
+        </section>
+
+        <h2 class="rp-title" id="rtitle"></h2>
+        <div class="stats" id="kpis"></div>
+
+        <section class="cd">
+          <div class="hd"><h2 id="chart-title">Revenue per day</h2><small class="hint" style="margin: 0" id="chart-note"></small></div>
+          <div class="bars one rev" id="chart" role="img"></div>
+        </section>
+
+        <div class="two">
+          <section class="cd">
+            <h2>By branch</h2>
+            <div class="tw"><table><thead><tr><th>Branch</th><th>Appointments</th><th>No-shows</th><th>New patients</th><th>Revenue</th></tr></thead><tbody id="bybranch"></tbody></table></div>
+          </section>
+          <section class="cd">
+            <h2>By service</h2>
+            <div class="tw"><table><thead><tr><th>Service</th><th>Appointments</th><th>Share</th></tr></thead><tbody id="byservice"></tbody></table></div>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      let period = "month";
+      ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
+      const T = ST.today();
+
+      function bounds() {
+        const d = ST.toDate(T);
+        if (period === "week") return [monday(T), T, "This week"];
+        if (period === "month") return [T.slice(0, 8) + "01", T, d.toLocaleDateString("en-US", { month: "long", year: "numeric" }) + ", up to today"];
+        if (period === "last") {
+          const s = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+          const e = new Date(d.getFullYear(), d.getMonth(), 0);
+          return [fmt(s), fmt(e), s.toLocaleDateString("en-US", { month: "long", year: "numeric" })];
+        }
+        const s = new Date(d.getFullYear(), d.getMonth() - 5, 1);
+        return [fmt(s), T, "Last 6 months"];
+      }
+
+      let rows = [];
+      function render() {
+        $("period").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.p === period));
+        const [from, to, label] = bounds();
+        const br = $("branch").value;
+        const keys = br ? [br] : AD.BR;
+        rows = AD.range(from, to);
+        $("rtitle").textContent = label + (br ? " · " + ST.branch(br).name : " · all branches");
+        const tot = { bookings: 0, noshow: 0, fresh: 0, revenue: 0 };
+        const per = {};
+        const mix = {};
+        keys.forEach((k) => (per[k] = { bookings: 0, noshow: 0, fresh: 0, revenue: 0 }));
+        rows.forEach((r) => keys.forEach((k) => {
+          const v = r.v[k];
+          ["bookings", "noshow", "fresh", "revenue"].forEach((f) => { tot[f] += v[f]; per[k][f] += v[f]; });
+          Object.keys(v.mix).forEach((s) => (mix[s] = (mix[s] || 0) + v.mix[s]));
+        }));
+        const rate = tot.bookings ? ((tot.noshow / tot.bookings) * 100).toFixed(1) : "0.0";
+        $("kpis").innerHTML = [
+          ["Appointments", tot.bookings.toLocaleString("en-US"), rows.length + " clinic days"],
+          ["No-show rate", rate + "%", tot.noshow + " missed visits"],
+          ["New patients", tot.fresh, "First visits"],
+          ["Revenue", ST.peso(tot.revenue), "Average " + ST.peso(rows.length ? tot.revenue / rows.length : 0) + " a day"],
+        ].map((k) => '<div class="st"><small>' + k[0] + "</small><b>" + k[1] + "</b><p>" + k[2] + "</p></div>").join("");
+
+        // Chart: per day, or per month for the 6-month view
+        let bars;
+        if (period === "six") {
+          const m = {};
+          rows.forEach((r) => { const k = r.date.slice(0, 7); m[k] = (m[k] || 0) + keys.reduce((n, b) => n + r.v[b].revenue, 0); });
+          bars = Object.keys(m).map((k) => [ST.toDate(k + "-01").toLocaleDateString("en-US", { month: "short" }), m[k], k === T.slice(0, 7)]);
+          $("chart-title").textContent = "Revenue per month";
+        } else {
+          bars = rows.map((r) => [period === "week" ? ST.toDate(r.date).toLocaleDateString("en-US", { weekday: "short" }) : String(ST.toDate(r.date).getDate()),
+            keys.reduce((n, b) => n + r.v[b].revenue, 0), r.date === T]);
+          $("chart-title").textContent = "Revenue per day";
+        }
+        const max = Math.max(...bars.map((b) => b[1]), 1) * 1.12;
+        $("chart").style.setProperty("--n", bars.length);
+        $("chart").setAttribute("aria-label", $("chart-title").textContent + ", " + label);
+        $("chart").innerHTML = bars.map((b) =>
+          "<div" + (b[2] ? ' class="ahead"' : "") + ' title="' + b[0] + ": " + ST.peso(b[1]) + '"><b>' + (bars.length <= 12 ? kpeso(b[1]) : "") + "</b>" +
+          '<i style="height: ' + Math.round((b[1] / max) * 100) + '%"></i>' + b[0] + "</div>").join("");
+        $("chart-note").textContent = bars.some((b) => b[2]) ? "Outlined: today or this month so far" : "";
+
+        $("bybranch").innerHTML = keys.map((k) =>
+          "<tr><td><b>" + ST.branch(k).name + "</b></td><td>" + per[k].bookings + "</td><td>" + per[k].noshow + "</td><td>" + per[k].fresh + "</td><td><b>" + ST.peso(per[k].revenue) + "</b>" +
+          '<span class="share"><i style="width: ' + (tot.revenue ? Math.round((per[k].revenue / tot.revenue) * 100) : 0) + '%"></i></span></td></tr>').join("") +
+          (keys.length > 1 ? "<tr class='total'><td><b>Total</b></td><td>" + tot.bookings + "</td><td>" + tot.noshow + "</td><td>" + tot.fresh + "</td><td><b>" + ST.peso(tot.revenue) + "</b></td></tr>" : "");
+        const mtot = Object.values(mix).reduce((n, v) => n + v, 0) || 1;
+        $("byservice").innerHTML = AD.SERVICES.map((s) => [s, mix[s] || 0]).sort((a, b) => b[1] - a[1]).map(([s, n]) =>
+          "<tr><td>" + s + "</td><td>" + n + '</td><td><span class="share wide"><i style="width: ' + Math.round((n / mtot) * 100) + '%"></i></span> ' + Math.round((n / mtot) * 100) + "%</td></tr>").join("");
+      }
+
+      $("period").onclick = (e) => { const b = e.target.closest("button"); if (b) { period = b.dataset.p; render(); } };
+      $("branch").onchange = render;
+      $("print").onclick = () => window.print();
+      $("csv").onclick = () => {
+        const keys = $("branch").value ? [$("branch").value] : AD.BR;
+        const out = [["Date", "Branch", "Appointments", "No-shows", "New patients", "Revenue (PHP)"]];
+        rows.forEach((r) => keys.forEach((k) => out.push([r.date, ST.branch(k).name, r.v[k].bookings, r.v[k].noshow, r.v[k].fresh, r.v[k].revenue])));
+        AD.downloadCsv("pearl-white-report-" + bounds()[0] + "-to-" + bounds()[1] + ".csv", out);
+        ST.log("owner", "Report", "Exported a report (" + bounds()[2] + ")");
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>

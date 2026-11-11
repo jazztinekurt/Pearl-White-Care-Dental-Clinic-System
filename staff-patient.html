@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient profile | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv on" href="staff-patients.html" aria-current="page">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Patient</h1>
+            <p id="sub"></p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="staff-patients.html">&larr; Patients</a>
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <div class="ac" style="margin: 0 0 16px" id="actions"></div>
+        <div class="split">
+          <section class="cd">
+            <div class="hd"><h2>Details</h2><span id="status"></span></div>
+            <dl class="kv" id="details"></dl>
+            <p class="hint" style="margin: 14px 0 0">Medical history and treatment notes are only visible to dentists.</p>
+          </section>
+          <section class="cd" id="balance"></section>
+        </div>
+        <section class="cd">
+          <h2>Appointments</h2>
+          <div id="appts"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const p = ST.patient(ST.param("id") || "P-0142");
+      if (!p) return location.replace("staff-patients.html");
+      const $ = (id) => document.getElementById(id);
+      $("title").textContent = p.name;
+      $("sub").textContent = p.id + " · patient since " + ST.longDate(p.since) + " · " + ST.branch(p.branch).name + " branch";
+      $("status").innerHTML = ST.badge(p.status);
+      if (ST.param("new")) {
+        $("msg").hidden = false;
+        $("msg").textContent = "Registered " + p.name + " as " + p.id + ". Consent signed and saved.";
+      }
+
+      const age = p.dob ? Math.floor((Date.now() - ST.toDate(p.dob)) / 31557600000) : null;
+      const rows = [
+        ["Mobile", p.mobile],
+        ["Email", p.email || "—"],
+        ["Date of birth", p.dob ? ST.longDate(p.dob) + " (" + age + ")" : "—"],
+        ["Sex", { F: "Female", M: "Male" }[p.sex] || "—"],
+        ["Home branch", ST.branch(p.branch).name],
+        ["Emergency contact", p.contact || "—"],
+      ];
+      $("details").innerHTML = rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + ST.esc(r[1]) + "</dd>").join("");
+
+      $("actions").innerHTML =
+        '<a class="btn" href="staff-appointment.html?patient=' + p.id + '">Book appointment</a>' +
+        '<a class="btn2" href="staff-billing.html?patient=' + p.id + '">Billing</a>';
+
+      const plan = ST.plan(p.id);
+      const pays = ST.payments().filter((x) => x.patient === p.id);
+      $("balance").innerHTML = plan
+        ? "<h2>Balance</h2><p class='big'>" + ST.peso(plan.left) + "</p>" +
+          '<div class="bar"><i style="width: ' + Math.round((plan.paid / plan.total) * 100) + '%"></i></div>' +
+          "<p style='color: var(--muted)'>" + ST.peso(plan.paid) + " of " + ST.peso(plan.total) + " paid on the " + plan.name.toLowerCase() + ".</p>" +
+          (pays.length ? "<p style='color: var(--muted); margin-top: 6px'>Last payment: " + ST.peso(pays[0].amount) + " on " + ST.shortDate(pays[0].date) +
+            ' (<a href="staff-receipt.html?or=' + pays[0].or + '" style="color: var(--lagoon); font-weight: 600">' + pays[0].or + "</a>)</p>" : "") +
+          (plan.left ? '<div class="ac"><a class="btn sm" href="staff-payment.html?patient=' + p.id + "&amount=" + Math.min(3000, plan.left) +
+            "&desc=" + encodeURIComponent(plan.name + " installment") + '&plan=1">Record payment</a></div>' : "")
+        : "<h2>Balance</h2><p class='big'>₱0</p><p style='color: var(--muted)'>No installment plan." +
+          (pays.length ? " Last payment " + ST.peso(pays[0].amount) + " on " + ST.shortDate(pays[0].date) + "." : "") + "</p>";
+
+      const mine = ST.appointments().filter((a) => a.patient === p.id).sort(ST.sortByTime);
+      const today = ST.today();
+      const up = mine.filter((a) => a.date > today || (a.date === today && a.status !== "Done"));
+      const past = mine.filter((a) => !up.includes(a)).reverse();
+      const row = (a) => {
+        const dt = ST.toDate(a.date);
+        return '<a class="ap' + (up.includes(a) ? "" : " past") + '" href="staff-appointment.html?ref=' + a.ref + '"><span class="ad"><b>' +
+          dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) + '</span><span class="at"><b>' + a.service +
+          "</b><small>" + a.time + " · " + ST.dentist(a.dentist).name + " · " + ST.branch(a.branch).name + " · " + a.source + "</small></span>" +
+          ST.badge(a.status) + "</a>";
+      };
+      $("appts").innerHTML =
+        (up.length ? '<p class="lab">Upcoming</p>' + up.map(row).join("") : '<p class="empty">No upcoming appointments.</p>') +
+        (past.length ? '<p class="lab">Past</p>' + past.slice(0, 6).map(row).join("") : "");
+      })();
+    </script>
+  </body>
+</html>

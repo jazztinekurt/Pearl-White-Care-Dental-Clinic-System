@@ -4194,3 +4194,680 @@ td a:where(:not(.auth *, .landing *)) {
 .app [hidden] {
   display: none !important;
 }
+
+/* ==========================================================
+   RECEPTIONIST PAGES: calendar, requests, billing, receipt, SMS
+   ========================================================== */
+
+/* Master calendar */
+.app .calbar {
+  flex-wrap: wrap;
+}
+.app .datepick {
+  font: 500 0.88rem var(--sans);
+  color: var(--ink);
+  padding: 6px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 99px;
+  background: #fff;
+}
+.app .cal {
+  min-width: 860px;
+  table-layout: fixed;
+}
+.app .cal th {
+  white-space: normal;
+  line-height: 1.25;
+}
+.app .cal th small {
+  display: block;
+  font-weight: 500;
+  color: var(--muted);
+}
+.app .cal th:first-child,
+.app .cal td:first-child {
+  width: 84px;
+}
+.app .cal .slot {
+  height: 54px;
+  padding: 0;
+  font-size: 0.8rem;
+  vertical-align: top;
+}
+.app .cal .slot a {
+  display: block;
+  height: 100%;
+  padding: 6px 8px;
+  color: inherit;
+  font-weight: 400;
+}
+.app .cal .slot b {
+  display: block;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app .cal .slot small {
+  display: block;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app .cal .c-bk {
+  background: var(--mist);
+  box-shadow: inset 3px 0 0 var(--lagoon);
+}
+.app .cal .c-in {
+  background: #ddf3e7;
+  box-shadow: inset 3px 0 0 var(--ok);
+}
+.app .cal .c-done {
+  background: var(--pearl);
+  color: var(--muted);
+}
+.app .cal .c-req {
+  background: #fff;
+  outline: 2px dashed var(--sun);
+  outline-offset: -4px;
+}
+.app .cal .c-away {
+  background: repeating-linear-gradient(135deg, #f1f4fa 0 6px, #fff 6px 12px);
+  color: var(--muted);
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}
+.app .cal .c-free a {
+  display: grid;
+  place-items: center;
+  color: transparent;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.app .cal .c-free:hover a,
+.app .cal .c-free a:focus-visible {
+  color: var(--lagoon);
+  background: var(--mist);
+}
+.app .cal .closed {
+  padding: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+.app .legend {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.app .legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app .legend i {
+  width: 16px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+.app .legend .k-bk { background: var(--mist); box-shadow: inset 3px 0 0 var(--lagoon); }
+.app .legend .k-in { background: #ddf3e7; box-shadow: inset 3px 0 0 var(--ok); }
+.app .legend .k-done { background: var(--pearl); }
+.app .legend .k-req { background: #fff; border: 2px dashed var(--sun); }
+.app .legend .k-away { background: repeating-linear-gradient(135deg, #e4e9f3 0 3px, #fff 3px 6px); }
+.app .legend .k-free { background: #fff; }
+
+/* Patient finder (appointment form) */
+.app .results {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+.app .results button {
+  text-align: left;
+  font: 500 0.95rem var(--sans);
+  color: var(--ink);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+}
+.app .results button:hover {
+  border-color: var(--lagoon);
+  background: var(--mist);
+}
+.app .results small {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Request rows */
+.app .req {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.app .req:first-child {
+  border-top: 0;
+}
+.app .req-main {
+  flex: 1 1 360px;
+}
+.app .req-main small {
+  display: block;
+  color: var(--muted);
+}
+.app .req .concern {
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+.app .req .clash {
+  margin-top: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--err);
+}
+.app .req-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.app .req-act small {
+  color: var(--muted);
+  max-width: 34ch;
+}
+.app .req .reject {
+  flex: 1 1 100%;
+}
+.app .btn.danger-fill {
+  background: var(--err);
+  border-color: var(--err);
+}
+.app .btn.danger-fill:hover {
+  background: #8e1d17;
+}
+.app .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Patient list */
+.app .filters {
+  grid-template-columns: 2fr 1fr;
+}
+.app tr.link {
+  cursor: pointer;
+}
+.app tr.link:hover td {
+  background: var(--pearl);
+}
+.app .f.inline span {
+  margin: 0;
+}
+.app .f.inline select {
+  width: auto;
+  padding: 7px 12px;
+  font-size: 0.88rem;
+}
+
+/* Register: consent signature */
+.app .sig {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: 140px;
+  border: 1.5px dashed #b9c8e6;
+  border-radius: 14px;
+  background: #fff;
+  touch-action: none;
+  cursor: crosshair;
+}
+.app .notice {
+  margin-bottom: 10px;
+}
+
+/* Patient profile and billing */
+.app .big {
+  font: 600 2rem var(--serif);
+  color: var(--ink);
+}
+.app .lines .qty {
+  width: 64px;
+  font: 400 0.95rem var(--sans);
+  padding: 6px 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+}
+.app .lines tfoot td {
+  border-top: 1.5px solid var(--line);
+  border-bottom: 0;
+}
+.app .choices.one {
+  grid-template-columns: 1fr;
+}
+.app .change {
+  align-self: end;
+  padding-bottom: 12px;
+  font-weight: 600;
+  color: var(--ok);
+}
+.app .ch.sm {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+/* Receipt */
+.app .receipt .rc-head b {
+  display: block;
+  font: 600 1.3rem var(--serif);
+}
+.app .receipt .rc-head small {
+  color: var(--muted);
+}
+.app .receipt .rc-no {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 16px 0;
+  padding: 12px 0;
+  border-top: 1.5px dashed var(--line);
+  border-bottom: 1.5px dashed var(--line);
+}
+.app .receipt .rc-no b {
+  font: 600 1.2rem var(--serif);
+}
+.app .receipt .rc-amt {
+  font: 600 1.4rem var(--serif);
+}
+
+/* SMS preview bubble */
+.app .sms {
+  max-width: 340px;
+  padding: 12px 14px;
+  border-radius: 18px 18px 18px 4px;
+  background: var(--mist);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 560px) {
+  .app .filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Printing a receipt: only the receipt card */
+@media print {
+  .app {
+    display: block;
+  }
+  .app .sb,
+  .app .tb .me,
+  .app .tb p,
+  .app .noprint,
+  .app .ft {
+    display: none !important;
+  }
+  .app .split {
+    display: block;
+  }
+  .app .receipt {
+    border: 0;
+    max-width: 420px;
+  }
+}
+
+/* Treatment history: X-ray thumbnails (full image shown, never cropped) */
+.app .xray {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0b1530;
+}
+.app .xray img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s;
+}
+.app .xray:hover img {
+  transform: scale(1.04);
+}
+/* If an image file is missing, show a placeholder instead of a broken icon */
+.app .xray.missing {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #c9d6ee, #e4ecfa);
+}
+.app .xray.missing::after {
+  content: "Image not found";
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Booking: specialist line on service cards, bio on dentist cards */
+.app .choice small.who {
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--lagoon-d);
+}
+.app .choice small.bio {
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* ==========================================================
+   DENTIST PAGES: schedule, patient record tabs, dental chart
+   ========================================================== */
+
+.app .alert-text {
+  color: var(--err);
+  font-weight: 600;
+}
+.app a.plan {
+  display: block;
+  color: inherit;
+}
+.app a.plan:hover b {
+  color: var(--lagoon);
+}
+.app .cal.wk {
+  min-width: 760px;
+}
+.app .cal th.is-today {
+  color: var(--lagoon);
+  box-shadow: inset 0 -3px 0 var(--lagoon);
+}
+
+/* Record tabs */
+.app .tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  border-bottom: 1.5px solid var(--line);
+  overflow-x: auto;
+}
+.app .tabs button {
+  font: 600 0.92rem var(--sans);
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 10px 14px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.app .tabs button:hover {
+  color: var(--ink);
+}
+.app .tabs button[aria-selected="true"] {
+  color: var(--lagoon);
+  border-bottom-color: var(--lagoon);
+}
+
+/* Dental chart: 16 teeth per jaw, gap at the midline between 11 and 21 */
+.app .jaw {
+  grid-template-columns: repeat(8, minmax(38px, 1fr)) 14px repeat(8, minmax(38px, 1fr));
+  margin-bottom: 6px;
+}
+.app .jaw .th:nth-child(9) {
+  grid-column-start: 10;
+}
+.app #upper {
+  padding-bottom: 8px;
+  border-bottom: 1.5px dashed var(--line);
+  margin-bottom: 8px;
+}
+.app .jaw-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 4px 0;
+}
+.app .jaw .th {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 62px;
+  padding: 6px 0;
+  font: 500 0.75rem var(--sans);
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.app .jaw .th:hover {
+  border-color: var(--lagoon);
+}
+.app .jaw .th small {
+  color: var(--muted);
+}
+.app .jaw .th b {
+  font: 600 0.85rem var(--sans);
+  min-height: 1.2em;
+}
+.app .jaw .th i {
+  font-style: normal;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.app .jaw .th.sel {
+  border-color: var(--sun) !important;
+  box-shadow: inset 0 0 0 2px var(--sun);
+}
+.app .k-cav { background: var(--pinkt) !important; border-color: var(--sun) !important; color: #9c1c6b !important; }
+.app .k-fill { background: var(--mist) !important; border-color: var(--lagoon) !important; color: var(--lagoon-d) !important; }
+.app .k-crown { background: #fff4d6 !important; border-color: #c98a00 !important; color: #7a5200 !important; }
+.app .k-miss { background: #eef1f6 !important; color: #8892a6 !important; text-decoration: line-through; }
+.app .k-un { background: #fff !important; border-style: dashed !important; color: var(--muted) !important; }
+.app .jaw .th.noted b {
+  color: var(--lagoon);
+}
+
+/* Tooth editor */
+.app .editor {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1.5px solid var(--lagoon);
+  border-radius: 16px;
+  background: var(--pearl);
+}
+.app .editor h3 {
+  margin-bottom: 10px;
+}
+
+/* Chart legend: the clinic's own codes */
+.app .legend.codes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.app .legend .code {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  padding: 2px 6px;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* X-ray upload */
+.app .drop {
+  display: block;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.app .drop:hover,
+.app .drop.over {
+  border-color: var(--lagoon);
+  background: var(--mist);
+}
+
+/* ==========================================================
+   CLINIC OWNER PAGES: users, schedule, reports, audit, archive, settings
+   ========================================================== */
+
+.app td.acts {
+  white-space: nowrap;
+}
+.app td.acts > * + * {
+  margin-left: 6px;
+}
+
+/* Role access list (Add/edit staff account) */
+.app .perks-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.app .perks-list li:not(.hint) {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.app .perks-list li:not(.hint)::before {
+  content: "\2713";
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--mist);
+  color: var(--lagoon);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+/* View-only schedule cells */
+.app .cal .slot .in {
+  display: block;
+  padding: 6px 8px;
+}
+
+/* Reports */
+.app .rp-title {
+  font-size: 1.3rem;
+  margin: 4px 0 14px;
+}
+.app .bars.rev {
+  gap: max(3px, calc(24px - var(--n, 6) * 0.7px));
+  height: 220px;
+}
+.app .bars.rev div {
+  min-width: 0;
+  font-size: 0.72rem;
+}
+.app .bars.rev b {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.app .share {
+  display: inline-block;
+  vertical-align: middle;
+  width: 60px;
+  height: 6px;
+  margin-left: 8px;
+  border-radius: 99px;
+  background: var(--mist);
+  overflow: hidden;
+}
+.app .share.wide {
+  width: 90px;
+  margin: 0 6px 0 0;
+}
+.app .share i {
+  display: block;
+  height: 100%;
+  background: var(--lagoon);
+}
+.app tr.total td {
+  border-top: 1.5px solid var(--line);
+}
+
+/* Audit trail filters */
+.app .audit-filters {
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+}
+
+/* Settings: SMS template with its preview beside it */
+.app .smsrow {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  align-items: end;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.app .smsrow:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.app .lines select {
+  font: 400 0.88rem var(--sans);
+  padding: 6px 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+.app .lines .price {
+  width: 110px;
+}
+
+@media (max-width: 900px) {
+  .app .audit-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .app .smsrow {
+    grid-template-columns: 1fr;
+  }
+}
+@media print {
+  .app .rp-title {
+    margin-top: 0;
+  }
+}
+
+/* Form grids: let fields (date inputs especially) shrink on narrow screens */
+.app .fg > * {
+  min-width: 0;
+}
+.app .f input[type="date"] {
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .app .audit-filters {
+    grid-template-columns: 1fr;
+  }
+}

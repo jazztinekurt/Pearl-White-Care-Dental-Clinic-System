@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Staff account | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv on" href="admin-users.html" aria-current="page">Users and staff</a>
+          <a class="nv" href="admin-schedule.html">Master schedule</a>
+          <a class="nv" href="admin-reports.html">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv" href="admin-archive.html">Archive</a>
+          <a class="nv" href="admin-settings.html">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Add staff account</h1>
+            <p id="sub">Set their role and branches. The role decides what they can open.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="admin-users.html">&larr; Users and staff</a>
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <div class="split">
+          <form class="cd" id="form" novalidate>
+            <h2>Details</h2>
+            <div class="fg">
+              <label class="f"><span>Full name</span><input id="name" placeholder="e.g. Dr. Paolo Ramos" /></label>
+              <label class="f"><span>Email (used to log in)</span><input id="email" type="email" placeholder="name@pearlwhite.ph" /></label>
+              <label class="f"><span>Mobile number</span><input id="mobile" type="tel" inputmode="numeric" placeholder="0917 123 4567" /></label>
+              <label class="f"><span>Role</span><select id="role"><option value="">Choose a role</option><option>Dentist</option><option>Receptionist</option><option>Clinic owner</option></select></label>
+              <label class="f" id="specwrap" hidden><span>Specialty</span><select id="spec"><option>General dentistry</option><option>Orthodontics</option><option>Endodontics</option><option>Oral surgery</option><option>Prosthodontics (dentures)</option></select></label>
+              <label class="f" id="statuswrap" hidden><span>Status</span><select id="status"><option>Active</option><option>Deactivated</option></select></label>
+            </div>
+            <p class="lab">Branches</p>
+            <div class="ckgrid" id="branches"></div>
+            <label class="ck" id="pwwrap"><input type="checkbox" id="sendpw" checked /><span>Email them a temporary password</span></label>
+            <p class="err" id="err" role="alert"></p>
+            <div class="ac">
+              <button class="btn" type="submit" id="save">Create account</button>
+              <a class="btn2" href="admin-users.html">Cancel</a>
+              <button type="button" class="btn2" id="reset" hidden>Send password reset link</button>
+            </div>
+          </form>
+          <section class="cd">
+            <h2>What this role can open</h2>
+            <ul class="perks-list" id="access"><li class="hint">Choose a role to see its access.</li></ul>
+            <p class="hint" style="margin: 14px 0 0">Only dentists can open clinical records. The clinic owner sees reports and accounts, not clinical details.</p>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      const u = AD.user(ST.param("id") || "");
+      $("branches").innerHTML = ST.branches.map((b) => '<label class="ck"><input type="checkbox" value="' + b.id + '" /><span>' + b.name + "</span></label>").join("");
+      if (u) {
+        $("title").textContent = "Edit " + u.name;
+        $("sub").textContent = u.id + " · last login " + u.last;
+        $("name").value = u.name;
+        $("email").value = u.email;
+        $("mobile").value = u.mobile || "";
+        $("role").value = u.role;
+        if (u.spec) $("spec").value = u.spec;
+        $("status").value = u.status;
+        $("statuswrap").hidden = false;
+        $("pwwrap").hidden = true;
+        $("reset").hidden = false;
+        $("save").textContent = "Save changes";
+        $("branches").querySelectorAll("input").forEach((c) => (c.checked = u.branches.includes(c.value)));
+        if (u.role === "Clinic owner") $("role").disabled = $("status").disabled = true;
+      }
+      function sync() {
+        const r = $("role").value;
+        $("specwrap").hidden = r !== "Dentist";
+        $("access").innerHTML = r ? AD.access[r].map((x) => "<li>" + x + "</li>").join("") : '<li class="hint">Choose a role to see its access.</li>';
+        if (r === "Clinic owner") $("branches").querySelectorAll("input").forEach((c) => (c.checked = true));
+      }
+      $("role").onchange = sync;
+      sync();
+      $("reset").onclick = () => {
+        ST.log("owner", "Account", "Sent a password reset link to " + u.id);
+        say("msg", "A reset link was emailed to " + u.email + ". It works for 30 minutes.");
+      };
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        const name = $("name").value.trim();
+        const email = $("email").value.trim().toLowerCase();
+        const role = $("role").value;
+        const branches = [...$("branches").querySelectorAll("input:checked")].map((c) => c.value);
+        let err = "";
+        if (!name) err = "Enter their full name.";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "Enter a valid email address.";
+        else if (AD.users().some((x) => x.email === email && (!u || x.id !== u.id))) err = "Another account already uses this email.";
+        else if (!role) err = "Choose a role.";
+        else if (!branches.length) err = "Pick at least one branch.";
+        $("err").textContent = err;
+        if (err) return;
+        const rec = { id: u ? u.id : AD.nextUserId(), name, email, mobile: $("mobile").value.trim(), role, branches, spec: role === "Dentist" ? $("spec").value : undefined,
+          status: u ? $("status").value : "Active", last: u ? u.last : "Never" };
+        AD.saveUser(rec);
+        ST.log("owner", "Account", (u ? "Updated" : "Created") + " staff account " + rec.id + " (" + name + ", " + role + ")");
+        location.href = "admin-users.html?saved=" + rec.id + (u ? "" : "&new=1");
+      };
+      })();
+    </script>
+  </body>
+</html>

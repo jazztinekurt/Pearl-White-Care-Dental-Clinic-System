@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Archive | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv" href="admin-users.html">Users and staff</a>
+          <a class="nv" href="admin-schedule.html">Master schedule</a>
+          <a class="nv" href="admin-reports.html">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv on" href="admin-archive.html" aria-current="page">Archive</a>
+          <a class="nv" href="admin-settings.html">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Archive</h1>
+            <p id="sub">Inactive patients, closed transactions and finished treatment records. Kept, but out of the daily lists.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok" id="msg" role="status" hidden></div>
+        <section class="cd" id="suggest"></section>
+        <section class="cd">
+          <div class="chs" id="tabs" role="group" aria-label="Show" style="margin-bottom: 8px">
+            <button type="button" class="ch" aria-pressed="true" data-k="">All</button>
+            <button type="button" class="ch" aria-pressed="false" data-k="Patient">Patients</button>
+            <button type="button" class="ch" aria-pressed="false" data-k="Transaction">Transactions</button>
+            <button type="button" class="ch" aria-pressed="false" data-k="Treatment">Treatment records</button>
+          </div>
+          <div class="tw"><table><thead><tr><th>Item</th><th>Type</th><th>Branch</th><th>Archived</th><th>Reason</th><th><span class="sr">Restore</span></th></tr></thead><tbody id="rows"></tbody></table></div>
+          <p class="hint" style="margin: 12px 0 0">Treatment records show only their title here. Their contents stay visible to dentists only.</p>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      let kind = "";
+      function render() {
+        $("tabs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === kind));
+        const s = AD.suggestions();
+        $("suggest").innerHTML = "<h2>Ready to archive</h2>" + (s.length
+          ? s.map((x) => '<div class="li"><i></i><div><b>' + x.name + "</b> · " + x.ref + "<small>" + x.kind + " · " + ST.branch(x.branch).name + " · " + x.why + "</small></div>" +
+              '<button type="button" class="btn2 sm" style="margin-left: auto" data-arch="' + x.id + '">Archive</button></div>').join("")
+          : '<p class="empty">Nothing waiting. Inactive records show up here.</p>');
+        const list = AD.archive().filter((a) => !kind || a.kind === kind);
+        $("rows").innerHTML = list.map((a) =>
+          "<tr><td><b>" + a.name + "</b><small class='sub'>" + a.ref + "</small></td><td>" + a.kind + "</td><td>" + ST.branch(a.branch).name + "</td><td>" + ST.shortDate(a.since) +
+          "</td><td>" + a.why + '</td><td><button type="button" class="btn2 sm" data-restore="' + a.id + '">Restore</button></td></tr>').join("") ||
+          '<tr><td colspan="6" class="empty">Nothing archived here.</td></tr>';
+      }
+      $("tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) { kind = b.dataset.k; render(); } };
+      document.querySelector(".mn").addEventListener("click", (e) => {
+        const r = e.target.closest("[data-restore]");
+        const a = e.target.closest("[data-arch]");
+        if (r) {
+          const item = AD.archive().find((x) => x.id === r.dataset.restore);
+          if (!confirm("Restore " + item.name + "? It goes back to the daily lists.")) return;
+          ST.save("ad_restored", ST.load("ad_restored", []).concat(item.id));
+          ST.log("owner", "Account", "Restored " + item.kind.toLowerCase() + " " + item.ref + " from the archive");
+          say("msg", item.name + " is restored.");
+        } else if (a) {
+          const s = AD.suggestions().find((x) => x.id === a.dataset.arch);
+          const rec = Object.assign({}, s, { id: "AR-0" + (32 + ST.load("ad_archived", []).length), from: s.id, since: ST.today() });
+          ST.save("ad_archived", [rec].concat(ST.load("ad_archived", [])));
+          ST.log("owner", "Account", "Archived " + s.kind.toLowerCase() + " " + s.ref);
+          say("msg", s.name + " is archived. You can restore it any time.");
+        }
+        render();
+      });
+      render();
+      })();
+    </script>
+  </body>
+</html>

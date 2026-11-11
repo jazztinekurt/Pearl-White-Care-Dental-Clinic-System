@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patients | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv on" href="staff-patients.html" aria-current="page">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Patients</h1>
+            <p id="sub">Search every patient across the three branches.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <section class="cd">
+          <div class="hd">
+            <h2 id="count">Patients</h2>
+            <a class="btn sm" href="staff-patient-new.html">Register new patient</a>
+          </div>
+          <div class="fg filters">
+            <label class="f"><span>Search</span><input id="q" type="search" placeholder="Name, patient ID or mobile number" autocomplete="off" /></label>
+            <label class="f"><span>Branch</span><select id="branch"><option value="">All branches</option></select></label>
+          </div>
+          <div class="chs" id="status" role="group" aria-label="Filter" style="margin: 12px 0 6px">
+            <button type="button" class="ch" aria-pressed="true" data-s="all">All</button>
+            <button type="button" class="ch" aria-pressed="false" data-s="balance">With balance</button>
+            <button type="button" class="ch" aria-pressed="false" data-s="New">New</button>
+            <button type="button" class="ch" aria-pressed="false" data-s="Inactive">Inactive</button>
+          </div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Patient</th><th>Mobile</th><th>Branch</th><th>Last visit</th><th>Next visit</th><th>Balance</th><th>Status</th></tr></thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
+      let status = "all";
+      const appts = ST.appointments().filter(ST.active).sort(ST.sortByTime);
+      const today = ST.today();
+
+      function render() {
+        const q = $("q").value.trim().toLowerCase().replace(/\s/g, "");
+        const br = $("branch").value;
+        const list = ST.patients().filter((p) => {
+          if (q && !(p.name + p.id + p.mobile).toLowerCase().replace(/\s/g, "").includes(q)) return false;
+          if (br && p.branch !== br) return false;
+          if (status === "balance") return (ST.plan(p.id) || { left: 0 }).left > 0;
+          if (status !== "all") return p.status === status;
+          return true;
+        }).sort((a, b) => a.last.localeCompare(b.last));
+        $("count").textContent = list.length + (list.length === 1 ? " patient" : " patients");
+        $("rows").innerHTML = list.length
+          ? list.map((p) => {
+              const mine = appts.filter((a) => a.patient === p.id);
+              const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Done")).pop();
+              const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Done"));
+              const plan = ST.plan(p.id);
+              return '<tr class="link" data-id="' + p.id + '"><td><a href="staff-patient.html?id=' + p.id + '"><b>' + p.name +
+                "</b></a><small class='sub'>" + p.id + "</small></td><td>" + p.mobile + "</td><td>" + ST.branch(p.branch).name +
+                "</td><td>" + (last ? ST.shortDate(last.date) : "—") + "</td><td>" + (next ? ST.shortDate(next.date) + ", " + next.time : "—") +
+                "</td><td>" + (plan && plan.left ? "<b>" + ST.peso(plan.left) + "</b>" : "—") + "</td><td>" + ST.badge(p.status) + "</td></tr>";
+            }).join("")
+          : '<tr><td colspan="7" class="empty">No patients match. <a href="staff-patient-new.html">Register a new patient</a></td></tr>';
+      }
+      $("q").oninput = render;
+      $("branch").onchange = render;
+      $("status").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        status = b.dataset.s;
+        $("status").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        render();
+      };
+      // Whole row opens the profile
+      $("rows").onclick = (e) => {
+        const tr = e.target.closest("tr[data-id]");
+        if (tr && !e.target.closest("a")) location.href = "staff-patient.html?id=" + tr.dataset.id;
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>

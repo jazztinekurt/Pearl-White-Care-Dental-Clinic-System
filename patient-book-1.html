@@ -24,7 +24,6 @@
         <p class="rl">Patient portal</p>
         <nav aria-label="Main">
           <a class="nv" href="patient-dashboard.html">Dashboard</a>
-          <a class="nv" href="patient-dentists.html">Dentists</a>
           <a class="nv on" href="patient-book-1.html" aria-current="page">Book appointment</a>
           <a class="nv" href="patient-appointments.html">My appointments</a>
           <a class="nv" href="patient-history.html">Treatment history</a>
@@ -114,11 +113,14 @@
       const svc = document.getElementById("svc");
       const br = document.getElementById("br");
 
+      // Each service names its specialist, so patients can match their concern to a dentist
       PW.services.forEach((s) => {
+        const sp = PW.dentists.find((d) => d.spec === s.id);
         svc.insertAdjacentHTML(
           "beforeend",
           '<label class="choice"><input type="radio" name="service" value="' + s.id + '"' +
             (bk.service === s.id ? " checked" : "") + " /><b>" + s.name + "</b><small>" + s.desc + "</small>" +
+            '<small class="who">' + (sp ? "Specialist: " + sp.name : "Any of our dentists") + "</small>" +
             (s.plan ? "<em>Payment plan</em>" : "") + "</label>",
         );
       });

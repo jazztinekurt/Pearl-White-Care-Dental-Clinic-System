@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Appointment requests | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv on" href="staff-requests.html" aria-current="page">Appointment requests</a>
+          <a class="nv" href="staff-patients.html">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Appointment requests</h1>
+            <p id="sub">Online booking requests from the patient portal. Confirm, reject or move them.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner" id="msg" role="status" hidden></div>
+        <section class="cd">
+          <div class="chs" id="tabs" role="group" aria-label="Show" style="margin-bottom: 8px">
+            <button type="button" class="ch" aria-pressed="true" data-v="pending">Pending</button>
+            <button type="button" class="ch" aria-pressed="false" data-v="handled">Handled</button>
+          </div>
+          <div id="list"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      let view = "pending";
+      const list = document.getElementById("list");
+      const msg = document.getElementById("msg");
+
+      function say(text, kind) {
+        msg.hidden = false;
+        msg.className = "banner " + (kind || "ok");
+        msg.innerHTML = text;
+      }
+
+      function render() {
+        ST.refreshCount();
+        const all = ST.requests();
+        const tabs = document.getElementById("tabs");
+        tabs.querySelector('[data-v="pending"]').textContent = "Pending (" + all.filter((r) => !r.state).length + ")";
+        tabs.querySelector('[data-v="handled"]').textContent = "Handled (" + all.filter((r) => r.state).length + ")";
+        const items = all.filter((r) => (view === "pending" ? !r.state : r.state));
+        if (!items.length) {
+          list.innerHTML = '<p class="empty">' + (view === "pending" ? "No pending requests. All caught up." : "Nothing handled yet today.") + "</p>";
+          return;
+        }
+        list.innerHTML = items.map((r) => {
+          const p = ST.patient(r.patient);
+          const c = !r.state && ST.conflict(r.dentist, r.date, r.time);
+          return (
+            '<div class="req" data-ref="' + r.ref + '">' +
+            '<div class="req-main"><b>' + p.name + "</b> · " + r.service + (p.status === "New" ? ' <span class="bd wa">New patient</span>' : "") +
+            "<small>" + ST.longDate(r.date) + " · " + r.time + " · " + ST.dentist(r.dentist).name + " · " + ST.branch(r.branch).name +
+            " · " + r.ref + " · sent " + r.sent + "</small>" +
+            (r.concern ? '<p class="concern">“' + ST.esc(r.concern) + "”</p>" : "") +
+            (c ? '<p class="clash">Clash: ' + ST.dentist(r.dentist).short + " is already booked at " + ST.branch(c.branch).name + " at " + r.time + " (" + ST.patient(c.patient).name + ").</p>" : "") +
+            "</div>" +
+            (r.state
+              ? '<div class="req-act">' + ST.badge(r.state) + "<small>" + (r.reason ? r.reason : "") + "</small></div>"
+              : '<div class="req-act ac">' +
+                '<button type="button" class="btn sm" data-ok' + (c ? " disabled" : "") + ">Confirm</button>" +
+                '<a class="btn2 sm" href="staff-appointment.html?req=' + r.ref + '">Reschedule</a>' +
+                '<button type="button" class="btn2 sm danger" data-no>Reject</button></div>' +
+                '<div class="reject" hidden><label class="f"><span>Reason sent to the patient</span><select>' +
+                "<option>The dentist is not available at that time. Please pick another time.</option>" +
+                "<option>This service is not offered at that branch. Please pick another branch.</option>" +
+                "<option>We could not reach you to confirm. Please book again.</option></select></label>" +
+                '<div class="ac"><button type="button" class="btn sm danger-fill" data-reject>Reject and send SMS</button>' +
+                '<button type="button" class="btn2 sm" data-back>Go back</button></div></div>')
+            + "</div>"
+          );
+        }).join("");
+      }
+
+      document.getElementById("tabs").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        view = b.dataset.v;
+        document.querySelectorAll("#tabs button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        render();
+      };
+
+      list.onclick = (e) => {
+        const row = e.target.closest(".req");
+        if (!row) return;
+        const ref = row.dataset.ref;
+        if (e.target.closest("[data-ok]")) {
+          const res = ST.confirmRequest(ref);
+          const p = ST.patient(res.request.patient);
+          if (res.ok) {
+            say("Confirmed " + ref + ". " + p.name + " gets an SMS and email, and it is on the " +
+              '<a href="staff-calendar.html?date=' + res.request.date + '">master calendar</a>.');
+          } else {
+            say("Can't confirm " + ref + ": the dentist is already booked then. " +
+              '<a href="staff-appointment.html?req=' + ref + '">Pick another time</a>', "warn");
+          }
+          render();
+        } else if (e.target.closest("[data-no]")) {
+          row.querySelector(".reject").hidden = false;
+          row.querySelector(".req-act").hidden = true;
+        } else if (e.target.closest("[data-back]")) {
+          row.querySelector(".reject").hidden = true;
+          row.querySelector(".req-act").hidden = false;
+        } else if (e.target.closest("[data-reject]")) {
+          const reason = row.querySelector("select").value;
+          ST.rejectRequest(ref, reason);
+          say("Rejected " + ref + ". The patient gets an SMS: “" + reason + "”");
+          render();
+        }
+      };
+
+      // Coming back from "Reschedule request"
+      render();
+      })();
+    </script>
+  </body>
+</html>

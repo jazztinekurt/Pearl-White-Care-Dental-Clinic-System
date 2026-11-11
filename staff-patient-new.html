@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register new patient | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv on" href="staff-patients.html" aria-current="page">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Register new patient</h1>
+            <p id="sub">Intake form and data privacy consent, filled in at the front desk.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="staff-patients.html" id="back">&larr; Patients</a>
+        <form id="form" novalidate>
+          <section class="cd">
+            <h2>Patient details</h2>
+            <div class="fg">
+              <label class="f"><span>First name</span><input id="first" autocomplete="off" /></label>
+              <label class="f"><span>Last name</span><input id="last" autocomplete="off" /></label>
+              <label class="f"><span>Date of birth</span><input id="dob" type="date" /></label>
+              <label class="f"><span>Sex</span><select id="sex"><option value="">Choose</option><option value="F">Female</option><option value="M">Male</option></select></label>
+              <label class="f"><span>Mobile number</span><input id="mobile" type="tel" inputmode="numeric" placeholder="0917 123 4567" /></label>
+              <label class="f"><span>Email <i>(optional)</i></span><input id="email" type="email" placeholder="name@email.com" /></label>
+              <label class="f s2"><span>Home address</span><input id="addr" /></label>
+              <label class="f"><span>Home branch</span><select id="branch"></select></label>
+              <label class="f"><span>Chief complaint <i>(optional)</i></span><input id="complaint" placeholder="e.g. Toothache, lower left" /></label>
+            </div>
+          </section>
+
+          <section class="cd">
+            <h2>Emergency contact</h2>
+            <div class="fg">
+              <label class="f"><span>Full name</span><input id="ecname" /></label>
+              <label class="f"><span>Mobile number</span><input id="ecmobile" type="tel" inputmode="numeric" /></label>
+            </div>
+            <p class="hint" style="margin: 10px 0 0">The dentist takes the medical and dental history in the chair.</p>
+          </section>
+
+          <section class="cd">
+            <h2>Data privacy consent</h2>
+            <div class="notice">
+              <p>We collect the patient's name, birth date, contact details, appointments, treatment records, X-rays and payments,
+              only to treat and bill them. Dentists see clinical records; front desk staff see what they need for booking and billing.</p>
+              <p>Under the Data Privacy Act of 2012 (RA 10173), the patient can ask to view, correct, archive or delete their data.</p>
+            </div>
+            <label class="ck"><input type="checkbox" id="agree" /><span><b>The patient read the notice and agrees</b> (required)</span></label>
+            <label class="ck"><input type="checkbox" id="sms" checked /><span>Send SMS reminders before visits</span></label>
+            <p class="lab" style="margin-top: 6px">Patient's signature</p>
+            <canvas id="sig" class="sig" width="560" height="140" aria-label="Signature pad. The patient signs here with a finger or mouse."></canvas>
+            <div class="ac" style="margin-top: 8px"><button type="button" class="btn2 sm" id="clear">Clear signature</button></div>
+          </section>
+
+          <p class="err" id="err" role="alert"></p>
+          <div class="ac" style="margin-top: 0">
+            <button class="btn" type="submit">Register patient</button>
+            <a class="btn2" href="staff-patients.html" id="cancel">Cancel</a>
+          </div>
+        </form>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
+      $("dob").max = ST.today();
+      const back = ST.param("back") === "appointment";
+      if (back) {
+        $("back").href = $("cancel").href = "staff-appointment.html";
+        $("back").innerHTML = "&larr; New appointment";
+      }
+
+      // Signature pad
+      const c = $("sig");
+      const ctx = c.getContext("2d");
+      let drawing = false;
+      let signed = false;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#0a2457";
+      const pos = (e) => {
+        const r = c.getBoundingClientRect();
+        return [((e.clientX - r.left) * c.width) / r.width, ((e.clientY - r.top) * c.height) / r.height];
+      };
+      c.addEventListener("pointerdown", (e) => {
+        drawing = true;
+        c.setPointerCapture(e.pointerId);
+        ctx.beginPath();
+        ctx.moveTo(...pos(e));
+      });
+      c.addEventListener("pointermove", (e) => {
+        if (!drawing) return;
+        ctx.lineTo(...pos(e));
+        ctx.stroke();
+        signed = true;
+      });
+      c.addEventListener("pointerup", () => (drawing = false));
+      $("clear").onclick = () => {
+        ctx.clearRect(0, 0, c.width, c.height);
+        signed = false;
+      };
+
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        const v = (id) => $(id).value.trim();
+        const mobile = v("mobile").replace(/[\s-]/g, "").replace(/^\+?63/, "0");
+        let err = "";
+        if (!v("first") || !v("last")) err = "Enter the patient's first and last name.";
+        else if (!v("dob")) err = "Enter the date of birth.";
+        else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
+        else if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) err = "Check the email address, or leave it blank.";
+        else if (!$("agree").checked) err = "The patient has to agree to the privacy notice before we can keep their records.";
+        else if (!signed) err = "Ask the patient to sign in the box.";
+        $("err").textContent = err;
+        if (err) return;
+        const added = ST.load("st_patients", []);
+        const id = "P-0" + (160 + added.length);
+        added.push({
+          id, first: v("first"), last: v("last"), sex: $("sex").value, dob: v("dob"), mobile: v("mobile"), email: v("email"),
+          address: v("addr"), branch: $("branch").value, since: ST.today(), status: "New",
+          contact: v("ecname") ? v("ecname") + (v("ecmobile") ? ", " + v("ecmobile") : "") : "", sms: $("sms").checked,
+        });
+        ST.save("st_patients", added);
+        ST.log("front", "Account", "Registered new patient " + id + " (consent signed)");
+        location.href = back ? "staff-appointment.html?patient=" + id : "staff-patient.html?id=" + id + "&new=1";
+      };
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Master schedule | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Clinic owner</p>
+        <nav aria-label="Main">
+          <a class="nv" href="admin-dashboard.html">Dashboard</a>
+          <a class="nv" href="admin-users.html">Users and staff</a>
+          <a class="nv on" href="admin-schedule.html" aria-current="page">Master schedule</a>
+          <a class="nv" href="admin-reports.html">Reports</a>
+          <a class="nv" href="admin-audit.html">Audit trail</a>
+          <a class="nv" href="admin-archive.html">Archive</a>
+          <a class="nv" href="admin-settings.html">Settings</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Master schedule</h1>
+            <p id="sub">Every branch and dentist, view only. The front desk makes the bookings.</p>
+          </div>
+          <div class="me">
+            <i>JT</i
+            ><span><b>Dr. Jena Tan-Booth</b><small>Clinic owner</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <section class="cd">
+          <div class="hd calbar">
+            <div class="ac" style="margin: 0">
+              <button type="button" class="btn2 sm" id="prev" aria-label="Previous day">&larr;</button>
+              <button type="button" class="btn2 sm" id="today">Today</button>
+              <button type="button" class="btn2 sm" id="next" aria-label="Next day">&rarr;</button>
+              <input type="date" id="pick" aria-label="Go to date" class="datepick" />
+            </div>
+            <p class="hint" id="sum" style="margin: 0"></p>
+          </div>
+          <h2 id="day" style="margin: 14px 0 10px"></h2>
+          <div class="chs" id="bf" role="group" aria-label="Filter by branch" style="margin-bottom: 12px">
+            <button type="button" class="ch" aria-pressed="true" data-b="all">All branches</button>
+          </div>
+          <div class="tw"><table class="sch cal" id="grid"></table></div>
+          <ul class="legend" aria-label="Legend">
+            <li><i class="k-bk"></i>Booked</li><li><i class="k-in"></i>Checked in</li><li><i class="k-done"></i>Done</li>
+            <li><i class="k-req"></i>Online request, not confirmed</li><li><i class="k-away"></i>Dentist at another branch</li>
+          </ul>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="admin.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const fmt = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const plus = (iso, n) => { const d = ST.toDate(iso); d.setDate(d.getDate() + n); return fmt(d); };
+      const monday = (iso) => { const d = ST.toDate(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+      const kpeso = (n) =>
+        n >= 1e6 ? "₱" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : n >= 1000 ? "₱" + (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : ST.peso(n);
+      const when = (isoTime) => {
+        const d = new Date(isoTime);
+        const day = fmt(d) === ST.today() ? "Today" : fmt(d) === plus(ST.today(), -1) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return day + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      };
+      function say(id, text, kind) {
+        const m = $(id);
+        m.hidden = false;
+        m.className = "banner " + (kind || "ok");
+        m.innerHTML = text;
+      }
+
+      let date = ST.today();
+      let bf = "all";
+      ST.branches.forEach((b) => $("bf").insertAdjacentHTML("beforeend", '<button type="button" class="ch" aria-pressed="false" data-b="' + b.id + '">' + b.name + "</button>"));
+      const cols = [];
+      ST.branches.forEach((b) => ST.dentists.forEach((d) => d.branches.includes(b.id) && cols.push({ b, d })));
+      const cls = { Booked: "c-bk", "Checked in": "c-in", Done: "c-done" };
+      function render() {
+        $("pick").value = date;
+        $("day").textContent = ST.toDate(date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) + (date === ST.today() ? " (today)" : "");
+        if (ST.toDate(date).getDay() === 0) {
+          $("grid").innerHTML = '<tbody><tr><td class="closed">All branches are closed on Sundays.</td></tr></tbody>';
+          $("sum").textContent = "";
+          return;
+        }
+        const appts = ST.appointments().filter((a) => a.date === date && ST.active(a));
+        const reqs = ST.requests().filter((r) => !r.state && r.date === date);
+        $("sum").textContent = ST.branches.map((b) => b.name + " " + appts.filter((a) => a.branch === b.id).length).join(" · ") + " bookings";
+        const show = cols.filter((c) => bf === "all" || c.b.id === bf);
+        let html = "<thead><tr><th>Time</th>" + show.map((c) => "<th>" + c.b.name + "<small>" + c.d.short + "</small></th>").join("") + "</tr></thead><tbody>";
+        ST.times.forEach((t) => {
+          html += "<tr><td>" + t + "</td>" + show.map((c) => {
+            const here = appts.find((a) => a.dentist === c.d.id && a.time === t && a.branch === c.b.id);
+            const away = !here && appts.find((a) => a.dentist === c.d.id && a.time === t);
+            const req = reqs.find((r) => r.dentist === c.d.id && r.time === t && r.branch === c.b.id);
+            if (here) return '<td class="slot ' + (cls[here.status] || "c-bk") + '"><span class="in"><b>' + ST.patient(here.patient).name + "</b><small>" + here.service + "</small></span></td>";
+            if (away) return '<td class="slot c-away">At ' + ST.branch(away.branch).name + "</td>";
+            if (req) return '<td class="slot c-req"><span class="in"><b>' + ST.patient(req.patient).name + "</b><small>Request</small></span></td>";
+            return '<td class="slot"></td>';
+          }).join("") + "</tr>";
+        });
+        $("grid").innerHTML = html + "</tbody>";
+      }
+      $("prev").onclick = () => { date = plus(date, -1); render(); };
+      $("next").onclick = () => { date = plus(date, 1); render(); };
+      $("today").onclick = () => { date = ST.today(); render(); };
+      $("pick").onchange = (e) => { if (e.target.value) { date = e.target.value; render(); } };
+      $("bf").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        bf = b.dataset.b;
+        $("bf").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        render();
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>
