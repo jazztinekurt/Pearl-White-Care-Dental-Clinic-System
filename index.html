@@ -35,7 +35,7 @@
         </nav>
         <div class="actions">
           <a class="btn btn-line btn-sm" href="login.html">Log in</a>
-          <a class="btn btn-fill btn-sm" href="book.html">Book now</a>
+          <a class="btn btn-fill btn-sm" href="register.html">Book now</a>
         </div>
       </div>
     </header>
@@ -134,7 +134,7 @@
             <p id="pick" aria-live="polite">
               Pick a date and time to continue.
             </p>
-            <a class="btn btn-fill" href="book.html" id="req"
+            <a class="btn btn-fill" href="register.html" id="req"
               >Request this appointment</a
             >
             <p
@@ -532,7 +532,7 @@
               </div>
 
               <div style="margin-top: 28px; display: flex; gap: 12px">
-                <a href="book.html" class="btn btn-fill" style="flex: 1"
+                <a href="register.html" class="btn btn-fill" style="flex: 1"
                   >Book this Branch</a
                 >
                 <button
@@ -568,7 +568,7 @@
             <p>Book in a couple of minutes. No account needed.</p>
           </div>
           <div style="display: flex; gap: 12px; flex-wrap: wrap">
-            <a class="btn btn-fill" href="book.html">Book an appointment</a>
+            <a class="btn btn-fill" href="register.html">Book an appointment</a>
             <a class="btn btn-line" href="login.html">Log in</a>
           </div>
         </div>
@@ -802,7 +802,8 @@
           const next = document.querySelector("#how + section .wrap");
           if (!first) return;
           e.preventDefault();
-          const headerH = document.querySelector(".landing header").offsetHeight;
+          const headerH =
+            document.querySelector(".landing header").offsetHeight;
           const top = first.getBoundingClientRect().top;
           const bottom = (next || first).getBoundingClientRect().bottom;
           const space = window.innerHeight - headerH;
