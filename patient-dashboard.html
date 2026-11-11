@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Patient portal</p>
+        <nav aria-label="Main">
+          <a class="nv on" href="patient-dashboard.html">Dashboard</a>
+          <a class="nv" href="patient-dentists.html">Dentists</a>
+          <a class="nv" href="patient-book-1.html">Book appointment</a>
+          <a class="nv" href="patient-appointments.html">My appointments</a>
+          <a class="nv" href="patient-history.html">Treatment history</a>
+          <a class="nv" href="patient-payments.html">Payments</a>
+          <a class="nv" href="patient-notifications.html">Notifications</a>
+          <a class="nv" href="patient-profile.html">My profile</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="greet">Good morning, Maria</h1>
+            <p id="today">Here is what is coming up.</p>
+          </div>
+          <div class="me">
+            <i id="ini">ML</i
+            ><span><b id="uname">Maria Lopez</b><small>Patient</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <!-- Next appointment -->
+        <section class="nextcard" aria-label="Next appointment">
+          <div class="dtile"><small>Fri</small><b>13</b><span>Nov</span></div>
+          <div class="ninfo">
+            <span class="when">In 2 days</span>
+            <h2>Orthodontics check</h2>
+            <p>10:00 AM with Dr. Maria Santos</p>
+            <div class="nmeta">
+              <span>Amparo branch</span><span>Ref PW-2026-0142</span
+              ><span class="bd ok">Confirmed</span>
+            </div>
+          </div>
+          <div class="nact">
+            <a class="btn inv" href="patient-appointment-details.html"
+              >View details</a
+            >
+            <a class="btn2 inv" href="patient-book-2.html">Reschedule</a>
+          </div>
+        </section>
+
+        <!-- Key numbers: one card per topic, each with one link -->
+        <div class="stats">
+          <div class="st">
+            <small>Balance due</small><b>₱12,000</b>
+            <div class="bar"><i style="width: 60%"></i></div>
+            <p>₱18,000 of ₱30,000 paid</p>
+            <a href="patient-payments.html">View payments</a>
+          </div>
+          <div class="st">
+            <small>Braces progress</small><b>6 of 12 visits</b>
+            <div class="bar"><i style="width: 50%"></i></div>
+            <p>Last visit Oct 22: wire change. Brackets are settling well.</p>
+            <a href="patient-history.html">View treatment history</a>
+          </div>
+          <div class="st">
+            <small>Your profile</small><b>80% complete</b>
+            <div class="bar"><i style="width: 80%"></i></div>
+            <p>Add your medical history so your dentist is ready.</p>
+            <a href="patient-profile.html">Update profile</a>
+          </div>
+        </div>
+
+        <!-- Appointments and alerts -->
+        <div class="split">
+          <section class="cd">
+            <div class="hd">
+              <h2>Other appointments</h2>
+              <a href="patient-appointments.html">See all</a>
+            </div>
+            <a class="ap" href="patient-appointment-details.html">
+              <span class="ad"><b>20</b>Nov</span>
+              <span class="at"
+                ><b>Cleaning</b
+                ><small>2:00 PM · Dr. Juan Reyes · Amparo</small></span
+              >
+              <span class="bd">Pending</span>
+            </a>
+            <a class="ap past" href="patient-appointment-details.html">
+              <span class="ad"><b>22</b>Oct</span>
+              <span class="at"
+                ><b>Wire change</b
+                ><small>9:00 AM · Dr. Maria Santos · Amparo</small></span
+              >
+              <span class="bd">Completed</span>
+            </a>
+            <div class="ac">
+              <a class="btn" href="patient-book-1.html">Book appointment</a>
+            </div>
+          </section>
+
+          <section class="cd">
+            <div class="hd">
+              <h2>Recent notifications</h2>
+              <a href="patient-notifications.html">See all</a>
+            </div>
+            <div class="li">
+              <i></i>
+              <div>
+                Your Nov 13 appointment is confirmed.<small>Today · SMS</small>
+              </div>
+            </div>
+            <div class="li">
+              <i></i>
+              <div>
+                Payment of ₱3,000 recorded. Thank you.<small
+                  >Nov 5 · Email</small
+                >
+              </div>
+            </div>
+            <div class="li">
+              <i></i>
+              <div>
+                Reminder: bring your retainer case to your next visit.<small
+                  >Oct 22 · SMS</small
+                >
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script>
+      const h = new Date().getHours();
+      let name = "Maria";
+      try {
+        const n = sessionStorage.getItem("pw_first_name");
+        if (n) {
+          name = n;
+          document.getElementById("uname").textContent = n;
+          document.getElementById("ini").textContent = n
+            .charAt(0)
+            .toUpperCase();
+        }
+      } catch (e) {}
+      document.getElementById("greet").textContent =
+        (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") +
+        ", " +
+        name;
+      document.getElementById("today").textContent =
+        new Date().toLocaleDateString("en-PH", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }) + ". Here is what is coming up.";
+    </script>
+  </body>
+</html>

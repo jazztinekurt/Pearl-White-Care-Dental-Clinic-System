@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in | Pearl White Dental Clinic</title>
+<link rel="icon" href="images/pearl-white-logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="auth">
+
+  <aside class="side">
+    <a class="lockup" href="index.html" aria-label="Pearl White Dental Clinic, home">
+      <span class="tile"><img src="images/pearl-white-logo.png" alt="" height="32"></span>
+      <span><b>Pearl White</b><small>Dental Clinic</small></span>
+    </a>
+    <div class="copy">
+      <h1>Welcome back.</h1>
+      <p>Log in to book a visit, see your treatment history and check what you still owe.</p>
+      <p class="note">Dentists, receptionists and admins use this same page. You will land on your own dashboard.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><a class="back" href="index.html">Back to home</a></div>
+
+    <div class="card">
+      <h2>Log in</h2>
+      <p class="sub">Enter the email and password you registered with.</p>
+
+      <form id="login" novalidate>
+        <div class="field">
+          <label for="email">Email or username</label>
+          <div class="input"><input id="email" name="email" type="text" autocomplete="username" placeholder="name@email.com" required></div>
+        </div>
+        <div class="field">
+          <label for="pw">Password</label>
+          <div class="input">
+            <input id="pw" name="pw" type="password" autocomplete="current-password" placeholder="Your password" required>
+            <button type="button" class="show" id="toggle" aria-pressed="false" aria-controls="pw">Show</button>
+          </div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" name="remember"> Keep me logged in</label>
+          <a href="forgot-password.html">Forgot password?</a>
+        </div>
+        <button class="btn" type="submit">Log in</button>
+        <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      </form>
+
+      <p class="new">New here? <a href="book.html">Book without an account</a> or <a href="register.html">sign up</a></p>
+
+      <div class="demo">
+        <p><b>Prototype only.</b> Tap a role to fill in a sample account:</p>
+        <div class="chips">
+          <button type="button" data-u="patient@pearlwhite.test">Patient<span>Patient dashboard</span></button>
+          <button type="button" data-u="staff@pearlwhite.test">Receptionist<span>Staff dashboard</span></button>
+          <button type="button" data-u="dentist@pearlwhite.test">Dentist<span>Dentist dashboard</span></button>
+          <button type="button" data-u="admin@pearlwhite.test">Admin<span>Admin dashboard</span></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const accounts={
+  "patient@pearlwhite.test":{role:"patient",to:"patient-dashboard.html"},
+  "staff@pearlwhite.test":{role:"receptionist",to:"staff-dashboard.html"},
+  "dentist@pearlwhite.test":{role:"dentist",to:"dentist-dashboard.html"},
+  "admin@pearlwhite.test":{role:"admin",to:"admin-dashboard.html"}
+};
+const DEMO_PASSWORD="demo1234";
+const form=document.getElementById("login"),email=document.getElementById("email"),pw=document.getElementById("pw"),msg=document.getElementById("msg");
+
+document.getElementById("toggle").onclick=e=>{
+  const show=pw.type==="password";
+  pw.type=show?"text":"password";
+  e.currentTarget.textContent=show?"Hide":"Show";
+  e.currentTarget.setAttribute("aria-pressed",show);
+};
+
+document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{
+  email.value=b.dataset.u;pw.value=DEMO_PASSWORD;
+  msg.className="msg";msg.textContent="";
+  form.querySelector(".btn").focus();
+});
+
+form.onsubmit=e=>{
+  e.preventDefault();
+  const u=email.value.trim().toLowerCase(),a=accounts[u];
+  if(!u||!pw.value){msg.className="msg err";msg.textContent="Enter your email and password to continue.";return}
+  if(!a||pw.value!==DEMO_PASSWORD){msg.className="msg err";msg.textContent="That email and password don’t match. Try again or reset your password.";return}
+  msg.className="msg ok";msg.textContent="Signing you in as "+a.role+"…";
+  setTimeout(()=>{location.href=a.to},700);
+};
+</script>
+</body>
+</html>

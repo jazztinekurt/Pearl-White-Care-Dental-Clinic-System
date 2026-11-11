@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data privacy consent | Pearl White Dental Clinic</title>
+<link rel="icon" href="images/pearl-white-logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="auth">
+
+  <aside class="side">
+    <a class="lockup" href="index.html" aria-label="Pearl White Dental Clinic, home">
+      <span class="tile"><img src="images/pearl-white-logo.png" alt="" height="32"></span>
+      <span><b>Pearl White</b><small>Dental Clinic</small></span>
+    </a>
+    <div class="copy">
+      <h1>Your data, your say.</h1>
+      <p>We keep your records safe and only use them to care for you.</p>
+      <ol class="next" aria-label="Sign-up steps">
+        <li class="done">Create your account</li>
+        <li class="on">Accept the data privacy consent</li>
+        <li>Book your first visit</li>
+      </ol>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><a class="back" href="register.html">Back</a></div>
+
+    <div class="card wide">
+      <h1 id="title">One last step</h1>
+      <p class="sub">Please read how we handle your information. Open each section to learn more.</p>
+
+      <details name="notice" open>
+        <summary>What we collect</summary>
+        <p>Your name, date of birth, mobile number, email, appointments, treatment records, X-rays and payment details. We ask only for what we need to treat and bill you.</p>
+      </details>
+      <details name="notice">
+        <summary>Why we use it</summary>
+        <p>To book and manage your visits, keep your dental history across all three branches, send reminders, and record payments and balances.</p>
+      </details>
+      <details name="notice">
+        <summary>Who can see it</summary>
+        <p>Only authorized clinic staff, based on their role. Your dentists see your clinical records. Receptionists see what they need for booking and billing. Admins manage accounts and reports and do not see clinical records.</p>
+      </details>
+      <details name="notice">
+        <summary>How long we keep it</summary>
+        <p>For as long as needed for your treatment and for legal and billing requirements. Inactive records are archived, not left open.</p>
+      </details>
+      <details name="notice">
+        <summary>Your rights</summary>
+        <p>Under the Data Privacy Act of 2012 (RA 10173), you can ask to view, correct, archive or delete your data. You can manage these choices later under Privacy settings in your profile.</p>
+      </details>
+
+      <div class="checks">
+        <label class="ck"><input type="checkbox" id="agree">
+          <div><b>I agree <span class="tag req">Required</span></b><span>I have read the notice and agree to the collection and use of my data for treatment, booking and billing.</span></div></label>
+        <label class="ck"><input type="checkbox" id="sms">
+          <div><b>Send me reminders <span class="tag">Optional</span></b><span>Appointment reminders by SMS or email.</span></div></label>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="accept" type="button" disabled>Accept and continue</button>
+        <a class="btn2" href="index.html">Decline</a>
+      </div>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      <p class="fine">Sample notice text for the prototype. Replace it with the clinic’s official data privacy notice.</p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const agree=document.getElementById("agree"),btn=document.getElementById("accept"),msg=document.getElementById("msg");
+try{const n=sessionStorage.getItem("pw_first_name");if(n)document.getElementById("title").textContent="Hi "+n+", one last step"}catch(e){}
+agree.onchange=()=>{btn.disabled=!agree.checked};
+btn.onclick=()=>{
+  if(!agree.checked)return;
+  btn.disabled=true;
+  msg.textContent="Thank you. Taking you to your dashboard…";
+  setTimeout(()=>{location.href="patient-dashboard.html"},800);
+};
+</script>
+</body>
+</html>

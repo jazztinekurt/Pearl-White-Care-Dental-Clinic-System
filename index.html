@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pearl White Dental Clinic | Book your dental visit online</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="landing">
+    <header>
+      <div class="wrap nav">
+        <a
+          class="brand"
+          href="index.html"
+          aria-label="Pearl White Dental Clinic, home"
+          ><img src="images/pearl-white-logo.png" alt="" height="50" /><span
+            ><b>Pearl White</b><small>Dental Clinic</small></span
+          ></a
+        >
+        <nav aria-label="Main">
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#dentists">Dentists</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#branches">Branches</a></li>
+          </ul>
+        </nav>
+        <div class="actions">
+          <a class="btn btn-line btn-sm" href="login.html">Log in</a>
+          <a class="btn btn-fill btn-sm" href="book.html">Book now</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="slides" aria-hidden="true">
+          <span
+            style="--i: 0; background-image: url(images/slideshow/img1.jpg)"
+          ></span
+          ><span
+            style="--i: 1; background-image: url(images/slideshow/img2.jpg)"
+          ></span
+          ><span
+            style="--i: 2; background-image: url(images/slideshow/img3.jpg)"
+          ></span
+          ><span
+            style="--i: 3; background-image: url(images/slideshow/img4.jpg)"
+          ></span
+          ><span
+            style="--i: 4; background-image: url(images/slideshow/img5.jpg)"
+          ></span
+          ><span
+            style="--i: 5; background-image: url(images/slideshow/img6.jpg)"
+          ></span
+          ><span
+            style="--i: 6; background-image: url(images/slideshow/img7.jpg)"
+          ></span
+          ><span
+            style="--i: 7; background-image: url(images/slideshow/img8.jpg)"
+          ></span
+          ><span
+            style="--i: 8; background-image: url(images/slideshow/img9.jpg)"
+          ></span
+          ><span
+            style="--i: 9; background-image: url(images/slideshow/img10.jpg)"
+          ></span
+          ><span
+            style="--i: 10; background-image: url(images/slideshow/img11.jpg)"
+          ></span
+          ><span
+            style="--i: 11; background-image: url(images/slideshow/img12.jpg)"
+          ></span
+          ><span
+            style="--i: 12; background-image: url(images/slideshow/img13.jpg)"
+          ></span>
+        </div>
+        <div class="wrap hero-grid">
+          <div>
+            <h1>Welcome to Pearl White. Don't Forget to Smile!</h1>
+            <p class="lead">
+              Choose your branch, dentist and time online. No account needed,
+              and no more waiting for a Messenger reply to find out if you got
+              the schedule.
+            </p>
+            <div class="facts">
+              <span><b>Since 1999</b> caring for families</span>
+              <span><b>3 branches</b> in Caloocan and Quezon City</span>
+              <span><b>SMS reminders</b> before every visit</span>
+              <span><b>No account</b> needed to book</span>
+            </div>
+          </div>
+
+          <div class="book" aria-label="Sample booking">
+            <h2>Try a booking</h2>
+            <small>Sample slots. Taken times are crossed out.</small>
+            <div class="seg" id="branch" role="group" aria-label="Branch">
+              <button aria-pressed="true">Amparo</button>
+              <button aria-pressed="false">Capitol Park</button>
+              <button aria-pressed="false">Lagro</button>
+            </div>
+
+            <!-- Calendar Widget -->
+            <div class="calendar-widget">
+              <div class="cal-header">
+                <button
+                  type="button"
+                  id="prev-month"
+                  aria-label="Previous Month"
+                >
+                  &larr;
+                </button>
+                <span id="cal-month-year"></span>
+                <button type="button" id="next-month" aria-label="Next Month">
+                  &rarr;
+                </button>
+              </div>
+              <div class="cal-weekdays">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span
+                ><span>Th</span><span>Fr</span><span>Sa</span>
+              </div>
+              <div class="cal-days" id="cal-days"></div>
+            </div>
+
+            <div class="slots" id="slots" role="group" aria-label="Time"></div>
+            <p id="pick" aria-live="polite">
+              Pick a date and time to continue.
+            </p>
+            <a class="btn btn-fill" href="book.html" id="req"
+              >Request this appointment</a
+            >
+            <p
+              style="
+                text-align: center;
+                font-size: 0.85rem;
+                color: var(--muted);
+                margin-top: 10px;
+              "
+            >
+              No account needed.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <section id="about" class="about">
+        <div class="wrap about-grid">
+          <div>
+            <p class="eyebrow">About us</p>
+            <h2>A family clinic that grew up with its patients</h2>
+            <p class="lead">
+              Pearl White started in 1999 as the Jena Tan-Booth Dental Clinic,
+              founded by Dr. Jena. For more than 25 years, we have helped
+              families in Caloocan and Quezon City keep healthy teeth and smile
+              with confidence.
+            </p>
+            <p>
+              As the practice grew and added services, we took the name Pearl
+              White to match a more modern clinic, while keeping the values we
+              started with. Today we run three branches, and online booking lets
+              you see open times without waiting for a reply.
+            </p>
+            <dl class="about-stats">
+              <div>
+                <dt>Years of care</dt>
+                <dd>25+</dd>
+              </div>
+              <div>
+                <dt>Branches</dt>
+                <dd>3</dd>
+              </div>
+              <div>
+                <dt>Services</dt>
+                <dd>5</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="values" aria-labelledby="values-title">
+            <h3 id="values-title">What we stand for</h3>
+            <ul>
+              <li>
+                <strong>Excellence</strong
+                ><span>Careful, high-quality treatment at every visit.</span>
+              </li>
+              <li>
+                <strong>Compassion</strong
+                ><span>We listen, explain each step and go at your pace.</span>
+              </li>
+              <li>
+                <strong>Integrity</strong
+                ><span
+                  >Honest advice about what you need, and what you don’t.</span
+                >
+              </li>
+              <li>
+                <strong>Innovation</strong
+                ><span
+                  >Modern care, now with online booking and digital
+                  records.</span
+                >
+              </li>
+              <li>
+                <strong>Patients first</strong
+                ><span
+                  >Your comfort and confidence come before anything else.</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="services">
+        <div class="wrap">
+          <div class="head">
+            <h2>What we treat</h2>
+            <p>
+              Pick the service when you book. Your dentist confirms the plan and
+              payment options during your visit.
+            </p>
+          </div>
+          <ul class="svc">
+            <li>
+              <div>
+                <strong>General dentistry</strong
+                ><span>Check-ups, cleaning, fillings and everyday care.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Orthodontics</strong
+                ><span>Braces that straighten teeth over several visits.</span>
+              </div>
+              <em>Payment plan</em>
+            </li>
+            <li>
+              <div>
+                <strong>Endodontics</strong
+                ><span>Root canal treatment to save a damaged tooth.</span>
+              </div>
+              <!-- Not in the thesis yet: confirm with the clinic that root
+                   canals can be paid in installments -->
+              <em>Payment plan</em>
+            </li>
+            <li>
+              <div>
+                <strong>Oral surgery</strong
+                ><span>Tooth extraction, including wisdom teeth.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Dentures</strong
+                ><span
+                  >Complete or partial sets, fitted over multiple visits.</span
+                >
+              </div>
+              <em>Payment plan</em>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="dentists" class="band">
+        <div class="wrap">
+          <div class="head">
+            <h2>Find the right dentist for your concern</h2>
+            <p>
+              Each dentist lists a specialty, so you can book the person who
+              treats your problem.
+            </p>
+          </div>
+          <div class="dent">
+            <div class="d">
+              <div class="av">D1</div>
+              <div>
+                <h3>Dentist 1</h3>
+                <span class="tag">Orthodontics</span>
+                <p>
+                  Straightens teeth for teens and adults. Sees braces patients
+                  at Amparo and Lagro.
+                </p>
+              </div>
+            </div>
+            <div class="d">
+              <div class="av">D2</div>
+              <div>
+                <h3>Dentist 2</h3>
+                <span class="tag">Endodontics</span>
+                <p>Root canal treatment to save infected or damaged teeth.</p>
+              </div>
+            </div>
+            <div class="d">
+              <div class="av">D3</div>
+              <div>
+                <h3>Dentist 3</h3>
+                <span class="tag">Oral surgery</span>
+                <p>Extractions, including wisdom teeth.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="wrap">
+          <div class="head">
+            <h2>It only takes four steps</h2>
+            <p>
+              Booking takes a couple of minutes, and you never have to register.
+            </p>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <h3>Choose a time</h3>
+              <p>Tell us your concern and pick a time. No account needed.</p>
+            </div>
+            <div class="step">
+              <h3>Get your confirmation</h3>
+              <p>The clinic confirms by text or email.</p>
+            </div>
+            <div class="step">
+              <h3>Visit your dentist</h3>
+              <p>Show up at your branch and we take care of the rest.</p>
+            </div>
+            <div class="step">
+              <h3>Create an account, if you like</h3>
+              <p>Keep your records, X-rays and balance in one place.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding-top: 0">
+        <div class="wrap portal" style="grid-template-columns: 1fr">
+          <div style="max-width: 700px; margin: 0 auto; text-align: center">
+            <h2>Want to keep track of your visits?</h2>
+            <p class="lead" style="margin: 14px auto 0">
+              Create a free account after you book. It is optional, and it works
+              at all three branches.
+            </p>
+            <ul style="display: inline-block; text-align: left">
+              <li>
+                <i></i>
+                <span
+                  >Check your treatment history and X-rays from past
+                  visits.</span
+                >
+              </li>
+              <li>
+                <i></i>
+                <span>Track what you still owe on braces or dentures.</span>
+              </li>
+              <li>
+                <i></i>
+                <span>Reschedule or cancel without calling anyone.</span>
+              </li>
+              <li>
+                <i></i>
+                <span
+                  >Your dentist sees your history, so you never repeat
+                  yourself.</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="branches" style="padding-top: 0">
+        <div class="wrap">
+          <div class="head">
+            <h2>Three places to find us</h2>
+            <p>
+              Same dentists’ records, same booking system at every branch. Click
+              any card to explore.
+            </p>
+          </div>
+
+          <div class="branch-grid">
+            <!-- Branch 1: Amparo -->
+            <div
+              class="branch-card"
+              data-branch="amparo"
+              role="button"
+              tabindex="0"
+            >
+              <div class="branch-img-placeholder">
+                <img
+                  src="images/branches/amparo/img1.jpg"
+                  alt="Amparo Branch"
+                />
+              </div>
+              <h3>Amparo <span class="main">Main</span></h3>
+              <p class="branch-address">
+                13 Makabud St., Amparo Subdivision, North Caloocan City
+              </p>
+              <div class="branch-meta">
+                <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
+                <p><b>Payments:</b> Cash, QR code</p>
+              </div>
+            </div>
+
+            <!-- Branch 2: Capitol Park Homes II -->
+            <div
+              class="branch-card"
+              data-branch="capitol"
+              role="button"
+              tabindex="0"
+            >
+              <div class="branch-img-placeholder">
+                <img
+                  src="images/branches/capitol park/img1.jpg"
+                  alt="Capitol Park Branch"
+                />
+              </div>
+              <h3>Capitol Park</h3>
+              <p class="branch-address">Capitol Park Homes II, Caloocan City</p>
+              <div class="branch-meta">
+                <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
+                <p><b>Payments:</b> Cash, QR code</p>
+              </div>
+            </div>
+
+            <!-- Branch 3: Lagro -->
+            <div
+              class="branch-card"
+              data-branch="lagro"
+              role="button"
+              tabindex="0"
+            >
+              <div class="branch-img-placeholder">
+                <img src="images/branches/lagro/img1.jpg" alt="Lagro Branch" />
+              </div>
+              <h3>Lagro</h3>
+              <p class="branch-address">
+                Unit 2D, Ava & Ham Bldg, Bristol St., North Fairview, Quezon
+                City
+              </p>
+              <div class="branch-meta">
+                <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
+                <p><b>Payments:</b> Cash, QR code, debit/credit card</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="branch-modal" class="branch-modal-overlay" aria-hidden="true">
+        <div class="branch-modal-content" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            class="modal-close"
+            id="modal-close-btn"
+            aria-label="Close modal"
+          >
+            &times;
+          </button>
+
+          <div class="modal-body-grid">
+            <div class="modal-gallery-pane">
+              <div
+                class="modal-main-img-wrap"
+                id="modal-img-trigger"
+                title="Click to view full screen"
+              >
+                <button
+                  type="button"
+                  class="gallery-arrow prev-arrow"
+                  id="prev-photo-btn"
+                  aria-label="Previous photo"
+                >
+                  &larr;
+                </button>
+                <img id="modal-active-img" src="" alt="Branch view" />
+                <button
+                  type="button"
+                  class="gallery-arrow next-arrow"
+                  id="next-photo-btn"
+                  aria-label="Next photo"
+                >
+                  &rarr;
+                </button>
+                <div class="gallery-badge">
+                  <span id="photo-counter">1/3</span>
+                </div>
+              </div>
+              <div class="modal-thumbnails" id="modal-thumbnails">
+                <!-- Thumbnails injected dynamically -->
+              </div>
+            </div>
+
+            <div class="modal-info-pane">
+              <span
+                id="modal-badge"
+                class="main"
+                style="display: inline-block; margin-bottom: 8px"
+                >Main Branch</span
+              >
+              <h2 id="modal-title">Branch Name</h2>
+              <p
+                id="modal-address"
+                class="branch-address"
+                style="font-size: 1.05rem; margin-bottom: 20px"
+              ></p>
+
+              <div class="modal-specs">
+                <div class="spec-item">
+                  <b>Operating Hours</b>
+                  <p id="modal-hours">Mon to Sat, 9:00 AM – 6:00 PM</p>
+                </div>
+                <div class="spec-item">
+                  <b>Accepted Payment Methods</b>
+                  <p id="modal-payments">Cash, QR Code, Debit/Credit Card</p>
+                </div>
+                <div class="spec-item">
+                  <b>Services Available</b>
+                  <p>
+                    General Dentistry, Orthodontics, Endodontics, Oral Surgery,
+                    Dentures
+                  </p>
+                </div>
+              </div>
+
+              <div style="margin-top: 28px; display: flex; gap: 12px">
+                <a href="book.html" class="btn btn-fill" style="flex: 1"
+                  >Book this Branch</a
+                >
+                <button
+                  type="button"
+                  class="btn btn-line"
+                  id="modal-close-action"
+                >
+                  Close Window
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FULLSCREEN LIGHTBOX OVERLAY -->
+      <div id="lightbox-overlay" class="lightbox-overlay" aria-hidden="true">
+        <button
+          type="button"
+          class="lightbox-close"
+          id="lightbox-close-btn"
+          aria-label="Close fullscreen"
+        >
+          &times;
+        </button>
+        <img id="lightbox-img" src="" alt="Fullscreen branch view" />
+      </div>
+
+      <div class="wrap">
+        <div class="final">
+          <div>
+            <h2>Ready for your next visit?</h2>
+            <p>Book in a couple of minutes. No account needed.</p>
+          </div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap">
+            <a class="btn btn-fill" href="book.html">Book an appointment</a>
+            <a class="btn btn-line" href="login.html">Log in</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span
+          >© 2026 Pearl White Dental Clinic. Student prototype, sample
+          content.</span
+        >
+        <span>Questions? Call or text the clinic at (02) 0000 0000</span>
+      </div>
+    </footer>
+
+    <script>
+      const times = [
+        "9:00 AM",
+        "10:00 AM",
+        "11:00 AM",
+        "1:00 PM",
+        "2:00 PM",
+        "3:00 PM",
+        "4:00 PM",
+        "5:00 PM",
+        "5:30 PM",
+      ];
+
+      const slotsEl = document.getElementById("slots");
+      const pick = document.getElementById("pick");
+      const branchBtns = [...document.querySelectorAll("#branch button")];
+      const calMonthYear = document.getElementById("cal-month-year");
+      const calDaysEl = document.getElementById("cal-days");
+      const prevMonthBtn = document.getElementById("prev-month");
+      const nextMonthBtn = document.getElementById("next-month");
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let currentViewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      let selectedDate = new Date(today);
+      let selectedBranch = 0;
+      let selectedTime = null;
+
+      function renderCalendar() {
+        const year = currentViewDate.getFullYear();
+        const month = currentViewDate.getMonth();
+
+        calMonthYear.textContent = new Date(year, month).toLocaleString(
+          "default",
+          {
+            month: "long",
+            year: "numeric",
+          },
+        );
+
+        // Disable previous month button if in current month
+        prevMonthBtn.disabled =
+          year === today.getFullYear() && month === today.getMonth();
+
+        calDaysEl.innerHTML = "";
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty padding cells for previous month
+        for (let i = 0; i < firstDayIndex; i++) {
+          const empty = document.createElement("span");
+          calDaysEl.appendChild(empty);
+        }
+
+        // Render days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const btn = document.createElement("button");
+          btn.textContent = day;
+          const dateForDay = new Date(year, month, day);
+
+          // Disable past dates
+          if (dateForDay < today) {
+            btn.disabled = true;
+          }
+
+          // Highlight selected date
+          if (selectedDate && dateForDay.getTime() === selectedDate.getTime()) {
+            btn.setAttribute("aria-pressed", "true");
+          } else {
+            btn.setAttribute("aria-pressed", "false");
+          }
+
+          btn.onclick = () => {
+            selectedDate = dateForDay;
+            renderCalendar();
+            renderSlots();
+          };
+
+          calDaysEl.appendChild(btn);
+        }
+      }
+
+      function renderSlots() {
+        slotsEl.innerHTML = "";
+        selectedTime = null;
+        updatePickText();
+
+        if (!selectedDate) return;
+
+        const dayVal = selectedDate.getDate();
+
+        times.forEach((t, i) => {
+          const s = document.createElement("button");
+          s.textContent = t;
+
+          // Pseudo availability dynamic calculation
+          if ((i * 7 + selectedBranch * 3 + dayVal * 5) % 4 === 0) {
+            s.disabled = true;
+          }
+
+          s.onclick = () => {
+            [...slotsEl.children].forEach((x) =>
+              x.setAttribute("aria-pressed", "false"),
+            );
+            s.setAttribute("aria-pressed", "true");
+            selectedTime = t;
+            updatePickText();
+          };
+          slotsEl.appendChild(s);
+        });
+      }
+
+      function updatePickText() {
+        if (!selectedDate) {
+          pick.textContent = "Pick a date and time to continue.";
+          return;
+        }
+
+        const dateStr = selectedDate.toLocaleDateString("default", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+
+        if (selectedTime) {
+          pick.textContent =
+            branchBtns[selectedBranch].textContent +
+            " · " +
+            dateStr +
+            " · " +
+            selectedTime;
+        } else {
+          pick.textContent =
+            branchBtns[selectedBranch].textContent +
+            " · " +
+            dateStr +
+            " — Pick a time slot.";
+        }
+      }
+
+      // Month navigation
+      prevMonthBtn.onclick = () => {
+        currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+        renderCalendar();
+      };
+
+      nextMonthBtn.onclick = () => {
+        currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+        renderCalendar();
+      };
+
+      // Branch selection
+      branchBtns.forEach((btn, idx) => {
+        btn.onclick = () => {
+          if (idx === selectedBranch) return;
+          // Slide the time slots in from the side the user moved toward
+          const dir = idx > selectedBranch ? "from-right" : "from-left";
+          branchBtns.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          btn.setAttribute("aria-pressed", "true");
+          selectedBranch = idx;
+          renderSlots();
+          slotsEl.classList.remove("from-right", "from-left");
+          void slotsEl.offsetWidth; // restart the animation on every click
+          slotsEl.classList.add(dir);
+        };
+      });
+
+      // Initialize
+      renderCalendar();
+      renderSlots();
+
+      document.getElementById("req").onclick = () => {
+        try {
+          sessionStorage.setItem(
+            "pw_slot",
+            JSON.stringify({
+              branch: selectedBranch,
+              day: selectedDate ? selectedDate.toISOString() : "",
+              time: selectedTime || "",
+            }),
+          );
+        } catch (e) {}
+      };
+
+      const bookNowHeaderBtn = document.querySelector(
+        ".landing header .actions .btn-fill",
+      );
+
+      function checkScrollPosition() {
+        const slotsElement = document.getElementById("slots");
+        if (!slotsElement || !bookNowHeaderBtn) return;
+
+        const slotsBottom = slotsElement.getBoundingClientRect().bottom;
+
+        // Triggers the animation class once the bottom of #slots scrolls past the top of the viewport
+        if (slotsBottom < 0) {
+          bookNowHeaderBtn.classList.add("show-btn");
+        } else {
+          bookNowHeaderBtn.classList.remove("show-btn");
+        }
+      }
+
+      window.addEventListener("scroll", checkScrollPosition);
+      checkScrollPosition();
+
+      // "How it works" link: centre the four steps together with the
+      // "Want to keep track of your visits?" block under them, in the space
+      // below the sticky header. If both don't fit (small screens), line the
+      // steps up just under the header instead.
+      document.querySelectorAll('a[href="#how"]').forEach((link) => {
+        link.addEventListener("click", (e) => {
+          const first = document.querySelector("#how .wrap");
+          const next = document.querySelector("#how + section .wrap");
+          if (!first) return;
+          e.preventDefault();
+          const headerH = document.querySelector(".landing header").offsetHeight;
+          const top = first.getBoundingClientRect().top;
+          const bottom = (next || first).getBoundingClientRect().bottom;
+          const space = window.innerHeight - headerH;
+          const height = bottom - top;
+          const offset = height < space ? (space - height) / 2 : 24;
+          window.scrollTo({ top: window.scrollY + top - headerH - offset });
+          history.replaceState(null, "", "#how");
+        });
+      });
+
+      // ==========================================================
+      // BRANCH MODAL & PHOTO GALLERY LOGIC
+      // ==========================================================
+      const branchData = {
+        amparo: {
+          name: "Amparo (Main)",
+          badge: "Main Branch",
+          address: "13 Makabud St., Amparo Subdivision, North Caloocan City",
+          hours: "Mon to Sat, 9:00 AM – 6:00 PM",
+          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          images: [
+            "images/branches/amparo/img1.jpg",
+            "images/branches/amparo/img2.jpg",
+            "images/branches/amparo/img3.jpg",
+          ],
+        },
+        capitol: {
+          name: "Capitol Park",
+          badge: "Branch",
+          address: "Capitol Park Homes II, Caloocan City",
+          hours: "Mon to Sat, 9:00 AM – 6:00 PM",
+          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          images: [
+            "images/branches/capitol park/img1.jpg",
+            "images/branches/capitol park/img2.jpg",
+            "images/branches/capitol park/img3.jpg",
+            "images/branches/capitol park/img4.jpg",
+          ],
+        },
+        lagro: {
+          name: "Lagro / Bristol",
+          badge: "Branch",
+          address:
+            "Unit 2D, Ava & Ham Bldg, Bristol St., North Fairview, Quezon City",
+          hours: "Mon to Sat, 9:00 AM – 6:00 PM",
+          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          images: [
+            "images/branches/lagro/img1.jpg",
+            "images/branches/lagro/img2.jpg",
+            "images/branches/lagro/img3.jpg",
+          ],
+        },
+      };
+
+      let currentActiveBranch = null;
+      let currentImageIndex = 0;
+
+      const modalOverlay = document.getElementById("branch-modal");
+      const modalTitle = document.getElementById("modal-title");
+      const modalBadge = document.getElementById("modal-badge");
+      const modalAddress = document.getElementById("modal-address");
+      const modalHours = document.getElementById("modal-hours");
+      const modalPayments = document.getElementById("modal-payments");
+      const activeImgEl = document.getElementById("modal-active-img");
+      const photoCounter = document.getElementById("photo-counter");
+      const thumbnailsContainer = document.getElementById("modal-thumbnails");
+
+      function openBranchModal(branchKey) {
+        const data = branchData[branchKey];
+        if (!data) return;
+
+        currentActiveBranch = data;
+        currentImageIndex = 0;
+
+        modalTitle.textContent = data.name;
+        modalBadge.textContent = data.badge;
+        modalAddress.textContent = data.address;
+        modalHours.textContent = data.hours;
+        modalPayments.textContent = data.payments;
+
+        updateModalGallery();
+        modalOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeBranchModal() {
+        modalOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+
+      function updateModalGallery() {
+        const imgs = currentActiveBranch.images;
+        activeImgEl.src = imgs[currentImageIndex];
+        photoCounter.textContent = `${currentImageIndex + 1}/${imgs.length}`;
+
+        thumbnailsContainer.innerHTML = "";
+        imgs.forEach((src, idx) => {
+          const thumb = document.createElement("div");
+          thumb.className = `modal-thumb ${idx === currentImageIndex ? "active" : ""}`;
+          thumb.innerHTML = `<img src="${src}" alt="Thumbnail ${idx + 1}">`;
+          thumb.onclick = () => {
+            currentImageIndex = idx;
+            updateModalGallery();
+          };
+          thumbnailsContainer.appendChild(thumb);
+        });
+      }
+
+      // Attach click events to branch cards
+      document.querySelectorAll(".branch-card").forEach((card) => {
+        card.onclick = () => {
+          const key = card.getAttribute("data-branch");
+          openBranchModal(key);
+        };
+        card.onkeydown = (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            const key = card.getAttribute("data-branch");
+            openBranchModal(key);
+          }
+        };
+      });
+
+      // Clicking main picture inside modal cycles to the next photo
+      document.getElementById("modal-img-trigger").onclick = () => {
+        if (!currentActiveBranch) return;
+        currentImageIndex =
+          (currentImageIndex + 1) % currentActiveBranch.images.length;
+        updateModalGallery();
+      };
+
+      // Close modal triggers
+      document.getElementById("modal-close-btn").onclick = closeBranchModal;
+      document.getElementById("modal-close-action").onclick = closeBranchModal;
+      modalOverlay.onclick = (e) => {
+        if (e.target === modalOverlay) closeBranchModal();
+      };
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeBranchModal();
+      });
+    </script>
+  </body>
+</html>
