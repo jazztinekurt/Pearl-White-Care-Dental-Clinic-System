@@ -919,12 +919,57 @@
         };
       });
 
-      // Clicking main picture inside modal cycles to the next photo
-      document.getElementById("modal-img-trigger").onclick = () => {
-        if (!currentActiveBranch) return;
-        currentImageIndex =
-          (currentImageIndex + 1) % currentActiveBranch.images.length;
+      // Arrows step through the photos (they sit on top of the big picture)
+      function stepPhoto(by) {
+        const n = currentActiveBranch.images.length;
+        currentImageIndex = (currentImageIndex + by + n) % n;
         updateModalGallery();
+      }
+      document.getElementById("prev-photo-btn").onclick = (e) => {
+        e.stopPropagation();
+        stepPhoto(-1);
+      };
+      document.getElementById("next-photo-btn").onclick = (e) => {
+        e.stopPropagation();
+        stepPhoto(1);
+      };
+
+      // Clicking the big picture opens it full screen
+      const lightbox = document.getElementById("lightbox-overlay");
+      const lightboxImg = document.getElementById("lightbox-img");
+      const lightboxClose = document.getElementById("lightbox-close-btn");
+      let lightboxOpener = null;
+
+      function openLightbox() {
+        if (!currentActiveBranch) return;
+        lightboxImg.src = currentActiveBranch.images[currentImageIndex];
+        lightboxImg.alt =
+          currentActiveBranch.name + ", photo " + (currentImageIndex + 1);
+        lightboxOpener = document.activeElement;
+        lightbox.classList.add("active");
+        lightbox.setAttribute("aria-hidden", "false");
+        lightboxClose.focus();
+      }
+      function closeLightbox() {
+        lightbox.classList.remove("active");
+        lightbox.setAttribute("aria-hidden", "true");
+        if (lightboxOpener) lightboxOpener.focus();
+      }
+      const imgTrigger = document.getElementById("modal-img-trigger");
+      imgTrigger.setAttribute("role", "button");
+      imgTrigger.setAttribute("tabindex", "0");
+      imgTrigger.setAttribute("aria-label", "View photo full screen");
+      imgTrigger.onclick = openLightbox;
+      imgTrigger.onkeydown = (e) => {
+        if (e.target !== imgTrigger) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openLightbox();
+        }
+      };
+      lightboxClose.onclick = closeLightbox;
+      lightbox.onclick = (e) => {
+        if (e.target === lightbox) closeLightbox();
       };
 
       // Close modal triggers
@@ -934,7 +979,10 @@
         if (e.target === modalOverlay) closeBranchModal();
       };
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeBranchModal();
+        if (e.key !== "Escape") return;
+        // Escape closes the full-screen photo first, then the branch window
+        if (lightbox.classList.contains("active")) closeLightbox();
+        else closeBranchModal();
       });
     </script>
   </body>

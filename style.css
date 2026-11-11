@@ -3562,7 +3562,7 @@ td a:where(:not(.auth *, .landing *)) {
   overflow: hidden;
   border: 2px solid var(--line);
   position: relative;
-  cursor: pointer;
+  cursor: zoom-in;
   background: var(--pearl);
 }
 
@@ -3718,11 +3718,16 @@ td a:where(:not(.auth *, .landing *)) {
 .lightbox-overlay.active {
   opacity: 1;
   visibility: visible;
+  /* Visible at once on open so the close button can take focus */
+  transition:
+    opacity 0.3s ease,
+    visibility 0s;
 }
 
 .lightbox-overlay img {
   max-width: 100%;
   max-height: 90vh;
+  cursor: default;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -3753,6 +3758,22 @@ td a:where(:not(.auth *, .landing *)) {
 
 .lightbox-close:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.lightbox-close:focus-visible,
+.modal-main-img-wrap:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .lightbox-overlay {
+    padding: 72px 12px 24px;
+  }
+  .lightbox-close {
+    top: 14px;
+    right: 14px;
+  }
 }
 
 .booking-anim-wrap {
