@@ -71,6 +71,7 @@
       const p = ST.patient(ST.param("id") || "P-0142");
       if (!p) return location.replace("staff-patients.html");
       const $ = (id) => document.getElementById(id);
+      ST.log("front", "Record", "Viewed the profile of " + p.id);
       $("title").textContent = p.name;
       $("sub").textContent = p.id + " · patient since " + ST.longDate(p.since) + " · " + ST.branch(p.branch).name + " branch";
       $("status").innerHTML = ST.badge(p.status);
@@ -109,7 +110,7 @@
 
       const mine = ST.appointments().filter((a) => a.patient === p.id).sort(ST.sortByTime);
       const today = ST.today();
-      const up = mine.filter((a) => a.date > today || (a.date === today && a.status !== "Done"));
+      const up = mine.filter((a) => a.date > today || (a.date === today && a.status !== "Completed"));
       const past = mine.filter((a) => !up.includes(a)).reverse();
       const row = (a) => {
         const dt = ST.toDate(a.date);

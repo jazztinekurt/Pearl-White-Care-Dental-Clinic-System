@@ -1,3 +1,11 @@
+/* ==========================================================
+   PEARL WHITE: clinical sample data for the dentist pages.
+   Loaded after staff.js, which holds the shared clinic data
+   (patients, appointments, branches). Only dentists see what is
+   in this file. Prototype only: notes, chart changes and uploads
+   are kept in sessionStorage until the tab is closed.
+   ========================================================== */
+
 const DN = (() => {
   const ME = "santos"; // signed-in dentist for the prototype
 
@@ -22,37 +30,18 @@ const DN = (() => {
     { code: "Un", name: "Unerupted", kind: "un" },
   ];
   // FDI numbering, as the patient sees it facing them
-  const upper = [
-    18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28,
-  ];
-  const lower = [
-    48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38,
-  ];
+  const upper = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+  const lower = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
   const surfaces = [
-    ["M", "Mesial"],
-    ["O", "Occlusal"],
-    ["D", "Distal"],
-    ["B", "Buccal"],
-    ["L", "Lingual"],
+    ["M", "Mesial"], ["O", "Occlusal"], ["D", "Distal"], ["B", "Buccal"], ["L", "Lingual"],
   ];
 
   /* ---------- Clinical records (sample) ---------- */
   const records = {
     "P-0142": {
-      medical: {
-        conditions: [],
-        allergies: "None reported",
-        meds: "None",
-        pregnant: "No",
-      },
+      medical: { conditions: [], allergies: "None reported", meds: "None", pregnant: "No" },
       dental: "Two fillings (2022). Last cleaning 2024.",
-      plan: {
-        name: "Braces (metal)",
-        done: 6,
-        of: 12,
-        started: "2026-08-27",
-        next: "Wire change in 3 weeks",
-      },
+      plan: { name: "Braces (metal)", done: 6, of: 12, started: "2026-08-27", next: "Wire change in 3 weeks" },
       chart: {
         36: { code: "Co", surfaces: ["O"], note: "2022" },
         46: { code: "AM", surfaces: ["O", "B"], note: "2022" },
@@ -62,182 +51,50 @@ const DN = (() => {
         48: { code: "Un", surfaces: [], note: "" },
       },
       visits: [
-        {
-          date: "2026-10-22",
-          title: "Wire change",
-          procedure: "Archwire changed to 0.016 NiTi",
-          teeth: "Upper and lower arch",
-          notes: "Brackets are settling well. Next check in 3 weeks.",
-        },
-        {
-          date: "2026-10-08",
-          title: "Braces adjustment",
-          procedure: "Elastic ties replaced, wire tightened",
-          teeth: "Upper and lower arch",
-          notes: "Mild soreness expected for 2 to 3 days.",
-        },
-        {
-          date: "2026-09-24",
-          title: "Braces adjustment",
-          procedure: "Wire adjustment",
-          teeth: "Upper arch",
-          notes: "Good progress on upper crowding.",
-        },
-        {
-          date: "2026-09-10",
-          title: "Braces check",
-          procedure: "Bracket check, one bracket re-bonded",
-          teeth: "Tooth 22",
-          notes: "Avoid hard and sticky food.",
-        },
-        {
-          date: "2026-08-27",
-          title: "Braces installation",
-          procedure: "Metal braces installed",
-          teeth: "Upper and lower arch",
-          notes: "Braces plan started: 12 visits, ₱30,000 total.",
-        },
-        {
-          date: "2026-08-13",
-          title: "Records and X-rays",
-          procedure: "Impressions, photos and X-rays",
-          teeth: "Full mouth",
-          notes: "Records taken for the braces plan.",
-        },
-        {
-          date: "2026-08-06",
-          title: "Consultation",
-          procedure: "Oral exam and consultation",
-          teeth: "Full mouth",
-          notes: "Crowding on upper and lower front teeth. Braces recommended.",
-        },
+        { date: "2026-10-22", title: "Wire change", procedure: "Archwire changed to 0.016 NiTi", teeth: "Upper and lower arch", notes: "Brackets are settling well. Next check in 3 weeks." },
+        { date: "2026-10-08", title: "Braces adjustment", procedure: "Elastic ties replaced, wire tightened", teeth: "Upper and lower arch", notes: "Mild soreness expected for 2 to 3 days." },
+        { date: "2026-09-24", title: "Braces adjustment", procedure: "Wire adjustment", teeth: "Upper arch", notes: "Good progress on upper crowding." },
+        { date: "2026-09-10", title: "Braces check", procedure: "Bracket check, one bracket re-bonded", teeth: "Tooth 22", notes: "Avoid hard and sticky food." },
+        { date: "2026-08-27", title: "Braces installation", procedure: "Metal braces installed", teeth: "Upper and lower arch", notes: "Braces plan started: 12 visits, ₱30,000 total." },
+        { date: "2026-08-13", title: "Records and X-rays", procedure: "Impressions, photos and X-rays", teeth: "Full mouth", notes: "Records taken for the braces plan." },
+        { date: "2026-08-06", title: "Consultation", procedure: "Oral exam and consultation", teeth: "Full mouth", notes: "Crowding on upper and lower front teeth. Braces recommended." },
       ],
       xrays: [
-        {
-          label: "Panoramic X-ray",
-          date: "2026-08-13",
-          src: "images/x-ray/img1.jpg",
-        },
-        {
-          label: "Periapical X-ray, tooth 36",
-          date: "2026-08-13",
-          src: "images/x-ray/img2.jpg",
-        },
-        {
-          label: "Cephalometric X-ray",
-          date: "2026-08-13",
-          src: "images/x-ray/img4.jpg",
-        },
-        {
-          label: "Periapical X-ray, tooth 11",
-          date: "2026-08-06",
-          src: "images/x-ray/img3.jpg",
-        },
+        { label: "Panoramic X-ray", date: "2026-08-13", src: "images/x-ray/img1.jpg" },
+        { label: "Periapical X-ray, tooth 36", date: "2026-08-13", src: "images/x-ray/img2.jpg" },
+        { label: "Cephalometric X-ray", date: "2026-08-13", src: "images/x-ray/img4.jpg" },
+        { label: "Periapical X-ray, tooth 11", date: "2026-08-06", src: "images/x-ray/img3.jpg" },
       ],
     },
     "P-0119": {
-      medical: {
-        conditions: ["Asthma"],
-        allergies: "Penicillin",
-        meds: "Salbutamol inhaler as needed",
-        pregnant: "No",
-      },
+      medical: { conditions: ["Asthma"], allergies: "Penicillin", meds: "Salbutamol inhaler as needed", pregnant: "No" },
       dental: "Extraction of 14 and 24 for braces (2026).",
-      plan: {
-        name: "Braces (metal)",
-        done: 9,
-        of: 12,
-        started: "2026-03-14",
-        next: "Adjustment today",
-      },
-      chart: {
-        14: { code: "M", surfaces: [], note: "Extracted for ortho" },
-        24: { code: "M", surfaces: [], note: "Extracted for ortho" },
-        26: { code: "Co", surfaces: ["O", "D"], note: "" },
-      },
-      visits: [
-        {
-          date: "2026-10-14",
-          title: "Braces adjustment",
-          procedure: "Wire tightened, power chain upper",
-          teeth: "Upper arch",
-          notes: "Space closing well.",
-        },
-      ],
+      plan: { name: "Braces (metal)", done: 9, of: 12, started: "2026-03-14", next: "Adjustment today" },
+      chart: { 14: { code: "M", surfaces: [], note: "Extracted for ortho" }, 24: { code: "M", surfaces: [], note: "Extracted for ortho" }, 26: { code: "Co", surfaces: ["O", "D"], note: "" } },
+      visits: [{ date: "2026-10-14", title: "Braces adjustment", procedure: "Wire tightened, power chain upper", teeth: "Upper arch", notes: "Space closing well." }],
       xrays: [],
     },
     "P-0107": {
-      medical: {
-        conditions: [],
-        allergies: "None reported",
-        meds: "None",
-        pregnant: "Not applicable",
-      },
+      medical: { conditions: [], allergies: "None reported", meds: "None", pregnant: "Not applicable" },
       dental: "No past treatment.",
-      plan: {
-        name: "Braces (metal)",
-        done: 3,
-        of: 12,
-        started: "2026-09-02",
-        next: "Adjustment today",
-      },
+      plan: { name: "Braces (metal)", done: 3, of: 12, started: "2026-09-02", next: "Adjustment today" },
       chart: { 16: { code: "C", surfaces: ["O"], note: "Refer for filling" } },
-      visits: [
-        {
-          date: "2026-10-21",
-          title: "Braces adjustment",
-          procedure: "First wire change",
-          teeth: "Upper and lower arch",
-          notes: "Oral hygiene needs work around brackets.",
-        },
-      ],
+      visits: [{ date: "2026-10-21", title: "Braces adjustment", procedure: "First wire change", teeth: "Upper and lower arch", notes: "Oral hygiene needs work around brackets." }],
       xrays: [],
     },
     "P-0128": {
-      medical: {
-        conditions: ["High blood pressure"],
-        allergies: "None reported",
-        meds: "Losartan 50 mg daily",
-        pregnant: "Not applicable",
-      },
+      medical: { conditions: ["High blood pressure"], allergies: "None reported", meds: "Losartan 50 mg daily", pregnant: "Not applicable" },
       dental: "Braces since Nov 2025.",
-      plan: {
-        name: "Braces (metal)",
-        done: 11,
-        of: 12,
-        started: "2025-11-20",
-        next: "Retainer fitting next visit",
-      },
+      plan: { name: "Braces (metal)", done: 11, of: 12, started: "2025-11-20", next: "Retainer fitting next visit" },
       chart: { 46: { code: "PorJC", surfaces: [], note: "2019" } },
-      visits: [
-        {
-          date: "2026-10-28",
-          title: "Braces check",
-          procedure: "Final alignment check",
-          teeth: "Upper and lower arch",
-          notes: "Ready for debond and retainers next visit.",
-        },
-      ],
+      visits: [{ date: "2026-10-28", title: "Braces check", procedure: "Final alignment check", teeth: "Upper and lower arch", notes: "Ready for debond and retainers next visit." }],
       xrays: [],
     },
     "P-0133": {
-      medical: {
-        conditions: [],
-        allergies: "None reported",
-        meds: "None",
-        pregnant: "Not applicable",
-      },
+      medical: { conditions: [], allergies: "None reported", meds: "None", pregnant: "Not applicable" },
       dental: "First dental visit in 3 years.",
       chart: {},
-      visits: [
-        {
-          date: null,
-          title: "Consultation",
-          procedure: "Oral exam",
-          teeth: "Full mouth",
-          notes: "Mild crowding lower front. Discussed braces with parent.",
-        },
-      ],
+      visits: [{ date: null, title: "Consultation", procedure: "Oral exam", teeth: "Full mouth", notes: "Mild crowding lower front. Discussed braces with parent." }],
       xrays: [],
     },
   };
@@ -245,22 +102,12 @@ const DN = (() => {
   /* ---------- Session memory ---------- */
   const key = (k, pid) => "dn_" + k + "_" + pid;
   function record(pid) {
-    const base = records[pid] || {
-      medical: null,
-      dental: "",
-      chart: {},
-      visits: [],
-      xrays: [],
-    };
+    const base = records[pid] || { medical: null, dental: "", chart: {}, visits: [], xrays: [] };
     const chart = Object.assign({}, base.chart, ST.load(key("chart", pid), {}));
     Object.keys(chart).forEach((t) => chart[t] === null && delete chart[t]);
-    const visits = ST.load(key("notes", pid), [])
-      .concat(base.visits)
-      .map((v) => Object.assign({}, v, { date: v.date || ST.today() }));
+    const visits = ST.load(key("notes", pid), []).concat(base.visits).map((v) => Object.assign({}, v, { date: v.date || ST.today() }));
     const xrays = ST.load(key("xrays", pid), []).concat(base.xrays);
-    const plan = base.plan
-      ? Object.assign({}, base.plan, ST.load(key("plan", pid), {}))
-      : ST.load(key("plan", pid), null);
+    const plan = base.plan ? Object.assign({}, base.plan, ST.load(key("plan", pid), {})) : ST.load(key("plan", pid), null);
     return Object.assign({}, base, { chart, visits, xrays, plan });
   }
   function setTooth(pid, tooth, entry) {
@@ -293,22 +140,7 @@ const DN = (() => {
     Object.keys(records).forEach((id) => ids.add(id));
     return ST.patients().filter((p) => ids.has(p.id));
   }
-  const age = (dob) =>
-    dob ? Math.floor((Date.now() - ST.toDate(dob)) / 31557600000) : null;
+  const age = (dob) => (dob ? Math.floor((Date.now() - ST.toDate(dob)) / 31557600000) : null);
 
-  return {
-    ME,
-    legend,
-    upper,
-    lower,
-    surfaces,
-    legendItem,
-    record,
-    setTooth,
-    addNote,
-    addXray,
-    mine,
-    myPatients,
-    age,
-  };
+  return { ME, legend, upper, lower, surfaces, legendItem, record, setTooth, addNote, addXray, mine, myPatients, age };
 })();

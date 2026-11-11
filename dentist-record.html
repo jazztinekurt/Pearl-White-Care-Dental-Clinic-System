@@ -117,6 +117,7 @@
               <label class="f"><span>Add a charge</span><select id="addcharge"><option value="">Choose…</option></select></label>
             </div>
 
+            <label class="ck" style="margin-top: 14px"><input type="checkbox" id="n-consent" /><span><b>The patient was told about the treatment, its options and likely outcome, and agreed to it</b> (required)</span></label>
             <p class="err" id="n-err" role="alert"></p>
             <div class="ac">
               <button type="submit" class="btn" id="finish">Save notes and send charges</button>
@@ -151,16 +152,15 @@
     <script src="dentist.js"></script>
     <script>
       (() => {
+      // Marks the next patient still to be seen today (the first confirmed one)
       function dentistStatus(list) {
-        let chair = false;
+        let found = false;
         return list.map((a) => {
-          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
-          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
-          return Object.assign({}, a, { dstatus: s });
+          const next = !found && a.status === "Confirmed";
+          if (next) found = true;
+          return Object.assign({}, a, { next });
         });
       }
-      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
-      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
       function alertsOf(pid) {
         const m = DN.record(pid).medical;
         if (!m) return "";
@@ -177,6 +177,7 @@
       $("title").textContent = p.name;
       $("sub").textContent = p.id + " · " + (DN.age(p.dob) ?? "—") + " years · " + ({ F: "Female", M: "Male" }[p.sex] || "") + " · patient since " + ST.longDate(p.since);
       document.title = p.name + " | Pearl White Dental Clinic";
+      ST.log("dentist", "Record", "Viewed the record of " + p.id);
 
       // Medical alerts stay at the top on every tab
       const al = alertsOf(p.id);
@@ -188,9 +189,9 @@
         const a = todayAppt && ST.appointment(todayAppt.ref);
         if (!a) return;
         $("visit").hidden = false;
-        $("visit").innerHTML = a.status === "Done"
-          ? "<span>Today's visit is finished: " + a.service + ", " + a.time + ".</span>"
-          : "<span><b>Today:</b> " + a.service + " at " + a.time + ", " + ST.branch(a.branch).name + (a.status === "Checked in" ? " · checked in" : "") + "</span>" +
+        $("visit").innerHTML = a.status === "Completed"
+          ? "<span>Today's visit is completed: " + a.service + ", " + a.time + ".</span>"
+          : "<span><b>Today:</b> " + a.service + " at " + a.time + ", " + ST.branch(a.branch).name + "</span>" +
             '<a href="#notes" data-go="notes">Write today\'s notes</a>';
       }
       showVisit();
@@ -226,7 +227,7 @@
           : "<h2>Treatment plan</h2><p class='empty'>No plan yet. Add one in Notes and plan.</p>";
       }
       planCard();
-      const up = DN.mine().filter((a) => a.patient === p.id && ST.active(a) && (a.date > ST.today() || (a.date === ST.today() && a.status !== "Done"))).sort(ST.sortByTime);
+      const up = DN.mine().filter((a) => a.patient === p.id && ST.active(a) && (a.date > ST.today() || (a.date === ST.today() && a.status !== "Completed"))).sort(ST.sortByTime);
       $("upcoming").innerHTML = up.length
         ? up.map((a) => { const dt = ST.toDate(a.date); return '<div class="ap static"><span class="ad"><b>' + dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) +
             '</span><span class="at"><b>' + a.service + "</b><small>" + a.time + " · " + ST.branch(a.branch).name + "</small></span>" + ST.badge(a.status) + "</div>"; }).join("")
@@ -308,25 +309,27 @@
       if (plan && plan.left > 0 && todayAppt) lines.push({ name: plan.name + " installment", amount: Math.min(3000, plan.left), plan: true });
       charges();
       $("n-follow").min = ST.today();
-      $("finish").textContent = todayAppt && todayAppt.status !== "Done" ? "Finish visit and send charges" : "Save notes and send charges";
+      $("finish").textContent = todayAppt && todayAppt.status !== "Completed" ? "Complete visit and send charges" : "Save notes and send charges";
 
       $("noteform").onsubmit = (e) => {
         e.preventDefault();
         const v = (id) => $(id).value.trim();
         if (!v("n-proc") && !v("n-notes")) return ($("n-err").textContent = "Write the procedure done or a note.");
+        if (!$("n-consent").checked) return ($("n-err").textContent = "Confirm the patient's consent before recording treatment.");
         $("n-err").textContent = "";
         DN.addNote(p.id, {
           date: ST.today(), title: todayAppt ? todayAppt.service : "Visit", procedure: v("n-proc") || "—", teeth: v("n-teeth"),
+          consent: true,
           notes: [v("n-notes"), v("n-plan") ? "Plan: " + v("n-plan") : "", v("n-follow") ? "Follow-up " + ST.longDate(v("n-follow")) + "." : ""].filter(Boolean).join(" "),
           dx: v("n-dx"),
         });
-        if (r.plan && todayAppt && todayAppt.status !== "Done") {
+        if (r.plan && todayAppt && todayAppt.status !== "Completed") {
           ST.save("dn_plan_" + p.id, { done: Math.min(r.plan.of, r.plan.done + 1), next: v("n-follow") ? "Next visit " + ST.shortDate(v("n-follow")) : r.plan.next });
         }
         let msg = "Notes saved to " + p.first + "'s record.";
-        if (todayAppt && ST.appointment(todayAppt.ref).status !== "Done") {
-          ST.updateAppointment(todayAppt.ref, { status: "Done" });
-          msg += " Visit marked done.";
+        if (todayAppt && ST.appointment(todayAppt.ref).status !== "Completed") {
+          ST.updateAppointment(todayAppt.ref, { status: "Completed" });
+          msg += " Visit marked completed.";
         }
         if (lines.length) {
           ST.addCharge({ patient: p.id, appt: todayAppt ? todayAppt.ref : null, dentist: DN.ME, items: lines.map((l) => ({ name: l.name, amount: l.amount })), plan: lines.some((l) => l.plan) });

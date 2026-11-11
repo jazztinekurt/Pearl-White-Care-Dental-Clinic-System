@@ -35,7 +35,7 @@
         </nav>
         <div class="actions">
           <a class="btn btn-line btn-sm" href="login.html">Log in</a>
-          <a class="btn btn-fill btn-sm" href="book.html">Book now</a>
+          <a class="btn btn-fill btn-sm" href="login.html">Book now</a>
         </div>
       </div>
     </header>
@@ -87,15 +87,14 @@
           <div>
             <h1>Welcome to Pearl White. Don't Forget to Smile!</h1>
             <p class="lead">
-              Choose your branch, dentist and time online. No account needed,
-              and no more waiting for a Messenger reply to find out if you got
-              the schedule.
+              Choose your branch, dentist and time online, and stop waiting for
+              a Messenger reply to find out if you got the schedule.
             </p>
             <div class="facts">
               <span><b>Since 1999</b> caring for families</span>
               <span><b>3 branches</b> in Caloocan and Quezon City</span>
               <span><b>SMS reminders</b> before every visit</span>
-              <span><b>No account</b> needed to book</span>
+              <span><b>Online booking</b> at every branch</span>
             </div>
           </div>
 
@@ -134,7 +133,7 @@
             <p id="pick" aria-live="polite">
               Pick a date and time to continue.
             </p>
-            <a class="btn btn-fill" href="book.html" id="req"
+            <a class="btn btn-fill" href="login.html" id="req"
               >Request this appointment</a
             >
             <p
@@ -145,7 +144,7 @@
                 margin-top: 10px;
               "
             >
-              No account needed.
+              Log in or create a free account to send the request.
             </p>
           </div>
         </div>
@@ -158,7 +157,7 @@
             <h2>A family clinic that grew up with its patients</h2>
             <p class="lead">
               Pearl White started in 1999 as the Jena Tan-Booth Dental Clinic,
-              founded by Dr. Jena. For more than 25 years, we have helped
+              founded by Dr. Jena Tan-Booth. For more than 25 years, we have helped
               families in Caloocan and Quezon City keep healthy teeth and smile
               with confidence.
             </p>
@@ -247,9 +246,6 @@
                 <strong>Endodontics</strong
                 ><span>Root canal treatment to save a damaged tooth.</span>
               </div>
-              <!-- Not in the thesis yet: confirm with the clinic that root
-                   canals can be paid in installments -->
-              <em>Payment plan</em>
             </li>
             <li>
               <div>
@@ -286,8 +282,7 @@
                 <h3>Dentist 1</h3>
                 <span class="tag">Orthodontics</span>
                 <p>
-                  Straightens teeth for teens and adults. Sees braces patients
-                  at Amparo and Lagro.
+                  Straightens teeth for teens and adults.
                 </p>
               </div>
             </div>
@@ -316,13 +311,17 @@
           <div class="head">
             <h2>It only takes four steps</h2>
             <p>
-              Booking takes a couple of minutes, and you never have to register.
+              Create a free account once, then book in a couple of minutes.
             </p>
           </div>
           <div class="steps">
             <div class="step">
-              <h3>Choose a time</h3>
-              <p>Tell us your concern and pick a time. No account needed.</p>
+              <h3>Create an account</h3>
+              <p>Sign up and accept the data privacy consent.</p>
+            </div>
+            <div class="step">
+              <h3>Book a time</h3>
+              <p>Choose your service, branch, dentist and an open slot.</p>
             </div>
             <div class="step">
               <h3>Get your confirmation</h3>
@@ -331,10 +330,6 @@
             <div class="step">
               <h3>Visit your dentist</h3>
               <p>Show up at your branch and we take care of the rest.</p>
-            </div>
-            <div class="step">
-              <h3>Create an account, if you like</h3>
-              <p>Keep your records, X-rays and balance in one place.</p>
             </div>
           </div>
         </div>
@@ -345,8 +340,7 @@
           <div style="max-width: 700px; margin: 0 auto; text-align: center">
             <h2>Want to keep track of your visits?</h2>
             <p class="lead" style="margin: 14px auto 0">
-              Create a free account after you book. It is optional, and it works
-              at all three branches.
+              One free account works at all three branches. With it you can:
             </p>
             <ul style="display: inline-block; text-align: left">
               <li>
@@ -406,7 +400,7 @@
               </p>
               <div class="branch-meta">
                 <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
-                <p><b>Payments:</b> Cash, QR code</p>
+                <p><b>Payments:</b> Cash, GCash, bank transfer</p>
               </div>
             </div>
 
@@ -427,7 +421,7 @@
               <p class="branch-address">Capitol Park Homes II, Caloocan City</p>
               <div class="branch-meta">
                 <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
-                <p><b>Payments:</b> Cash, QR code</p>
+                <p><b>Payments:</b> Cash, GCash, bank transfer</p>
               </div>
             </div>
 
@@ -448,7 +442,7 @@
               </p>
               <div class="branch-meta">
                 <p><b>Hours:</b> Mon to Sat, 9:00 AM – 6:00 PM</p>
-                <p><b>Payments:</b> Cash, QR code, debit/credit card</p>
+                <p><b>Payments:</b> Cash, GCash, bank transfer, debit/credit card</p>
               </div>
             </div>
           </div>
@@ -520,7 +514,7 @@
                 </div>
                 <div class="spec-item">
                   <b>Accepted Payment Methods</b>
-                  <p id="modal-payments">Cash, QR Code, Debit/Credit Card</p>
+                  <p id="modal-payments"></p>
                 </div>
                 <div class="spec-item">
                   <b>Services Available</b>
@@ -532,7 +526,7 @@
               </div>
 
               <div style="margin-top: 28px; display: flex; gap: 12px">
-                <a href="book.html" class="btn btn-fill" style="flex: 1"
+                <a href="login.html" class="btn btn-fill" style="flex: 1"
                   >Book this Branch</a
                 >
                 <button
@@ -565,11 +559,11 @@
         <div class="final">
           <div>
             <h2>Ready for your next visit?</h2>
-            <p>Book in a couple of minutes. No account needed.</p>
+            <p>Book in a couple of minutes with your free account.</p>
           </div>
           <div style="display: flex; gap: 12px; flex-wrap: wrap">
-            <a class="btn btn-fill" href="book.html">Book an appointment</a>
-            <a class="btn btn-line" href="login.html">Log in</a>
+            <a class="btn btn-fill" href="login.html">Book an appointment</a>
+            <a class="btn btn-line" href="register.html">Create an account</a>
           </div>
         </div>
       </div>
@@ -822,7 +816,7 @@
           badge: "Main Branch",
           address: "13 Makabud St., Amparo Subdivision, North Caloocan City",
           hours: "Mon to Sat, 9:00 AM – 6:00 PM",
-          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          payments: "Cash, GCash, bank transfer",
           images: [
             "images/branches/amparo/img1.jpg",
             "images/branches/amparo/img2.jpg",
@@ -834,7 +828,7 @@
           badge: "Branch",
           address: "Capitol Park Homes II, Caloocan City",
           hours: "Mon to Sat, 9:00 AM – 6:00 PM",
-          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          payments: "Cash, GCash, bank transfer",
           images: [
             "images/branches/capitol park/img1.jpg",
             "images/branches/capitol park/img2.jpg",
@@ -848,7 +842,7 @@
           address:
             "Unit 2D, Ava & Ham Bldg, Bristol St., North Fairview, Quezon City",
           hours: "Mon to Sat, 9:00 AM – 6:00 PM",
-          payments: "Cash, QR Code e-wallets, Debit/Credit Card",
+          payments: "Cash, GCash, bank transfer, debit/credit card",
           images: [
             "images/branches/lagro/img1.jpg",
             "images/branches/lagro/img2.jpg",

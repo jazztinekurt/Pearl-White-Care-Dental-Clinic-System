@@ -79,7 +79,8 @@
               <p>Under the Data Privacy Act of 2012 (RA 10173), the patient can ask to view, correct, archive or delete their data.</p>
             </div>
             <label class="ck"><input type="checkbox" id="agree" /><span><b>The patient read the notice and agrees</b> (required)</span></label>
-            <label class="ck"><input type="checkbox" id="sms" checked /><span>Send SMS reminders before visits</span></label>
+            <label class="ck"><input type="checkbox" id="sms" checked /><span>Send SMS and email reminders before visits</span></label>
+            <label class="ck"><input type="checkbox" id="portal" checked /><span>Create a patient portal account (login details go to their email)</span></label>
             <p class="lab" style="margin-top: 6px">Patient's signature</p>
             <canvas id="sig" class="sig" width="560" height="140" aria-label="Signature pad. The patient signs here with a finger or mouse."></canvas>
             <div class="ac" style="margin-top: 8px"><button type="button" class="btn2 sm" id="clear">Clear signature</button></div>
@@ -147,6 +148,7 @@
         else if (!v("dob")) err = "Enter the date of birth.";
         else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
         else if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) err = "Check the email address, or leave it blank.";
+        else if ($("portal").checked && !v("email")) err = "A portal account needs an email address. Add one, or untick the portal account.";
         else if (!$("agree").checked) err = "The patient has to agree to the privacy notice before we can keep their records.";
         else if (!signed) err = "Ask the patient to sign in the box.";
         $("err").textContent = err;
@@ -157,9 +159,10 @@
           id, first: v("first"), last: v("last"), sex: $("sex").value, dob: v("dob"), mobile: v("mobile"), email: v("email"),
           address: v("addr"), branch: $("branch").value, since: ST.today(), status: "New",
           contact: v("ecname") ? v("ecname") + (v("ecmobile") ? ", " + v("ecmobile") : "") : "", sms: $("sms").checked,
+          portal: $("portal").checked && !!v("email"),
         });
         ST.save("st_patients", added);
-        ST.log("front", "Account", "Registered new patient " + id + " (consent signed)");
+        ST.log("front", "Account", "Registered new patient " + id + " (consent signed" + ($("portal").checked && v("email") ? ", portal account created)" : ")"));
         location.href = back ? "staff-appointment.html?patient=" + id : "staff-patient.html?id=" + id + "&new=1";
       };
       })();

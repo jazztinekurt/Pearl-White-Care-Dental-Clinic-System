@@ -95,8 +95,8 @@
         $("rows").innerHTML = list.length
           ? list.map((p) => {
               const mine = appts.filter((a) => a.patient === p.id);
-              const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Done")).pop();
-              const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Done"));
+              const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Completed")).pop();
+              const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Completed"));
               const plan = ST.plan(p.id);
               return '<tr class="link" data-id="' + p.id + '"><td><a href="staff-patient.html?id=' + p.id + '"><b>' + p.name +
                 "</b></a><small class='sub'>" + p.id + "</small></td><td>" + p.mobile + "</td><td>" + ST.branch(p.branch).name +

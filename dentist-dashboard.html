@@ -89,16 +89,15 @@
           ". " + s.textContent;
       })();
 
+      // Marks the next patient still to be seen today (the first confirmed one)
       function dentistStatus(list) {
-        let chair = false;
+        let found = false;
         return list.map((a) => {
-          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
-          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
-          return Object.assign({}, a, { dstatus: s });
+          const next = !found && a.status === "Confirmed";
+          if (next) found = true;
+          return Object.assign({}, a, { next });
         });
       }
-      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
-      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
       function alertsOf(pid) {
         const m = DN.record(pid).medical;
         if (!m) return "";
@@ -112,7 +111,7 @@
       document.getElementById("sub").textContent = document.getElementById("sub").textContent.replace(/\. $/, ". ") +
         (where ? "You are at the " + where + " branch today." : "No patients booked today.");
 
-      const done = today.filter((a) => a.dstatus === "Done").length;
+      const done = today.filter((a) => a.status === "Completed").length;
       document.getElementById("n-today").textContent = today.length;
       document.getElementById("n-prog").textContent = done + " done, " + (today.length - done) + " to go";
       const open = ST.times.filter((t) => !ST.conflict(DN.ME, ST.today(), t));
@@ -122,10 +121,10 @@
       document.getElementById("today").innerHTML = today.map((a) => {
         const p = ST.patient(a.patient);
         const al = alertsOf(p.id);
-        return "<tr" + (a.dstatus === "In chair" ? ' class="now"' : "") + "><td>" + a.time + "</td><td><b>" + p.name + "</b>" +
-          (al ? '<small class="sub alert-text">' + al + "</small>" : "") + "</td><td>" + a.service + "</td><td>" + dbadge(a.dstatus) + "</td>" +
-          '<td><a href="dentist-record.html?patient=' + p.id + (a.dstatus === "In chair" ? "#notes" : "") + '">' +
-          (a.dstatus === "In chair" ? "Write notes" : "Open record") + "</a></td></tr>";
+        return "<tr" + (a.next ? ' class="now"' : "") + "><td>" + a.time + (a.next ? '<small class="sub">Next</small>' : "") + "</td><td><b>" + p.name + "</b>" +
+          (al ? '<small class="sub alert-text">' + al + "</small>" : "") + "</td><td>" + a.service + "</td><td>" + ST.badge(a.status) + "</td>" +
+          '<td><a href="dentist-record.html?patient=' + p.id + (a.next ? "#notes" : "") + '">' +
+          (a.next ? "Write notes" : "Open record") + "</a></td></tr>";
       }).join("") || '<tr><td colspan="5" class="empty">No patients today.</td></tr>';
 
       const plans = DN.myPatients().map((p) => [p, DN.record(p.id).plan]).filter(([, pl]) => pl);

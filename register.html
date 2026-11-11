@@ -48,8 +48,7 @@
         <div class="card wide">
           <h2>Create your account</h2>
           <p class="sub">
-            Optional, but it makes future visits faster. We only ask for what we
-            need.
+            You need an account to book online. We only ask for what we need.
           </p>
 
           <form id="reg" novalidate>
@@ -251,23 +250,6 @@
         $("meter").dataset.s = strength(e.target.value);
       });
       $("dob").max = new Date().toISOString().split("T")[0];
-      // Pre-fill from a guest booking, if there is one
-      try {
-        const g = JSON.parse(sessionStorage.getItem("pw_guest") || "null");
-        if (g) {
-          const p = (g.name || "").trim().split(/\s+/).filter(Boolean);
-          $("first").value =
-            p.length > 1 ? p.slice(0, -1).join(" ") : p[0] || "";
-          $("last").value = p.length > 1 ? p[p.length - 1] : "";
-          $("mobile").value = (g.mobile || "")
-            .replace(/\D/g, "")
-            .replace(/^63/, "")
-            .replace(/^0/, "");
-          $("email").value = g.email || "";
-          if (g.branch) $("branch").value = g.branch;
-        }
-      } catch (_) {}
-
       $("toggle").onclick = (e) => {
         const show = $("pw").type === "password";
         $("pw").type = $("confirm").type = show ? "text" : "password";

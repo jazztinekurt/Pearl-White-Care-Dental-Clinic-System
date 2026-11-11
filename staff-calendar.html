@@ -62,10 +62,9 @@
           </div>
           <div class="tw"><table class="sch cal" id="grid"></table></div>
           <ul class="legend" aria-label="Legend">
-            <li><i class="k-bk"></i>Booked</li>
-            <li><i class="k-in"></i>Checked in</li>
-            <li><i class="k-done"></i>Done</li>
-            <li><i class="k-req"></i>Online request, not confirmed</li>
+            <li><i class="k-bk"></i>Confirmed</li>
+            <li><i class="k-done"></i>Completed</li>
+            <li><i class="k-req"></i>Online request, pending</li>
             <li><i class="k-away"></i>Dentist at another branch</li>
             <li><i class="k-free"></i>Free: click to book</li>
           </ul>
@@ -97,7 +96,7 @@
       // Columns: every dentist at every branch they work at
       const cols = [];
       ST.branches.forEach((b) => ST.dentists.forEach((d) => d.branches.includes(b.id) && cols.push({ b, d })));
-      const statusClass = { Booked: "c-bk", "Checked in": "c-in", Done: "c-done" };
+      const statusClass = { Confirmed: "c-bk", Completed: "c-done" };
 
       function render() {
         document.getElementById("pick").value = date;
@@ -135,7 +134,7 @@
             } else if (req) {
               html +=
                 '<td class="slot c-req"><a href="staff-requests.html"><b>' + ST.patient(req.patient).name +
-                "</b><small>Request · " + req.service + "</small></a></td>";
+                "</b><small>Pending request · " + req.service + "</small></a></td>";
             } else if (past) {
               html += '<td class="slot c-past"></td>';
             } else {

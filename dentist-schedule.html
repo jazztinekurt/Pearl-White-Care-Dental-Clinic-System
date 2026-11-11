@@ -58,6 +58,14 @@
           <div id="out"></div>
         </section>
 
+        <section class="cd">
+          <h2>My availability</h2>
+          <p class="hint">Where you work each day. The front desk and patients can only book you there.</p>
+          <div class="tw"><table class="lines"><thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody><tr id="avail"></tr></tbody></table></div>
+          <div class="ac"><button type="button" class="btn sm" id="save-avail">Save availability</button></div>
+          <p class="msg" id="avail-msg" role="status"></p>
+        </section>
+
         <p class="ft">Prototype page with sample data.</p>
       </main>
     </div>
@@ -66,16 +74,15 @@
     <script src="dentist.js"></script>
     <script>
       (() => {
+      // Marks the next patient still to be seen today (the first confirmed one)
       function dentistStatus(list) {
-        let chair = false;
+        let found = false;
         return list.map((a) => {
-          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
-          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
-          return Object.assign({}, a, { dstatus: s });
+          const next = !found && a.status === "Confirmed";
+          if (next) found = true;
+          return Object.assign({}, a, { next });
         });
       }
-      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
-      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
       function alertsOf(pid) {
         const m = DN.record(pid).medical;
         if (!m) return "";
@@ -101,7 +108,7 @@
       function cell(a) {
         if (!a) return '<td class="slot c-free-dn"></td>';
         const p = ST.patient(a.patient);
-        return '<td class="slot ' + (a.status === "Done" ? "c-done" : a.status === "Checked in" ? "c-in" : "c-bk") + '"><a href="dentist-record.html?patient=' + p.id + '"><b>' +
+        return '<td class="slot ' + (a.status === "Completed" ? "c-done" : "c-bk") + '"><a href="dentist-record.html?patient=' + p.id + '"><b>' +
           p.name + "</b><small>" + a.service + " · " + ST.branch(a.branch).name + "</small></a></td>";
       }
 
@@ -129,7 +136,7 @@
                   const p = ST.patient(a.patient);
                   return '<a class="ap" href="dentist-record.html?patient=' + p.id + '"><span class="ad"><b>' + a.time.split(" ")[0] + "</b>" + a.time.split(" ")[1] +
                     '</span><span class="at"><b>' + p.name + "</b><small>" + a.service + " · " + ST.branch(a.branch).name + "</small></span>" +
-                    (anchor === ST.today() ? dbadge(a.dstatus) : ST.badge(a.status)) + "</a>";
+                    ST.badge(a.status) + "</a>";
                 }).join("")
               : '<p class="empty">No appointments this day.</p>';
         }
@@ -139,6 +146,22 @@
       document.getElementById("today").onclick = () => { anchor = ST.today(); render(); };
       document.getElementById("view").onclick = (e) => { const b = e.target.closest("button"); if (b) { view = b.dataset.v; render(); } };
       render();
+
+      // Availability (Mon to Sat): one of the dentist's branches, or off
+      const me = ST.dentist(DN.ME);
+      const dflt = ["amparo", "lagro", "amparo", "lagro", "amparo", "lagro"];
+      const avail = Object.assign({}, { [DN.ME]: dflt }, ST.load("ad_avail", {}))[DN.ME];
+      document.getElementById("avail").innerHTML = avail.map((v, i) =>
+        '<td><select data-i="' + i + '" aria-label="' + ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][i] + '">' +
+        me.branches.map((b) => '<option value="' + b + '"' + (v === b ? " selected" : "") + ">" + ST.branch(b).name + "</option>").join("") +
+        '<option value="off"' + (v === "off" ? " selected" : "") + ">Off</option></select></td>").join("");
+      document.getElementById("save-avail").onclick = () => {
+        const all = ST.load("ad_avail", {});
+        all[DN.ME] = [...document.querySelectorAll("#avail select")].map((s) => s.value);
+        ST.save("ad_avail", all);
+        ST.log("dentist", "Schedule", "Updated availability");
+        document.getElementById("avail-msg").textContent = "Saved. The master calendar uses your new availability.";
+      };
       })();
     </script>
   </body>

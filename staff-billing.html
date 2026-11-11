@@ -139,6 +139,8 @@
 
       const charge = ST.charges().find((c) => c.patient === p.id);
       let lines = charge ? charge.items.map((x) => ({ name: x.name, qty: 1, price: x.amount, fromPlan: !!charge.plan })) : [];
+      // Installment plans are only for braces and dentures
+      const planOk = () => lines.some((l) => l.planEligible);
       ST.priceList.forEach((x) => $("add").insertAdjacentHTML("beforeend", '<option value="' + x.id + '">' + x.name + " · " + ST.peso(x.price) + "</option>"));
 
       const total = () => lines.reduce((n, l) => n + l.qty * l.price, 0);
@@ -150,6 +152,12 @@
               "<td>" + ST.peso(l.qty * l.price) + '</td><td><button type="button" class="btn2 sm" data-x="' + i + '" aria-label="Remove ' + l.name + '">Remove</button></td></tr>').join("")
           : '<tr><td colspan="4" class="empty">Add the services done today from the price list.</td></tr>';
         $("total").textContent = ST.peso(total());
+        const planRadio = document.querySelector("input[name=mode][value=plan]");
+        planRadio.disabled = !planOk();
+        if (planRadio.disabled && planRadio.checked) document.querySelector("input[name=mode][value=full]").checked = true;
+        planRadio.closest(".choice").querySelector("small").textContent = planOk()
+          ? "Down payment now, the rest over several months."
+          : "Only for braces and dentures.";
         const planMode = document.querySelector("input[name=mode]:checked").value === "plan";
         $("planbox").hidden = !planMode;
         if (planMode) {
@@ -161,7 +169,7 @@
       }
       $("add").onchange = () => {
         const it = ST.priceList.find((x) => x.id === $("add").value);
-        if (it) lines.push({ name: it.name, qty: 1, price: it.price });
+        if (it) lines.push({ name: it.name, qty: 1, price: it.price, planEligible: !!it.plan });
         $("add").value = "";
         render();
       };

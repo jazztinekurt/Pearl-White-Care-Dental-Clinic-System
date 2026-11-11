@@ -50,7 +50,6 @@
         <!-- Today's numbers -->
         <div class="stats">
           <div class="st"><small>Appointments today</small><b id="n-today">0</b><p id="n-left"></p></div>
-          <div class="st"><small>Pending online requests</small><b id="n-pending">0</b><p>Confirm them so patients get an SMS.</p><a href="staff-requests.html">Open requests</a></div>
           <div class="st"><small>Collected today</small><b id="n-paid">₱0</b><p id="n-paid-text"></p></div>
         </div>
 
@@ -63,7 +62,7 @@
             <div class="chs" id="branches" role="group" aria-label="Filter by branch" style="margin-bottom: 8px">
               <button type="button" class="ch" aria-pressed="true" data-b="all">All branches</button>
               <button type="button" class="ch" aria-pressed="false" data-b="amparo">Amparo</button>
-              <button type="button" class="ch" aria-pressed="false" data-b="capitol">Capitol Park</button>
+              <button type="button" class="ch" aria-pressed="false" data-b="capitol">Capitol Park Homes II</button>
               <button type="button" class="ch" aria-pressed="false" data-b="lagro">Lagro</button>
             </div>
             <div class="tw">
@@ -94,7 +93,7 @@
             </div>
             <p style="color: var(--muted)">
               <b style="color: var(--ink)" id="n-tmrw">0 patients</b> have appointments on the next clinic day.
-              SMS reminders go out automatically at 6:00 PM through Semaphore.
+              SMS and email reminders go out automatically at 6:00 PM.
             </p>
           </section>
         </div>
@@ -121,7 +120,7 @@
       // Everything comes from staff.js, so the other front desk pages stay in step
       let branch = "all";
       const today = ST.today();
-      const cls = { Done: "", "Checked in": "ok", Booked: "" };
+      const cls = { Completed: "", Confirmed: "ok" };
 
       function say(text, kind) {
         const m = document.getElementById("msg");
@@ -135,24 +134,19 @@
         const rows = all.filter((a) => branch === "all" || a.branch === branch);
         document.getElementById("today").innerHTML = rows.map((a) => {
           const p = ST.patient(a.patient);
-          const action = a.status === "Booked"
-            ? '<button type="button" class="btn2 sm" data-in="' + a.ref + '">Check in</button>'
-            : a.status === "Done"
-              ? '<a class="btn2 sm" href="staff-billing.html?patient=' + p.id + '">Bill</a>'
-              : "";
+          const action = a.status === "Completed" ? '<a class="btn2 sm" href="staff-billing.html?patient=' + p.id + '">Bill</a>' : "";
           return "<tr><td>" + a.time + '</td><td><a href="staff-patient.html?id=' + p.id + '"><b>' + (a.source === "Walk-in" ? "Walk-in: " : "") + p.name +
             "</b></a></td><td>" + a.service + "</td><td>" + ST.dentist(a.dentist).name + "</td><td>" + ST.branch(a.branch).name +
             '</td><td><span class="bd' + (cls[a.status] ? " " + cls[a.status] : "") + '">' + a.status + "</span></td><td>" + action + "</td></tr>";
         }).join("") || '<tr><td colspan="7" class="empty">No appointments here today.</td></tr>';
-        const done = all.filter((a) => a.status === "Done").length;
+        const done = all.filter((a) => a.status === "Completed").length;
         document.getElementById("n-today").textContent = all.length;
-        document.getElementById("n-left").textContent = done + " done, " + (all.length - done) + " still to come";
+        document.getElementById("n-left").textContent = done + " completed, " + (all.length - done) + " still to come";
       }
 
       function renderRequests() {
         const box = document.getElementById("requests");
         const open = ST.pending();
-        document.getElementById("n-pending").textContent = open.length;
         box.innerHTML = open.length
           ? open.slice(0, 3).map((r) => {
               const p = ST.patient(r.patient);
@@ -186,14 +180,6 @@
         renderToday();
       };
 
-      document.getElementById("today").onclick = (e) => {
-        const b = e.target.closest("button[data-in]");
-        if (!b) return;
-        const a = ST.appointment(b.dataset.in);
-        ST.updateAppointment(a.ref, { status: "Checked in" });
-        renderToday();
-        say(ST.patient(a.patient).name + " is checked in. " + ST.dentist(a.dentist).name + " has been notified.");
-      };
 
       document.getElementById("requests").onclick = (e) => {
         const ok = e.target.closest("[data-ok]");

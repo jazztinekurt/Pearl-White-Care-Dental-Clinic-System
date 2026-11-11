@@ -21,7 +21,7 @@
     <div class="copy">
       <h1>Welcome back.</h1>
       <p>Log in to book a visit, see your treatment history and check what you still owe.</p>
-      <p class="note">Dentists, receptionists and admins use this same page. You will land on your own dashboard.</p>
+      <p class="note">Dentists, receptionists and the clinic owner use this same page. You will land on your own dashboard.</p>
     </div>
   </aside>
 
@@ -52,7 +52,7 @@
         <p class="msg" id="msg" role="status" aria-live="polite"></p>
       </form>
 
-      <p class="new">New here? <a href="book.html">Book without an account</a> or <a href="register.html">sign up</a></p>
+      <p class="new">New here? <a href="register.html">Create an account</a></p>
 
       <div class="demo">
         <p><b>Prototype only.</b> Tap a role to fill in a sample account:</p>
@@ -60,7 +60,7 @@
           <button type="button" data-u="patient@pearlwhite.test">Patient<span>Patient dashboard</span></button>
           <button type="button" data-u="staff@pearlwhite.test">Receptionist<span>Staff dashboard</span></button>
           <button type="button" data-u="dentist@pearlwhite.test">Dentist<span>Dentist dashboard</span></button>
-          <button type="button" data-u="admin@pearlwhite.test">Admin<span>Admin dashboard</span></button>
+          <button type="button" data-u="admin@pearlwhite.test">Clinic owner<span>Owner dashboard</span></button>
         </div>
       </div>
     </div>
@@ -73,7 +73,7 @@ const accounts={
   "patient@pearlwhite.test":{role:"patient",to:"patient-dashboard.html"},
   "staff@pearlwhite.test":{role:"receptionist",to:"staff-dashboard.html"},
   "dentist@pearlwhite.test":{role:"dentist",to:"dentist-dashboard.html"},
-  "admin@pearlwhite.test":{role:"admin",to:"admin-dashboard.html"}
+  "admin@pearlwhite.test":{role:"clinic owner",to:"admin-dashboard.html"}
 };
 const DEMO_PASSWORD="demo1234";
 const form=document.getElementById("login"),email=document.getElementById("email"),pw=document.getElementById("pw"),msg=document.getElementById("msg");

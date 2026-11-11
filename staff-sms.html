@@ -36,7 +36,7 @@
         <header class="tb">
           <div>
             <h1 id="title">SMS reminders</h1>
-            <p id="sub">Remind patients about tomorrow's visits. Sent through Semaphore.</p>
+            <p id="sub">Remind patients about their next visit or a payment that is due.</p>
           </div>
           <div class="me">
             <i>LM</i
@@ -46,9 +46,13 @@
         </header>
 
         <div class="banner ok" id="msg" role="status" hidden></div>
+        <div class="chs" id="kind" role="group" aria-label="Reminder type" style="margin-bottom: 16px">
+          <button type="button" class="ch" aria-pressed="true" data-k="visit">Appointments</button>
+          <button type="button" class="ch" aria-pressed="false" data-k="payment">Payments due</button>
+        </div>
         <div class="split">
           <section class="cd">
-            <div class="hd"><h2 id="who">Tomorrow's appointments</h2><a href="staff-calendar.html" id="callink">Open calendar</a></div>
+            <div class="hd"><h2 id="who"></h2><a href="staff-calendar.html" id="callink">Open calendar</a></div>
             <label class="ck" style="margin-top: 0"><input type="checkbox" id="all" checked /><span><b>Select everyone</b></span></label>
             <div id="list"></div>
           </section>
@@ -56,21 +60,16 @@
           <section class="cd">
             <h2>Message</h2>
             <label class="f"><span>Template</span><textarea id="tpl" rows="5"></textarea></label>
-            <div class="chs" id="tags" style="margin-top: 8px" aria-label="Insert a field">
-              <button type="button" class="ch sm" data-t="{name}">+ Name</button>
-              <button type="button" class="ch sm" data-t="{date}">+ Date</button>
-              <button type="button" class="ch sm" data-t="{time}">+ Time</button>
-              <button type="button" class="ch sm" data-t="{dentist}">+ Dentist</button>
-              <button type="button" class="ch sm" data-t="{branch}">+ Branch</button>
-            </div>
+            <div class="chs" id="tags" style="margin-top: 8px" aria-label="Insert a field"></div>
             <p class="lab">Preview</p>
             <div class="sms" id="preview"></div>
             <p class="hint" id="len" style="margin: 6px 0 0"></p>
+            <label class="ck"><input type="checkbox" id="email" checked /><span>Also send by email to patients who have one</span></label>
             <div class="ac">
               <button type="button" class="btn" id="send">Send now</button>
               <button type="button" class="btn2" id="schedule">Schedule for 6:00 PM</button>
             </div>
-            <p class="hint" style="margin: 10px 0 0">Prototype: no real SMS is sent.</p>
+            <p class="hint" style="margin: 10px 0 0">Sent through the clinic's SMS gateway. Prototype: nothing is actually sent.</p>
           </section>
         </div>
 
@@ -89,37 +88,56 @@
       const $ = (id) => document.getElementById(id);
       const day = ST.openDay(1);
       const optedOut = ["P-0061", "P-0115"];
-      $("who").textContent = "Appointments on " + ST.shortDate(day);
-      $("callink").href = "staff-calendar.html?date=" + day;
-      // Default template comes from the owner's Settings (SMS templates)
-      $("tpl").value = ST.load("ad_sms", {}).reminder ||
-        "Hi {name}! Pearl White Dental reminder: {date}, {time} with {dentist} at {branch}. Call (02) 0000 0000 to reschedule.";
-
-      const appts = ST.appointments().filter((a) => a.date === day && ST.active(a)).sort(ST.sortByTime);
-      $("list").innerHTML = appts.length
-        ? appts.map((a, i) => {
-            const p = ST.patient(a.patient);
-            const off = optedOut.includes(p.id);
-            return '<label class="ck"><input type="checkbox" data-i="' + i + '"' + (off ? " disabled" : " checked") + " /><span><b>" + p.name +
-              "</b> · " + a.time + " · " + ST.branch(a.branch).name + (off ? ' <span class="bd">Reminders off</span>' : "") +
-              '<br /><small style="color: var(--muted)">' + p.mobile + " · " + a.service + " with " + ST.dentist(a.dentist).short + "</small></span></label>";
-          }).join("")
-        : '<p class="empty">No appointments that day.</p>';
-
-      const fill = (a) => {
-        const p = ST.patient(a.patient);
-        return $("tpl").value
-          .replaceAll("{name}", p.first)
-          .replaceAll("{date}", ST.shortDate(a.date))
-          .replaceAll("{time}", a.time)
-          .replaceAll("{dentist}", ST.dentist(a.dentist).short)
-          .replaceAll("{branch}", ST.branch(a.branch).name);
+      const saved = ST.load("ad_sms", {});
+      const T = {
+        visit: saved.reminder || "Hi {name}! Pearl White Dental reminder: {date}, {time} with {dentist} at {branch}. Call (02) 0000 0000 to reschedule.",
+        payment: saved.payment || "Hi {name}! Pearl White reminder: your {plan} payment of {amount} is due on your next visit. Balance: {balance}.",
       };
-      const picked = () => [...document.querySelectorAll("#list input:checked")].map((c) => appts[c.dataset.i]);
+      const FIELDS = {
+        visit: [["{name}", "Name"], ["{date}", "Date"], ["{time}", "Time"], ["{dentist}", "Dentist"], ["{branch}", "Branch"]],
+        payment: [["{name}", "Name"], ["{plan}", "Plan"], ["{amount}", "Amount"], ["{balance}", "Balance"]],
+      };
+      let kind = "visit";
+      let rows = [];
+
+      function build() {
+        $("kind").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === kind));
+        $("tpl").value = T[kind];
+        $("tags").innerHTML = FIELDS[kind].map(([t, n]) => '<button type="button" class="ch sm" data-t="' + t + '">+ ' + n + "</button>").join("");
+        $("callink").hidden = kind !== "visit";
+        if (kind === "visit") {
+          $("who").textContent = "Appointments on " + ST.shortDate(day);
+          $("callink").href = "staff-calendar.html?date=" + day;
+          rows = ST.appointments().filter((a) => a.date === day && ST.active(a)).sort(ST.sortByTime).map((a) => {
+            const p = ST.patient(a.patient);
+            return { p, off: optedOut.includes(p.id), line: a.time + " · " + ST.branch(a.branch).name, sub: a.service + " with " + ST.dentist(a.dentist).short,
+              fill: { "{name}": p.first, "{date}": ST.shortDate(a.date), "{time}": a.time, "{dentist}": ST.dentist(a.dentist).short, "{branch}": ST.branch(a.branch).name } };
+          });
+        } else {
+          $("who").textContent = "Installment payments due";
+          rows = ST.patients().map((p) => [p, ST.plan(p.id)]).filter(([, pl]) => pl && pl.left > 0).map(([p, pl]) => {
+            const amt = Math.min(3000, pl.left);
+            return { p, off: optedOut.includes(p.id), line: pl.name, sub: ST.peso(amt) + " due · " + ST.peso(pl.left) + " left",
+              fill: { "{name}": p.first, "{plan}": pl.name.toLowerCase(), "{amount}": ST.peso(amt), "{balance}": ST.peso(pl.left) } };
+          });
+        }
+        $("list").innerHTML = rows.length
+          ? rows.map((r, i) =>
+              '<label class="ck"><input type="checkbox" data-i="' + i + '"' + (r.off ? " disabled" : " checked") + " /><span><b>" + r.p.name +
+              "</b> · " + r.line + (r.off ? ' <span class="bd">Reminders off</span>' : "") +
+              '<br /><small style="color: var(--muted)">' + r.p.mobile + " · " + r.sub + "</small></span></label>").join("")
+          : '<p class="empty">Nobody to remind.</p>';
+        $("all").checked = true;
+        preview();
+      }
+
+      const fill = (r) => Object.keys(r.fill).reduce((t, k) => t.replaceAll(k, r.fill[k]), $("tpl").value);
+      const picked = () => [...document.querySelectorAll("#list input:checked")].map((c) => rows[c.dataset.i]);
 
       function preview() {
+        T[kind] = $("tpl").value;
         const sel = picked();
-        const sample = sel[0] || appts[0];
+        const sample = sel[0] || rows[0];
         const text = sample ? fill(sample) : $("tpl").value;
         $("preview").textContent = text;
         const parts = text.length <= 160 ? 1 : Math.ceil(text.length / 153);
@@ -129,9 +147,9 @@
         $("send").disabled = $("schedule").disabled = !sel.length;
       }
       $("tpl").oninput = preview;
+      $("kind").onclick = (e) => { const b = e.target.closest("button"); if (b) { kind = b.dataset.k; build(); } };
       $("list").onchange = () => {
-        const boxes = [...document.querySelectorAll("#list input:not(:disabled)")];
-        $("all").checked = boxes.every((b) => b.checked);
+        $("all").checked = [...document.querySelectorAll("#list input:not(:disabled)")].every((b) => b.checked);
         preview();
       };
       $("all").onchange = () => {
@@ -150,29 +168,29 @@
       };
 
       const baseLog = [
-        { when: "Today, 9:12 AM", what: "Booking confirmation", n: 3, status: "Delivered" },
+        { when: "Today, 9:12 AM", what: "Booking confirmations", n: 3, status: "Delivered" },
         { when: "Yesterday, 6:00 PM", what: "Reminders for today's visits", n: 18, status: "Delivered" },
-        { when: "2 days ago, 6:00 PM", what: "Reminders for the next day", n: 15, status: "Delivered" },
+        { when: "Yesterday, 6:00 PM", what: "Installment payment reminders", n: 4, status: "Delivered" },
       ];
       function log() {
-        const rows = ST.load("st_sms", []).concat(baseLog);
-        $("log").innerHTML = rows.map((r) =>
+        $("log").innerHTML = ST.load("st_sms", []).concat(baseLog).map((r) =>
           "<tr><td>" + r.when + "</td><td>" + r.what + "</td><td>" + r.n + "</td><td>" +
           '<span class="bd' + (r.status === "Delivered" ? " ok" : " wa") + '">' + r.status + "</span></td></tr>").join("");
       }
       function record(status, when) {
-        const n = picked().length;
-        ST.save("st_sms", [{ when, what: "Reminders for " + ST.shortDate(day), n, status }].concat(ST.load("st_sms", [])));
-        ST.log("front", "SMS", (status === "Scheduled" ? "Scheduled " : "Sent ") + n + " SMS reminders");
+        const sel = picked();
+        const emails = $("email").checked ? sel.filter((r) => r.p.email).length : 0;
+        const what = (kind === "visit" ? "Reminders for " + ST.shortDate(day) : "Installment payment reminders") + (emails ? " (SMS + " + emails + " emails)" : " (SMS)");
+        ST.save("st_sms", [{ when, what, n: sel.length, status }].concat(ST.load("st_sms", [])));
+        ST.log("front", "SMS", (status === "Scheduled" ? "Scheduled " : "Sent ") + sel.length + (kind === "visit" ? " appointment" : " payment") + " reminders");
         $("msg").hidden = false;
-        $("msg").textContent = status === "Scheduled"
-          ? n + " reminders scheduled for 6:00 PM today."
-          : n + " reminders sent through Semaphore.";
+        $("msg").textContent = (status === "Scheduled" ? sel.length + " reminders scheduled for 6:00 PM today" : sel.length + " reminders sent by SMS") +
+          (emails ? ", plus " + emails + " by email." : ".");
         log();
       }
       $("send").onclick = () => record("Delivered", "Just now");
       $("schedule").onclick = () => record("Scheduled", "Today, 6:00 PM");
-      preview();
+      build();
       log();
       })();
     </script>

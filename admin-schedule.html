@@ -62,8 +62,8 @@
           </div>
           <div class="tw"><table class="sch cal" id="grid"></table></div>
           <ul class="legend" aria-label="Legend">
-            <li><i class="k-bk"></i>Booked</li><li><i class="k-in"></i>Checked in</li><li><i class="k-done"></i>Done</li>
-            <li><i class="k-req"></i>Online request, not confirmed</li><li><i class="k-away"></i>Dentist at another branch</li>
+            <li><i class="k-bk"></i>Confirmed</li><li><i class="k-done"></i>Completed</li>
+            <li><i class="k-req"></i>Online request, pending</li><li><i class="k-away"></i>Dentist at another branch</li>
           </ul>
         </section>
 
@@ -99,7 +99,7 @@
       ST.branches.forEach((b) => $("bf").insertAdjacentHTML("beforeend", '<button type="button" class="ch" aria-pressed="false" data-b="' + b.id + '">' + b.name + "</button>"));
       const cols = [];
       ST.branches.forEach((b) => ST.dentists.forEach((d) => d.branches.includes(b.id) && cols.push({ b, d })));
-      const cls = { Booked: "c-bk", "Checked in": "c-in", Done: "c-done" };
+      const cls = { Confirmed: "c-bk", Completed: "c-done" };
       function render() {
         $("pick").value = date;
         $("day").textContent = ST.toDate(date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) + (date === ST.today() ? " (today)" : "");
@@ -120,7 +120,7 @@
             const req = reqs.find((r) => r.dentist === c.d.id && r.time === t && r.branch === c.b.id);
             if (here) return '<td class="slot ' + (cls[here.status] || "c-bk") + '"><span class="in"><b>' + ST.patient(here.patient).name + "</b><small>" + here.service + "</small></span></td>";
             if (away) return '<td class="slot c-away">At ' + ST.branch(away.branch).name + "</td>";
-            if (req) return '<td class="slot c-req"><span class="in"><b>' + ST.patient(req.patient).name + "</b><small>Request</small></span></td>";
+            if (req) return '<td class="slot c-req"><span class="in"><b>' + ST.patient(req.patient).name + "</b><small>Pending request</small></span></td>";
             return '<td class="slot"></td>';
           }).join("") + "</tr>";
         });

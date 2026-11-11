@@ -73,7 +73,7 @@
         <div class="two">
           <section class="cd">
             <h2>By branch</h2>
-            <div class="tw"><table><thead><tr><th>Branch</th><th>Appointments</th><th>No-shows</th><th>New patients</th><th>Revenue</th></tr></thead><tbody id="bybranch"></tbody></table></div>
+            <div class="tw"><table><thead><tr><th>Branch</th><th>Appointments</th><th>Missed</th><th>New patients</th><th>Revenue</th></tr></thead><tbody id="bybranch"></tbody></table></div>
           </section>
           <section class="cd">
             <h2>By service</h2>
@@ -145,7 +145,7 @@
         const rate = tot.bookings ? ((tot.noshow / tot.bookings) * 100).toFixed(1) : "0.0";
         $("kpis").innerHTML = [
           ["Appointments", tot.bookings.toLocaleString("en-US"), rows.length + " clinic days"],
-          ["No-show rate", rate + "%", tot.noshow + " missed visits"],
+          ["Missed appointments", tot.noshow, rate + "% of bookings"],
           ["New patients", tot.fresh, "First visits"],
           ["Revenue", ST.peso(tot.revenue), "Average " + ST.peso(rows.length ? tot.revenue / rows.length : 0) + " a day"],
         ].map((k) => '<div class="st"><small>' + k[0] + "</small><b>" + k[1] + "</b><p>" + k[2] + "</p></div>").join("");
@@ -184,7 +184,7 @@
       $("print").onclick = () => window.print();
       $("csv").onclick = () => {
         const keys = $("branch").value ? [$("branch").value] : AD.BR;
-        const out = [["Date", "Branch", "Appointments", "No-shows", "New patients", "Revenue (PHP)"]];
+        const out = [["Date", "Branch", "Appointments", "Missed", "New patients", "Revenue (PHP)"]];
         rows.forEach((r) => keys.forEach((k) => out.push([r.date, ST.branch(k).name, r.v[k].bookings, r.v[k].noshow, r.v[k].fresh, r.v[k].revenue])));
         AD.downloadCsv("pearl-white-report-" + bounds()[0] + "-to-" + bounds()[1] + ".csv", out);
         ST.log("owner", "Report", "Exported a report (" + bounds()[2] + ")");

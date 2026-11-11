@@ -135,11 +135,11 @@
           $("back").href = $("cancel-link").href = "staff-requests.html";
           $("back").innerHTML = "&larr; Appointment requests";
         }
-        if (editing && editing.status === "Booked") $("cancel-appt").hidden = false;
-        if (editing && editing.status === "Done") {
+        if (editing && editing.status === "Confirmed") $("cancel-appt").hidden = false;
+        if (editing && editing.status === "Completed") {
           const c = $("ctx");
           c.hidden = false;
-          c.innerHTML = "<span>This visit is done. Changes here do not affect billing.</span>" +
+          c.innerHTML = "<span>This visit is completed. Changes here do not affect billing.</span>" +
             '<a href="staff-billing.html?patient=' + editing.patient + '">Go to billing</a>';
         }
       }

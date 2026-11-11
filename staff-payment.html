@@ -59,14 +59,15 @@
             <p class="lab">Method</p>
             <div class="chs" id="method" role="group" aria-label="Payment method">
               <button type="button" class="ch" aria-pressed="true" data-m="Cash">Cash</button>
-              <button type="button" class="ch" aria-pressed="false" data-m="QR code">QR code (GCash, Maya)</button>
+              <button type="button" class="ch" aria-pressed="false" data-m="GCash">GCash (QR code)</button>
+              <button type="button" class="ch" aria-pressed="false" data-m="Bank transfer">Bank transfer</button>
               <button type="button" class="ch" aria-pressed="false" data-m="Card">Debit or credit card</button>
             </div>
             <p class="hint" id="cardnote" style="margin: 8px 0 0">Card payments are only possible at Lagro, where the card terminal is.</p>
 
             <div class="fg" style="margin-top: 12px">
               <label class="f" id="cashwrap"><span>Cash received (₱)</span><input id="cash" type="number" min="0" step="1" /></label>
-              <label class="f" id="refwrap" hidden><span>Reference number</span><input id="ref" placeholder="From the GCash, Maya or card slip" /></label>
+              <label class="f" id="refwrap" hidden><span>Reference number</span><input id="ref" placeholder="From the GCash receipt, bank slip or card slip" /></label>
               <p class="f change" id="change" aria-live="polite"></p>
             </div>
             <p class="err" id="err" role="alert"></p>
@@ -143,7 +144,7 @@
         else if (amt <= 0) err = "Enter the amount paid.";
         else if (!$("desc").value.trim()) err = "Say what the payment is for.";
         else if (method === "Cash" && Number($("cash").value || 0) < amt) err = "Cash received is less than the amount.";
-        else if (method !== "Cash" && !$("ref").value.trim()) err = "Enter the reference number from the " + (method === "Card" ? "card slip." : "QR payment.");
+        else if (method !== "Cash" && !$("ref").value.trim()) err = "Enter the reference number from the " + ({ Card: "card slip.", GCash: "GCash receipt.", "Bank transfer": "bank transfer slip." })[method];
         $("err").textContent = err;
         if (err) return;
         const pay = ST.addPayment({

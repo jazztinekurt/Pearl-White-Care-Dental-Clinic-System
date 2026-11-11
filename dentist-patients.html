@@ -60,16 +60,15 @@
     <script src="dentist.js"></script>
     <script>
       (() => {
+      // Marks the next patient still to be seen today (the first confirmed one)
       function dentistStatus(list) {
-        let chair = false;
+        let found = false;
         return list.map((a) => {
-          let s = a.status === "Done" ? "Done" : a.status === "Booked" ? "Upcoming" : "Waiting";
-          if (s === "Waiting" && !chair) { s = "In chair"; chair = true; }
-          return Object.assign({}, a, { dstatus: s });
+          const next = !found && a.status === "Confirmed";
+          if (next) found = true;
+          return Object.assign({}, a, { next });
         });
       }
-      const dcls = { Done: "", "In chair": "ok", Waiting: "wa", Upcoming: "" };
-      const dbadge = (s) => '<span class="bd' + (dcls[s] ? " " + dcls[s] : "") + '">' + s + "</span>";
       function alertsOf(pid) {
         const m = DN.record(pid).medical;
         if (!m) return "";
@@ -86,8 +85,8 @@
         document.getElementById("rows").innerHTML = list.map((p) => {
           const r = DN.record(p.id);
           const mine = appts.filter((a) => a.patient === p.id);
-          const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Done")).pop();
-          const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Done"));
+          const last = mine.filter((a) => a.date < today || (a.date === today && a.status === "Completed")).pop();
+          const next = mine.find((a) => a.date > today || (a.date === today && a.status !== "Completed"));
           const al = alertsOf(p.id);
           return '<tr class="link" data-id="' + p.id + '"><td><a href="dentist-record.html?patient=' + p.id + '"><b>' + p.name + "</b></a><small class='sub'>" + p.id + "</small></td>" +
             "<td>" + (DN.age(p.dob) ?? "—") + "</td><td>" + (al ? '<span class="alert-text">' + al + "</span>" : r.medical ? "—" : '<span class="hint">No history yet</span>') + "</td>" +

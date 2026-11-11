@@ -47,7 +47,7 @@
         </header>
 
         <div class="stats">
-          <div class="st"><small>Bookings today</small><b id="k-book"></b><p id="k-book-t"></p></div>
+          <div class="st"><small>Bookings today</small><b id="k-book"></b><p id="k-book-t">All three branches</p></div>
           <div class="st"><small>Revenue today</small><b id="k-rev"></b><p id="k-rev-t"></p></div>
           <div class="st"><small>Revenue this month</small><b id="k-month"></b><p id="k-month-t"></p></div>
           <div class="st"><small>Active accounts</small><b id="k-acc"></b><p id="k-acc-t"></p></div>
@@ -61,7 +61,7 @@
           </section>
           <section class="cd">
             <h2>Today by branch</h2>
-            <div class="tw"><table><thead><tr><th>Branch</th><th>Bookings</th><th>No-shows</th><th>Revenue</th></tr></thead><tbody id="branches"></tbody></table></div>
+            <div class="tw"><table><thead><tr><th>Branch</th><th>Bookings</th><th>Missed</th><th>Revenue</th></tr></thead><tbody id="branches"></tbody></table></div>
           </section>
         </div>
 
@@ -113,7 +113,6 @@
       const today = AD.day(T) || {};
       const sum = (o, k) => Object.values(o).reduce((n, v) => n + v[k], 0);
       $("k-book").textContent = sum(today, "bookings");
-      $("k-book-t").textContent = ST.branches.map((b) => b.name + " " + (today[b.id] ? today[b.id].bookings : 0)).join(" · ");
       const pays = ST.payments().filter((p) => p.date === T);
       $("k-rev").textContent = ST.peso(pays.reduce((n, p) => n + p.amount, 0));
       $("k-rev-t").textContent = pays.length + " payments so far";
