@@ -66,7 +66,7 @@
             <p class="hint" id="cardnote" style="margin: 8px 0 0">Card payments are only possible at Lagro, where the card terminal is.</p>
 
             <div class="fg" style="margin-top: 12px">
-              <label class="f" id="cashwrap"><span>Cash received (₱)</span><input id="cash" type="number" min="0" step="1" /></label>
+              <label class="f" id="cashwrap"><span>Cash received (₱)</span><input id="cash" type="text" inputmode="numeric" maxlength="7" autocomplete="off" /></label>
               <label class="f" id="refwrap" hidden><span>Reference number</span><input id="ref" placeholder="From the GCash receipt, bank slip or card slip" /></label>
               <p class="f change" id="change" aria-live="polite"></p>
             </div>
@@ -87,6 +87,7 @@
       const $ = (id) => document.getElementById(id);
       let pid = ST.param("patient");
       let method = "Cash";
+      const CASH_MAX = 1000000; // most cash a cashier may accept in one payment
       const isPlan = ST.param("plan") === "1";
       ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
       $("amount").value = ST.param("amount") || "";
@@ -124,7 +125,9 @@
         $("cashwrap").hidden = method !== "Cash";
         $("refwrap").hidden = method === "Cash";
         const change = Number($("cash").value || 0) - Number($("amount").value || 0);
-        $("change").textContent = method === "Cash" && $("cash").value ? (change >= 0 ? "Change: " + ST.peso(change) : "Short by " + ST.peso(-change)) : "";
+        $("change").textContent = method === "Cash" && Number($("cash").value || 0) > CASH_MAX
+          ? "Over the " + ST.peso(CASH_MAX) + " cash limit"
+          : method === "Cash" && $("cash").value ? (change >= 0 ? "Change: " + ST.peso(change) : "Short by " + ST.peso(-change)) : "";
       }
       $("method").onclick = (e) => {
         const b = e.target.closest("button");
@@ -133,7 +136,15 @@
         syncMethod();
       };
       $("branch").onchange = syncMethod;
-      $("cash").oninput = syncMethod;
+      // Whole pesos only, never more than ₱1,000,000: a keystroke or paste
+      // that would go over the limit is ignored and the last value stays.
+      let lastCash = $("cash").value;
+      $("cash").oninput = () => {
+        const digits = $("cash").value.replace(/\D/g, "");
+        $("cash").value = Number(digits) > CASH_MAX ? lastCash : digits;
+        lastCash = $("cash").value;
+        syncMethod();
+      };
       $("amount").oninput = () => { syncMethod(); summary(); };
 
       $("form").onsubmit = (e) => {
@@ -143,6 +154,8 @@
         if (!ST.patient(pid || "")) err = "Choose the patient.";
         else if (amt <= 0) err = "Enter the amount paid.";
         else if (!$("desc").value.trim()) err = "Say what the payment is for.";
+        else if (method === "Cash" && amt > CASH_MAX) err = "Cash payments are limited to " + ST.peso(CASH_MAX) + ". Use another method or split the payment.";
+        else if (method === "Cash" && Number($("cash").value || 0) > CASH_MAX) err = "Cash received can't be more than " + ST.peso(CASH_MAX) + ".";
         else if (method === "Cash" && Number($("cash").value || 0) < amt) err = "Cash received is less than the amount.";
         else if (method !== "Cash" && !$("ref").value.trim()) err = "Enter the reference number from the " + ({ Card: "card slip.", GCash: "GCash receipt.", "Bank transfer": "bank transfer slip." })[method];
         $("err").textContent = err;

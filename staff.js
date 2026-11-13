@@ -308,10 +308,13 @@ const ST = (() => {
     const list = load("st_payments", []);
     const n = load("st_or", 422) + 1;
     save("st_or", n);
-    const pay = Object.assign({ or: "OR-00" + n, date: today(), time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }), cashier: "Liza Mendoza" }, p);
+    // p.by = who took the payment ("front" or "dentist"); the receipt names them as cashier
+    const by = ACTORS[p.by] ? p.by : "front";
+    const pay = Object.assign({ or: "OR-00" + n, date: today(), time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }), cashier: ACTORS[by][0] }, p);
+    delete pay.by;
     list.push(pay);
     save("st_payments", list);
-    log("front", "Payment", "Recorded a " + peso(pay.amount) + " " + pay.method.toLowerCase() + " payment (" + pay.or + ")");
+    log(by, "Payment", "Recorded a " + peso(pay.amount) + " " + pay.method.toLowerCase() + " payment (" + pay.or + ")");
     return pay;
   }
   const payment = (or) => payments().find((p) => p.or === or);

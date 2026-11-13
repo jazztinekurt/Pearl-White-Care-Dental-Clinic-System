@@ -26,6 +26,7 @@
           <a class="nv" href="dentist-dashboard.html">Dashboard</a>
           <a class="nv on" href="dentist-schedule.html" aria-current="page">My schedule</a>
           <a class="nv" href="dentist-patients.html">Patients</a>
+          <a class="nv" href="dentist-billing.html">Billing</a>
         </nav>
       </aside>
 
@@ -147,13 +148,13 @@
       document.getElementById("view").onclick = (e) => { const b = e.target.closest("button"); if (b) { view = b.dataset.v; render(); } };
       render();
 
-      // Availability (Mon to Sat): one of the dentist's branches, or off
-      const me = ST.dentist(DN.ME);
+      // Availability (Mon to Sat): any of the three branches, or off.
+      // Dentists rotate between branches, so every branch is offered.
       const dflt = ["amparo", "lagro", "amparo", "lagro", "amparo", "lagro"];
       const avail = Object.assign({}, { [DN.ME]: dflt }, ST.load("ad_avail", {}))[DN.ME];
       document.getElementById("avail").innerHTML = avail.map((v, i) =>
         '<td><select data-i="' + i + '" aria-label="' + ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][i] + '">' +
-        me.branches.map((b) => '<option value="' + b + '"' + (v === b ? " selected" : "") + ">" + ST.branch(b).name + "</option>").join("") +
+        ST.branches.map((b) => '<option value="' + b.id + '"' + (v === b.id ? " selected" : "") + ">" + b.name.replace(" Homes II", "") + "</option>").join("") +
         '<option value="off"' + (v === "off" ? " selected" : "") + ">Off</option></select></td>").join("");
       document.getElementById("save-avail").onclick = () => {
         const all = ST.load("ad_avail", {});

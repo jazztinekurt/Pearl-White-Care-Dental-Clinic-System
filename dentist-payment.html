@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Record payment | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv" href="dentist-patients.html">Patients</a>
+          <a class="nv on" href="dentist-billing.html" aria-current="page">Billing</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Record payment</h1>
+            <p id="sub">Cash, QR code or card. The balance updates as soon as you save.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <a class="back" href="dentist-billing.html" id="back">&larr; Billing</a>
+        <div class="split">
+          <form class="cd" id="form" novalidate>
+            <h2>Payment</h2>
+            <label class="f" id="whowrap" hidden><span>Patient</span><select id="who"><option value="">Choose a patient</option></select></label>
+            <div class="fg">
+              <label class="f"><span>Amount (₱)</span><input id="amount" type="number" min="1" step="1" /></label>
+              <label class="f"><span>Received at</span><select id="branch"></select></label>
+              <label class="f s2"><span>For</span><input id="desc" /></label>
+            </div>
+
+            <p class="lab">Method</p>
+            <div class="chs" id="method" role="group" aria-label="Payment method">
+              <button type="button" class="ch" aria-pressed="true" data-m="Cash">Cash</button>
+              <button type="button" class="ch" aria-pressed="false" data-m="GCash">GCash (QR code)</button>
+              <button type="button" class="ch" aria-pressed="false" data-m="Bank transfer">Bank transfer</button>
+              <button type="button" class="ch" aria-pressed="false" data-m="Card">Debit or credit card</button>
+            </div>
+            <p class="hint" id="cardnote" style="margin: 8px 0 0">Card payments are only possible at Lagro, where the card terminal is.</p>
+
+            <div class="fg" style="margin-top: 12px">
+              <label class="f" id="cashwrap"><span>Cash received (₱)</span><input id="cash" type="text" inputmode="numeric" maxlength="7" autocomplete="off" /></label>
+              <label class="f" id="refwrap" hidden><span>Reference number</span><input id="ref" placeholder="From the GCash receipt, bank slip or card slip" /></label>
+              <p class="f change" id="change" aria-live="polite"></p>
+            </div>
+            <p class="err" id="err" role="alert"></p>
+            <div class="ac"><button class="btn" type="submit">Save and print receipt</button></div>
+          </form>
+
+          <section class="cd" id="summary"></section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      let pid = ST.param("patient");
+      let method = "Cash";
+      const CASH_MAX = 1000000; // most cash a cashier may accept in one payment
+      const isPlan = ST.param("plan") === "1";
+      ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
+      $("amount").value = ST.param("amount") || "";
+      $("desc").value = ST.param("desc") || "";
+
+      if (!ST.patient(pid || "")) {
+        $("whowrap").hidden = false;
+        DN.myPatients().sort((a, b) => a.last.localeCompare(b.last)).forEach((x) =>
+          $("who").insertAdjacentHTML("beforeend", '<option value="' + x.id + '">' + x.name + " · " + x.id + "</option>"));
+        $("who").onchange = () => { pid = $("who").value; summary(); };
+      } else {
+        $("branch").value = ST.patient(pid).branch;
+      }
+
+      function summary() {
+        const p = ST.patient(pid || "");
+        const plan = p && ST.plan(p.id);
+        const amt = Number($("amount").value || 0);
+        $("summary").innerHTML = !p
+          ? '<h2>Summary</h2><p class="empty">Choose a patient.</p>'
+          : "<h2>" + p.name + "</h2><dl class='kv'><dt>Patient ID</dt><dd>" + p.id + "</dd><dt>Mobile</dt><dd>" + p.mobile + "</dd>" +
+            (plan && isPlan
+              ? "<dt>" + plan.name + "</dt><dd>" + ST.peso(plan.left) + " left</dd><dt>After this payment</dt><dd><b>" + ST.peso(Math.max(0, plan.left - amt)) + " left</b></dd>"
+              : "<dt>Paying</dt><dd><b>" + ST.peso(amt) + "</b></dd>") +
+            "</dl>";
+      }
+
+      function syncMethod() {
+        const lagro = $("branch").value === "lagro";
+        const card = $("method").querySelector('[data-m="Card"]');
+        card.disabled = !lagro;
+        if (!lagro && method === "Card") method = "Cash";
+        $("method").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.m === method));
+        $("cardnote").hidden = lagro;
+        $("cashwrap").hidden = method !== "Cash";
+        $("refwrap").hidden = method === "Cash";
+        const change = Number($("cash").value || 0) - Number($("amount").value || 0);
+        $("change").textContent = method === "Cash" && Number($("cash").value || 0) > CASH_MAX
+          ? "Over the " + ST.peso(CASH_MAX) + " cash limit"
+          : method === "Cash" && $("cash").value ? (change >= 0 ? "Change: " + ST.peso(change) : "Short by " + ST.peso(-change)) : "";
+      }
+      $("method").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b || b.disabled) return;
+        method = b.dataset.m;
+        syncMethod();
+      };
+      $("branch").onchange = syncMethod;
+      // Whole pesos only, never more than ₱1,000,000: a keystroke or paste
+      // that would go over the limit is ignored and the last value stays.
+      let lastCash = $("cash").value;
+      $("cash").oninput = () => {
+        const digits = $("cash").value.replace(/\D/g, "");
+        $("cash").value = Number(digits) > CASH_MAX ? lastCash : digits;
+        lastCash = $("cash").value;
+        syncMethod();
+      };
+      $("amount").oninput = () => { syncMethod(); summary(); };
+
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        const amt = Number($("amount").value || 0);
+        let err = "";
+        if (!ST.patient(pid || "")) err = "Choose the patient.";
+        else if (amt <= 0) err = "Enter the amount paid.";
+        else if (!$("desc").value.trim()) err = "Say what the payment is for.";
+        else if (method === "Cash" && amt > CASH_MAX) err = "Cash payments are limited to " + ST.peso(CASH_MAX) + ". Use another method or split the payment.";
+        else if (method === "Cash" && Number($("cash").value || 0) > CASH_MAX) err = "Cash received can't be more than " + ST.peso(CASH_MAX) + ".";
+        else if (method === "Cash" && Number($("cash").value || 0) < amt) err = "Cash received is less than the amount.";
+        else if (method !== "Cash" && !$("ref").value.trim()) err = "Enter the reference number from the " + ({ Card: "card slip.", GCash: "GCash receipt.", "Bank transfer": "bank transfer slip." })[method];
+        $("err").textContent = err;
+        if (err) return;
+        const pay = ST.addPayment({ by: "dentist",
+          patient: pid, desc: $("desc").value.trim(), method, ref: method === "Cash" ? "" : $("ref").value.trim(),
+          amount: amt, branch: $("branch").value, toPlan: isPlan, cash: method === "Cash" ? Number($("cash").value) : null,
+        });
+        const charge = ST.param("charge");
+        if (charge) ST.markBilled(charge);
+        location.href = "dentist-receipt.html?or=" + pay.or + "&new=1";
+      };
+      syncMethod();
+      summary();
+      })();
+    </script>
+  </body>
+</html>

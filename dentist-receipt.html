@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Receipt | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv" href="dentist-patients.html">Patients</a>
+          <a class="nv on" href="dentist-billing.html" aria-current="page">Billing</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Receipt</h1>
+            <p id="sub">Print it or hand it over. Every payment today is listed below.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner ok noprint" id="msg" role="status" hidden></div>
+        <div class="split">
+          <section class="cd receipt" id="receipt"></section>
+          <section class="cd noprint">
+            <h2>Next</h2>
+            <div class="ac" style="flex-direction: column; align-items: stretch">
+              <button type="button" class="btn" id="print">Print receipt</button>
+              <a class="btn2" id="patient-link" href="dentist-patients.html">Patient record</a>
+            </div>
+          </section>
+        </div>
+        <section class="cd noprint">
+          <div class="hd"><h2>Today's transactions</h2><b id="daytotal"></b></div>
+          <div class="tw"><table><thead><tr><th>Receipt</th><th>Time</th><th>Patient</th><th>For</th><th>Method</th><th>Branch</th><th>Amount</th></tr></thead>
+            <tbody id="tx"></tbody></table></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const pay = ST.payment(ST.param("or") || "") || ST.payments()[0];
+      const p = ST.patient(pay.patient);
+      const b = ST.branch(pay.branch);
+      const plan = pay.toPlan || /plan/i.test(pay.desc) ? ST.plan(p.id) : null;
+      if (ST.param("new")) {
+        $("msg").hidden = false;
+        $("msg").textContent = "Payment saved. " + p.name + "'s balance is updated" + (p.email ? " and a copy was emailed to them." : ".");
+      }
+      $("patient-link").href = "dentist-record.html?id=" + p.id;
+      $("receipt").innerHTML =
+        '<div class="rc-head"><b>Pearl White Dental Clinic</b><small>' + b.name + " branch · " + b.address + "</small></div>" +
+        '<div class="rc-no"><span>Official receipt</span><b>' + pay.or + "</b></div>" +
+        "<dl class='kv'>" +
+        "<dt>Date</dt><dd>" + ST.longDate(pay.date) + ", " + pay.time + "</dd>" +
+        "<dt>Received from</dt><dd>" + p.name + " (" + p.id + ")</dd>" +
+        "<dt>For</dt><dd>" + ST.esc(pay.desc) + "</dd>" +
+        "<dt>Method</dt><dd>" + pay.method + (pay.ref ? " · ref " + ST.esc(pay.ref) : "") + "</dd>" +
+        (pay.cash ? "<dt>Cash received</dt><dd>" + ST.peso(pay.cash) + " · change " + ST.peso(pay.cash - pay.amount) + "</dd>" : "") +
+        '<dt>Amount paid</dt><dd class="rc-amt">' + ST.peso(pay.amount) + "</dd>" +
+        (plan ? "<dt>" + plan.name + " balance</dt><dd>" + ST.peso(plan.left) + "</dd>" : "") +
+        "<dt>Received by</dt><dd>" + pay.cashier + "</dd></dl>" +
+        '<p class="hint" style="margin: 14px 0 0">Sample receipt for the prototype. Not an official BIR receipt.</p>';
+
+      const today = ST.payments().filter((x) => x.date === ST.today());
+      $("daytotal").textContent = ST.peso(today.reduce((n, x) => n + x.amount, 0)) + " today";
+      $("tx").innerHTML = today.map((x) =>
+        "<tr" + (x.or === pay.or ? ' class="now"' : "") + '><td><a href="dentist-receipt.html?or=' + x.or + '">' + x.or + "</a></td><td>" + x.time + "</td><td>" +
+        ST.patient(x.patient).name + "</td><td>" + ST.esc(x.desc) + "</td><td>" + x.method + "</td><td>" + ST.branch(x.branch).name +
+        "</td><td><b>" + ST.peso(x.amount) + "</b></td></tr>").join("");
+      $("print").onclick = () => window.print();
+      })();
+    </script>
+  </body>
+</html>

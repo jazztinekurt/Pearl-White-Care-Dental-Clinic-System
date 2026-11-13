@@ -26,6 +26,7 @@
           <a class="nv" href="dentist-dashboard.html">Dashboard</a>
           <a class="nv" href="dentist-schedule.html">My schedule</a>
           <a class="nv on" href="dentist-patients.html" aria-current="page">Patients</a>
+          <a class="nv" href="dentist-billing.html">Billing</a>
         </nav>
       </aside>
 
@@ -111,7 +112,7 @@
             </div>
 
             <h2 class="sec">Charges for today</h2>
-            <p class="hint">These go to the front desk's billing list when you finish the visit.</p>
+            <p class="hint">These go to billing when you finish the visit. You or the front desk can bill them.</p>
             <div class="tw"><table class="lines"><tbody id="charges"></tbody></table></div>
             <div class="fg" style="margin-top: 10px">
               <label class="f"><span>Add a charge</span><select id="addcharge"><option value="">Choose…</option></select></label>
@@ -331,15 +332,23 @@
           ST.updateAppointment(todayAppt.ref, { status: "Completed" });
           msg += " Visit marked completed.";
         }
+        const sent = lines.length > 0;
         if (lines.length) {
           ST.addCharge({ patient: p.id, appt: todayAppt ? todayAppt.ref : null, dentist: DN.ME, items: lines.map((l) => ({ name: l.name, amount: l.amount })), plan: lines.some((l) => l.plan) });
-          msg += " " + ST.peso(lines.reduce((n, l) => n + l.amount, 0)) + " in charges sent to the front desk for billing.";
+          msg += " " + ST.peso(lines.reduce((n, l) => n + l.amount, 0)) + " in charges sent to billing.";
           lines = [];
         }
         $("noteform").reset();
         charges();
         $("saved").hidden = false;
         $("saved").textContent = msg;
+        if (sent) {
+          // The dentist can bill the visit right away, or leave it to the front desk
+          const a = document.createElement("a");
+          a.href = "dentist-billing.html?patient=" + encodeURIComponent(p.id);
+          a.textContent = "Bill now";
+          $("saved").append(" ", a);
+        }
         $("finish").textContent = "Save notes and send charges";
         history_();
         planCard();

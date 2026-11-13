@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Billing | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Dentist</p>
+        <nav aria-label="Main">
+          <a class="nv" href="dentist-dashboard.html">Dashboard</a>
+          <a class="nv" href="dentist-schedule.html">My schedule</a>
+          <a class="nv" href="dentist-patients.html">Patients</a>
+          <a class="nv on" href="dentist-billing.html" aria-current="page">Billing</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Billing</h1>
+            <p id="sub">Bill finished visits, set up installment plans and collect payments.</p>
+          </div>
+          <div class="me">
+            <i>MS</i
+            ><span><b>Dr. Maria Santos</b><small>Orthodontics</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div id="pick">
+          <section class="cd">
+            <h2>Ready to bill</h2>
+            <p class="hint" style="margin: -6px 0 10px">Charges you sent from your treatment notes.</p>
+            <div id="ready"></div>
+          </section>
+          <section class="cd">
+            <div class="hd">
+              <h2>Open balances</h2>
+              <label class="f inline"><span class="sr">Bill another patient</span>
+                <select id="other"><option value="">Bill another of your patients…</option></select></label>
+            </div>
+            <div class="tw"><table><thead><tr><th>Patient</th><th>Plan</th><th>Paid</th><th>Balance</th><th><span class="sr">Action</span></th></tr></thead>
+              <tbody id="open"></tbody></table></div>
+          </section>
+        </div>
+
+        <div id="bill" hidden>
+          <a class="back" href="dentist-billing.html">&larr; Billing</a>
+          <div class="split">
+            <section class="cd">
+              <h2>Charges</h2>
+              <div class="tw"><table class="lines"><thead><tr><th>Item</th><th>Qty</th><th>Amount</th><th><span class="sr">Remove</span></th></tr></thead>
+                <tbody id="lines"></tbody>
+                <tfoot><tr><td colspan="2"><b>Total</b></td><td colspan="2"><b id="total">₱0</b></td></tr></tfoot></table></div>
+              <div class="fg" style="margin-top: 12px">
+                <label class="f"><span>Add an item</span><select id="add"><option value="">Choose from the price list…</option></select></label>
+              </div>
+            </section>
+            <section class="cd">
+              <h2>How will they pay?</h2>
+              <div class="choices one" id="mode" role="radiogroup" aria-label="Payment type">
+                <label class="choice"><input type="radio" name="mode" value="full" checked /><b>Pay in full today</b><small>Collect the total now.</small></label>
+                <label class="choice"><input type="radio" name="mode" value="plan" /><b>Installment plan</b><small>Down payment now, the rest over several months.</small></label>
+              </div>
+              <div id="planbox" hidden>
+                <div class="fg" style="margin-top: 12px">
+                  <label class="f"><span>Down payment</span><input id="down" type="number" min="0" step="500" /></label>
+                  <label class="f"><span>Pay the rest over</span><select id="months">
+                    <option value="3">3 months</option><option value="6" selected>6 months</option><option value="9">9 months</option><option value="12">12 months</option></select></label>
+                </div>
+                <p class="hint" id="planline" style="margin: 10px 0 0"></p>
+              </div>
+              <p class="err" id="err" role="alert"></p>
+              <div class="ac"><button type="button" class="btn" id="go">Continue to payment</button></div>
+            </section>
+          </div>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="dentist.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const pid = ST.param("patient");
+      const p = pid && ST.patient(pid);
+
+      if (!p) {
+        // ---------- Choose who to bill ----------
+        const ready = ST.charges().filter((c) => c.dentist === DN.ME);
+        $("ready").innerHTML = ready.length
+          ? ready.map((c) => {
+              const pt = ST.patient(c.patient);
+              const total = c.items.reduce((n, x) => n + x.amount, 0);
+              return '<div class="li"><i></i><div><b>' + pt.name + "</b> · " + c.items.map((x) => x.name).join(", ") +
+                "<small>From " + ST.dentist(c.dentist).name + " · " + ST.peso(total) + "</small></div>" +
+                '<a class="btn sm" style="margin-left: auto" href="dentist-billing.html?patient=' + pt.id + '">Bill ' + ST.peso(total) + "</a></div>";
+            }).join("")
+          : '<p class="empty">Nothing waiting. Charges show up here when you add them to your visit notes.</p>';
+
+        const open = DN.myPatients().map((x) => [x, ST.plan(x.id)]).filter(([, pl]) => pl && pl.left > 0);
+        $("open").innerHTML = open.map(([x, pl]) =>
+          '<tr><td><a href="dentist-record.html?id=' + x.id + '"><b>' + x.name + "</b></a><small class='sub'>" + x.id + "</small></td><td>" + pl.name +
+          "</td><td>" + ST.peso(pl.paid) + " of " + ST.peso(pl.total) + "</td><td><b>" + ST.peso(pl.left) + "</b></td>" +
+          '<td><a class="btn2 sm" href="dentist-payment.html?patient=' + x.id + "&amount=" + Math.min(3000, pl.left) + "&desc=" +
+          encodeURIComponent(pl.name + " installment") + '&plan=1">Collect</a></td></tr>').join("");
+        DN.myPatients().sort((a, b) => a.last.localeCompare(b.last)).forEach((x) =>
+          $("other").insertAdjacentHTML("beforeend", '<option value="' + x.id + '">' + x.name + " · " + x.id + "</option>"));
+        $("other").onchange = () => $("other").value && (location.href = "dentist-billing.html?patient=" + $("other").value);
+        return;
+      }
+
+      // ---------- Build a bill for one patient ----------
+      $("pick").hidden = true;
+      $("bill").hidden = false;
+      $("title").textContent = "Bill " + p.name;
+      const plan = ST.plan(p.id);
+      $("sub").textContent = p.id + (plan ? " · " + plan.name + ": " + ST.peso(plan.left) + " left" : " · no installment plan");
+
+      const charge = ST.charges().find((c) => c.patient === p.id && c.dentist === DN.ME);
+      let lines = charge ? charge.items.map((x) => ({ name: x.name, qty: 1, price: x.amount, fromPlan: !!charge.plan })) : [];
+      // Installment plans are only for braces and dentures
+      const planOk = () => lines.some((l) => l.planEligible);
+      ST.priceList.forEach((x) => $("add").insertAdjacentHTML("beforeend", '<option value="' + x.id + '">' + x.name + " · " + ST.peso(x.price) + "</option>"));
+
+      const total = () => lines.reduce((n, l) => n + l.qty * l.price, 0);
+      function render() {
+        $("lines").innerHTML = lines.length
+          ? lines.map((l, i) =>
+              "<tr><td>" + l.name + (l.fromPlan ? ' <span class="bd">Plan</span>' : "") + "</td>" +
+              '<td><input type="number" min="1" value="' + l.qty + '" data-q="' + i + '" class="qty" aria-label="Quantity" /></td>' +
+              "<td>" + ST.peso(l.qty * l.price) + '</td><td><button type="button" class="btn2 sm" data-x="' + i + '" aria-label="Remove ' + l.name + '">Remove</button></td></tr>').join("")
+          : '<tr><td colspan="4" class="empty">Add the services done today from the price list.</td></tr>';
+        $("total").textContent = ST.peso(total());
+        const planRadio = document.querySelector("input[name=mode][value=plan]");
+        planRadio.disabled = !planOk();
+        if (planRadio.disabled && planRadio.checked) document.querySelector("input[name=mode][value=full]").checked = true;
+        planRadio.closest(".choice").querySelector("small").textContent = planOk()
+          ? "Down payment now, the rest over several months."
+          : "Only for braces and dentures.";
+        const planMode = document.querySelector("input[name=mode]:checked").value === "plan";
+        $("planbox").hidden = !planMode;
+        if (planMode) {
+          if (!$("down").value) $("down").value = Math.round((total() * 0.3) / 500) * 500;
+          const rest = Math.max(0, total() - Number($("down").value || 0));
+          const m = Number($("months").value);
+          $("planline").textContent = "Then " + m + " monthly payments of about " + ST.peso(Math.ceil(rest / m / 50) * 50) + " (" + ST.peso(rest) + " in total).";
+        }
+      }
+      $("add").onchange = () => {
+        const it = ST.priceList.find((x) => x.id === $("add").value);
+        if (it) lines.push({ name: it.name, qty: 1, price: it.price, planEligible: !!it.plan });
+        $("add").value = "";
+        render();
+      };
+      $("lines").oninput = (e) => {
+        const q = e.target.closest("[data-q]");
+        if (q) {
+          lines[q.dataset.q].qty = Math.max(1, Number(q.value) || 1);
+          $("total").textContent = ST.peso(total());
+        }
+      };
+      $("lines").onchange = () => render();
+      $("lines").onclick = (e) => {
+        const x = e.target.closest("[data-x]");
+        if (x) { lines.splice(Number(x.dataset.x), 1); render(); }
+      };
+      $("mode").onchange = render;
+      $("down").oninput = render;
+      $("months").onchange = render;
+
+      $("go").onclick = () => {
+        const t = total();
+        if (!t) return ($("err").textContent = "Add at least one item.");
+        const desc = lines.map((l) => (l.qty > 1 ? l.qty + "× " : "") + l.name).join(", ");
+        const planMode = document.querySelector("input[name=mode]:checked").value === "plan";
+        let amount = t;
+        let toPlan = lines.some((l) => l.fromPlan) ? 1 : 0;
+        if (planMode) {
+          const down = Number($("down").value || 0);
+          if (down <= 0 || down >= t) return ($("err").textContent = "The down payment has to be more than ₱0 and less than the total.");
+          ST.setPlan(p.id, { name: lines[0].name.replace(/,.*$/, "") + " plan", total: t, paid: 0 });
+          amount = down;
+          toPlan = 1;
+        }
+        location.href = "dentist-payment.html?patient=" + p.id + "&amount=" + amount + "&desc=" + encodeURIComponent(planMode ? "Down payment: " + desc : desc) +
+          "&plan=" + toPlan + (charge ? "&charge=" + charge.id : "");
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>
