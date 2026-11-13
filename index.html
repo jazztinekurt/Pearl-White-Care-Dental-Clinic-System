@@ -35,7 +35,7 @@
         </nav>
         <div class="actions">
           <a class="btn btn-line btn-sm" href="login.html">Log in</a>
-          <a class="btn btn-fill btn-sm" href="login.html">Book now</a>
+          <a class="btn btn-fill btn-sm" href="guest-book-1.html">Book now</a>
         </div>
       </div>
     </header>
@@ -94,7 +94,7 @@
               <span><b>Since 1999</b> caring for families</span>
               <span><b>3 branches</b> in Caloocan and Quezon City</span>
               <span><b>SMS reminders</b> before every visit</span>
-              <span><b>Online booking</b> at every branch</span>
+              <span><b>Online booking</b>, no account needed</span>
             </div>
           </div>
 
@@ -133,7 +133,7 @@
             <p id="pick" aria-live="polite">
               Pick a date and time to continue.
             </p>
-            <a class="btn btn-fill" href="login.html" id="req"
+            <a class="btn btn-fill" href="guest-book-1.html" id="req"
               >Request this appointment</a
             >
             <p
@@ -144,7 +144,7 @@
                 margin-top: 10px;
               "
             >
-              Log in or create a free account to send the request.
+              No account needed. Have one? <a href="login.html">Log in</a>.
             </p>
           </div>
         </div>
@@ -321,17 +321,17 @@
           <div class="head">
             <h2>It only takes four steps</h2>
             <p>
-              Create a free account once, then book in a couple of minutes.
+              Book in a couple of minutes, with or without an account.
             </p>
           </div>
           <div class="steps">
             <div class="step">
-              <h3>Create an account</h3>
-              <p>Sign up and accept the data privacy consent.</p>
-            </div>
-            <div class="step">
               <h3>Book a time</h3>
               <p>Choose your service, branch, dentist and an open slot.</p>
+            </div>
+            <div class="step">
+              <h3>Leave your details</h3>
+              <p>Your name and mobile number, or log in if you have an account.</p>
             </div>
             <div class="step">
               <h3>Get your confirmation</h3>
@@ -339,7 +339,7 @@
             </div>
             <div class="step">
               <h3>Visit your dentist</h3>
-              <p>Show up at your branch and we take care of the rest.</p>
+              <p>At the clinic, you can create a free account or skip it.</p>
             </div>
           </div>
         </div>
@@ -350,7 +350,8 @@
           <div style="max-width: 700px; margin: 0 auto; text-align: center">
             <h2>Want to keep track of your visits?</h2>
             <p class="lead" style="margin: 14px auto 0">
-              One free account works at all three branches. With it you can:
+              An account is optional and works at all three branches. Create
+              one here or at the clinic. With it you can:
             </p>
             <ul style="display: inline-block; text-align: left">
               <li>
@@ -376,6 +377,9 @@
                 >
               </li>
             </ul>
+            <p style="margin-top: 18px">
+              <a class="btn btn-line" href="register.html">Create an account</a>
+            </p>
           </div>
         </div>
       </section>
@@ -536,7 +540,7 @@
               </div>
 
               <div style="margin-top: 28px; display: flex; gap: 12px">
-                <a href="login.html" class="btn btn-fill" style="flex: 1"
+                <a href="guest-book-1.html" id="modal-book" class="btn btn-fill" style="flex: 1"
                   >Book this Branch</a
                 >
                 <button
@@ -569,10 +573,10 @@
         <div class="final">
           <div>
             <h2>Ready for your next visit?</h2>
-            <p>Book in a couple of minutes with your free account.</p>
+            <p>Book in a couple of minutes. No account needed.</p>
           </div>
           <div style="display: flex; gap: 12px; flex-wrap: wrap">
-            <a class="btn btn-fill" href="login.html">Book an appointment</a>
+            <a class="btn btn-fill" href="guest-book-1.html">Book an appointment</a>
             <a class="btn btn-line" href="register.html">Create an account</a>
           </div>
         </div>
@@ -886,6 +890,7 @@
         modalAddress.textContent = data.address;
         modalHours.textContent = data.hours;
         modalPayments.textContent = data.payments;
+        document.getElementById("modal-book").href = "guest-book-1.html?branch=" + branchKey;
 
         updateModalGallery();
         modalOverlay.classList.add("active");

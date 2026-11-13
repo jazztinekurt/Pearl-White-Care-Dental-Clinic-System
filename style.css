@@ -4972,3 +4972,12 @@ td a:where(:not(.auth *, .landing *)) {
     grid-template-columns: 1fr;
   }
 }
+
+/* Links inside small hint text (e.g. "Have an account? Log in") */
+.app .hint a {
+  color: var(--lagoon);
+  font-weight: 600;
+}
+.app .hint a:hover {
+  text-decoration: underline;
+}

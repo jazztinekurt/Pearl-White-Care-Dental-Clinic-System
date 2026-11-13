@@ -36,7 +36,7 @@
         <header class="tb">
           <div>
             <h1 id="title">Appointment requests</h1>
-            <p id="sub">Online booking requests from the patient portal. Confirm, reject or move them.</p>
+            <p id="sub">Online booking requests from patients and guests. Confirm, reject or move them.</p>
           </div>
           <div class="me">
             <i>LM</i
@@ -87,9 +87,10 @@
           const c = !r.state && ST.conflict(r.dentist, r.date, r.time);
           return (
             '<div class="req" data-ref="' + r.ref + '">' +
-            '<div class="req-main"><b>' + p.name + "</b> · " + r.service + (p.status === "New" ? ' <span class="bd wa">New patient</span>' : "") +
+            '<div class="req-main"><b>' + ST.esc(p.name) + "</b> · " + r.service +
+            (p.status === "New" ? ' <span class="bd wa">New patient</span>' : p.status === "Guest" ? ' <span class="bd wa">Guest, no account</span>' : "") +
             "<small>" + ST.longDate(r.date) + " · " + r.time + " · " + ST.dentist(r.dentist).name + " · " + ST.branch(r.branch).name +
-            " · " + r.ref + " · sent " + r.sent + "</small>" +
+            " · " + r.ref + " · sent " + r.sent + (p.status === "Guest" ? " · " + ST.esc(p.mobile) + (p.email ? " · " + ST.esc(p.email) : "") : "") + "</small>" +
             (r.concern ? '<p class="concern">“' + ST.esc(r.concern) + "”</p>" : "") +
             (c ? '<p class="clash">Clash: ' + ST.dentist(r.dentist).short + " is already booked at " + ST.branch(c.branch).name + " at " + r.time + " (" + ST.patient(c.patient).name + ").</p>" : "") +
             "</div>" +
@@ -126,7 +127,7 @@
           const res = ST.confirmRequest(ref);
           const p = ST.patient(res.request.patient);
           if (res.ok) {
-            say("Confirmed " + ref + ". " + p.name + " gets an SMS and email, and it is on the " +
+            say("Confirmed " + ref + ". " + ST.esc(p.name) + " gets an SMS" + (p.email ? " and email" : "") + ", and it is on the " +
               '<a href="staff-calendar.html?date=' + res.request.date + '">master calendar</a>.');
           } else {
             say("Can't confirm " + ref + ": the dentist is already booked then. " +

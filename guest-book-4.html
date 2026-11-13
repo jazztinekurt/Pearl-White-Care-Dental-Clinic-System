@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Request sent | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Guest booking</p>
+        <nav aria-label="Main">
+          <a class="nv" href="index.html">Home</a>
+          <a class="nv on" href="guest-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="login.html">Log in</a>
+          <a class="nv" href="register.html">Create an account</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 4 of 4: your request is with the clinic.</p>
+          </div>
+          <div class="me">
+            <span><b>Booking as a guest</b><small>No account needed</small></span>
+            <a href="login.html">Log in</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="done">Service and branch</li>
+          <li class="done">Dentist and time</li>
+          <li class="done">Your details</li>
+          <li class="on" aria-current="step">Submitted</li>
+        </ol>
+
+        <div class="split">
+          <section class="cd">
+            <div class="done-ic" aria-hidden="true">&#10003;</div>
+            <h2>Request sent</h2>
+            <p style="color: var(--muted); margin-bottom: 16px" id="lead"></p>
+            <dl class="kv" id="sum"></dl>
+            <div class="ac">
+              <a class="btn" href="index.html">Back to home</a>
+              <a class="btn2" href="guest-book-1.html">Book another</a>
+            </div>
+          </section>
+          <section class="cd">
+            <h2>Reference number</h2>
+            <p class="refno" id="ref"></p>
+            <p style="color: var(--muted); margin: 6px 0 18px">Give this number if you call or text the clinic to change or cancel.</p>
+            <h2>At the clinic</h2>
+            <div class="li"><i></i><div>Bring a valid ID. The front desk takes your details and your signed data privacy consent.</div></div>
+            <div class="li"><i></i><div>You can create a free patient account there, or skip it. Your records are kept either way.</div></div>
+            <p class="hint" style="margin: 14px 0 0">Want an account now? <a href="register.html">Create one</a> to see your visits and balances online.</p>
+          </section>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const r = PW.guestRequest(PW.param("ref") || "");
+      if (!r) return location.replace("index.html");
+      const g = r.guest;
+      document.getElementById("ref").textContent = r.ref;
+      document.getElementById("lead").textContent = g.sms
+        ? "We will text " + g.mobile + " once the clinic confirms your appointment."
+        : "The clinic will call " + g.mobile + " to confirm your appointment.";
+      document.getElementById("sum").innerHTML = [
+        ["Status", PW.badge("Pending")],
+        ["Name", PW.esc(g.first + " " + g.last)],
+        ["Appointment", r.serviceName || r.service],
+        ["When", PW.longDate(r.date) + ", " + r.time],
+        ["Dentist", PW.dentist(r.dentist).name],
+        ["Branch", PW.branch(r.branch).name],
+      ].map((x) => "<dt>" + x[0] + "</dt><dd>" + x[1] + "</dd>").join("");
+      })();
+    </script>
+  </body>
+</html>

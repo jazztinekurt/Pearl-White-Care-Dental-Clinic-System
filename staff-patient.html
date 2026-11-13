@@ -52,6 +52,11 @@
           <section class="cd">
             <div class="hd"><h2>Details</h2><span id="status"></span></div>
             <dl class="kv" id="details"></dl>
+            <div id="portalbox" hidden style="margin-top: 14px">
+              <label class="f"><span>Email for the portal account</span><input id="portal-email" type="email" placeholder="name@email.com" /></label>
+              <p class="err" id="portal-err" role="alert"></p>
+              <div class="ac" style="margin-top: 0"><button type="button" class="btn sm" id="portal-go">Create account</button></div>
+            </div>
             <p class="hint" style="margin: 14px 0 0">Medical history and treatment notes are only visible to dentists.</p>
           </section>
           <section class="cd" id="balance"></section>
@@ -75,9 +80,19 @@
       $("title").textContent = p.name;
       $("sub").textContent = p.id + " · patient since " + ST.longDate(p.since) + " · " + ST.branch(p.branch).name + " branch";
       $("status").innerHTML = ST.badge(p.status);
-      if (ST.param("new")) {
+      const say = (text, kind) => {
         $("msg").hidden = false;
-        $("msg").textContent = "Registered " + p.name + " as " + p.id + ". Consent signed and saved.";
+        $("msg").className = "banner " + (kind || "ok");
+        $("msg").textContent = text;
+      };
+      const portalLine = () => ST.hasPortal(p)
+        ? " Portal account created; login details sent to " + p.email + "."
+        : " No portal account. They can create one later here or on the website.";
+      if (ST.param("new")) say("Registered " + p.name + " as " + p.id + ". Consent signed and saved." + portalLine());
+      if (ST.param("intake")) say("Intake saved for " + p.name + ". Consent signed." + portalLine());
+      if (p.status === "Guest") {
+        say("Booked online as a guest (" + (p.fromRef || "online booking") + "). When they arrive, complete the intake form and consent, " +
+          "and ask if they want a patient portal account.", "warn");
       }
 
       const age = p.dob ? Math.floor((Date.now() - ST.toDate(p.dob)) / 31557600000) : null;
@@ -88,12 +103,36 @@
         ["Sex", { F: "Female", M: "Male" }[p.sex] || "—"],
         ["Home branch", ST.branch(p.branch).name],
         ["Emergency contact", p.contact || "—"],
+        ["Portal account", p.status === "Guest" ? "Not yet (ask at the visit)" : ST.hasPortal(p) ? "Yes" : "No"],
       ];
       $("details").innerHTML = rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + ST.esc(r[1]) + "</dd>").join("");
 
       $("actions").innerHTML =
-        '<a class="btn" href="staff-appointment.html?patient=' + p.id + '">Book appointment</a>' +
-        '<a class="btn2" href="staff-billing.html?patient=' + p.id + '">Billing</a>';
+        (p.status === "Guest" ? '<a class="btn" href="staff-patient-new.html?id=' + p.id + '">Complete intake</a>' : "") +
+        '<a class="' + (p.status === "Guest" ? "btn2" : "btn") + '" href="staff-appointment.html?patient=' + p.id + '">Book appointment</a>' +
+        '<a class="btn2" href="staff-billing.html?patient=' + p.id + '">Billing</a>' +
+        (p.status !== "Guest" && !ST.hasPortal(p) ? '<button type="button" class="btn2" id="portal">Create portal account</button>' : "");
+
+      // A patient without an account can get one at the front desk at any time
+      function createPortal(email) {
+        ST.updatePatient(p.id, { email, portal: true });
+        ST.log("front", "Account", "Created a portal account for " + p.id);
+        location.href = "staff-patient.html?id=" + p.id + "&portal=1";
+      }
+      if (ST.param("portal")) say("Portal account created for " + p.name + ". Login details were sent to " + p.email + ".");
+      if ($("portal")) {
+        $("portal").onclick = () => {
+          if (p.email) return createPortal(p.email);
+          $("portalbox").hidden = false;
+          $("portal-email").focus();
+        };
+        $("portal-go").onclick = () => {
+          const email = $("portal-email").value.trim();
+          const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+          $("portal-err").textContent = ok ? "" : "Enter a valid email address.";
+          if (ok) createPortal(email);
+        };
+      }
 
       const plan = ST.plan(p.id);
       const pays = ST.payments().filter((x) => x.patient === p.id);

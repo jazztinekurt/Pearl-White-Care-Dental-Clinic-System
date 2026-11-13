@@ -52,8 +52,15 @@
             <h2>Next</h2>
             <div class="ac" style="flex-direction: column; align-items: stretch">
               <button type="button" class="btn" id="print">Print receipt</button>
+              <button type="button" class="btn2" id="email">Send to email</button>
               <a class="btn2" id="patient-link" href="staff-patients.html">Patient profile</a>
             </div>
+            <div id="emailbox" hidden style="margin-top: 14px">
+              <label class="f"><span>Patient's email</span><input id="email-to" type="email" autocomplete="off" placeholder="name@email.com" /></label>
+              <p class="err" id="email-err" role="alert"></p>
+              <button type="button" class="btn sm" id="email-send">Send receipt</button>
+            </div>
+            <p class="hint" id="email-msg" role="status" style="margin: 12px 0 0"></p>
           </section>
         </div>
         <section class="cd noprint">
@@ -76,7 +83,7 @@
       const plan = pay.toPlan || /plan/i.test(pay.desc) ? ST.plan(p.id) : null;
       if (ST.param("new")) {
         $("msg").hidden = false;
-        $("msg").textContent = "Payment saved. " + p.name + "'s balance is updated" + (p.email ? " and a copy was emailed to them." : ".");
+        $("msg").textContent = "Payment saved. " + p.name + "'s balance is updated.";
       }
       $("patient-link").href = "staff-patient.html?id=" + p.id;
       $("receipt").innerHTML =
@@ -100,6 +107,39 @@
         ST.patient(x.patient).name + "</td><td>" + ST.esc(x.desc) + "</td><td>" + x.method + "</td><td>" + ST.branch(x.branch).name +
         "</td><td><b>" + ST.peso(x.amount) + "</b></td></tr>").join("");
       $("print").onclick = () => window.print();
+
+      // ---------- Send to email ----------
+      // Prototype only: nothing is really sent. It records where and when.
+      const ACTOR = "front";
+      const sentLog = () => ST.load("st_emailed", {});
+      function showSent() {
+        const s = sentLog()[pay.or];
+        $("email-msg").textContent = s ? "Sent to " + s.to + " at " + s.time + "." : "";
+        $("email").textContent = s ? "Send again" : "Send to email";
+      }
+      function send(to) {
+        const all = sentLog();
+        all[pay.or] = { to, time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) };
+        ST.save("st_emailed", all);
+        ST.log(ACTOR, "Payment", "Emailed receipt " + pay.or + " to " + p.id);
+        $("emailbox").hidden = true;
+        showSent();
+      }
+      $("email").onclick = () => {
+        // No email on file: ask for one first
+        if (!p.email) {
+          $("emailbox").hidden = false;
+          $("email-to").focus();
+          return;
+        }
+        send(p.email);
+      };
+      $("email-send").onclick = () => {
+        const to = $("email-to").value.trim();
+        $("email-err").textContent = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) ? "" : "Enter a valid email address.";
+        if (!$("email-err").textContent) send(to);
+      };
+      showSent();
       })();
     </script>
   </body>

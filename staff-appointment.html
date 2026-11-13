@@ -235,7 +235,9 @@
           ST.updateAppointment(editing.ref, fields);
           ref = editing.ref;
         } else if (request) {
-          ST.save("st_handled", Object.assign(ST.load("st_handled", {}), { [request.ref]: { state: "Confirmed", at: "now", moved: true } }));
+          // A guest gets their patient record when the booking is confirmed
+          if (String(fields.patient).startsWith("G-")) fields.patient = ST.registerGuest(request);
+          ST.save("st_handled", Object.assign(ST.load("st_handled", {}), { [request.ref]: { state: "Confirmed", at: "now", moved: true, patient: fields.patient } }));
           ref = ST.addAppointment(Object.assign({ ref: request.ref, source: "Online" }, fields)).ref;
         } else {
           ref = ST.addAppointment(Object.assign({ source: st.source }, fields)).ref;

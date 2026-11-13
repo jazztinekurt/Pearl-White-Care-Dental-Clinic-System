@@ -156,6 +156,23 @@ const PW = (() => {
     return ref;
   }
 
+  // Guests book without an account. The request goes to the front desk's
+  // request list (staff.js reads "pw_guest_requests"); the clinic texts them.
+  function submitGuestBooking(guest) {
+    const b = booking();
+    const s = service(b.service);
+    const list = load("pw_guest_requests", []);
+    const ref = "PW-2026-0" + (180 + list.length);
+    // The front desk books visit types, so map the service to its first visit
+    const visit = { general: "Check-up", ortho: "Orthodontics consult", endo: "Root canal", surgery: "Extraction", dentures: "Denture fitting" };
+    list.push({ ref, guest, service: visit[b.service] || "Consultation", serviceName: s ? s.name : "Appointment",
+      dentist: b.dentist, branch: b.branch, date: b.date, time: b.time, sent: "Just now", concern: b.concern || "" });
+    save("pw_guest_requests", list);
+    clearBooking();
+    return ref;
+  }
+  const guestRequest = (ref) => load("pw_guest_requests", []).find((r) => r.ref === ref);
+
   /* ---------- Slots: sample "real-time" availability ---------- */
   function bookableDays(count) {
     const out = [];
@@ -168,6 +185,14 @@ const PW = (() => {
     return out;
   }
   function isTaken(branchId, dentistId, dateIso, timeIdx) {
+    // Pages that also load staff.js (guest booking) check the clinic's real
+    // schedule: a time is taken if the dentist has an appointment or a
+    // pending request then, at any branch.
+    if (typeof ST !== "undefined") {
+      const t = times[timeIdx];
+      return !!ST.conflict(dentistId, dateIso, t) ||
+        ST.pending().some((r) => r.dentist === dentistId && r.date === dateIso && r.time === t);
+    }
     const day = Number(dateIso.slice(8, 10));
     const b = branches.findIndex((x) => x.id === branchId);
     const dn = dentists.findIndex((x) => x.id === dentistId);
@@ -230,7 +255,7 @@ const PW = (() => {
     branches, services, dentists, times, payments, treatments,
     branch, service, dentist,
     appointments, appointment, isUpcoming, changeAppointment,
-    booking, setBooking, clearBooking, submitBooking,
+    booking, setBooking, clearBooking, submitBooking, submitGuestBooking, guestRequest,
     bookableDays, isTaken,
     notifications, markRead,
     longDate, shortDate, toDate, peso, badge, esc, param, load, save,

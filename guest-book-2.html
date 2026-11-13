@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choose a dentist and time | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Guest booking</p>
+        <nav aria-label="Main">
+          <a class="nv" href="index.html">Home</a>
+          <a class="nv on" href="guest-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="login.html">Log in</a>
+          <a class="nv" href="register.html">Create an account</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 2 of 4: choose a dentist and an open time.</p>
+          </div>
+          <div class="me">
+            <span><b>Booking as a guest</b><small>No account needed</small></span>
+            <a href="login.html">Log in</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="done">Service and branch</li>
+          <li class="on" aria-current="step">Dentist and time</li>
+          <li>Your details</li>
+          <li>Submitted</li>
+        </ol>
+
+        <div class="banner" id="ctx"></div>
+        <div class="cd">
+          <h2>Dentist</h2>
+          <div class="choices" id="dent" role="radiogroup" aria-label="Dentist"></div>
+          <p class="hint" id="dnote" style="margin-top: 10px" hidden></p>
+
+          <div class="when">
+            <div>
+              <h2 class="sec">Date</h2>
+              <div class="mcal" id="mcal">
+                <div class="mcal-head">
+                  <button type="button" id="m-prev" aria-label="Previous month">&larr;</button>
+                  <b id="m-title" aria-live="polite"></b>
+                  <button type="button" id="m-next" aria-label="Next month">&rarr;</button>
+                </div>
+                <div class="mcal-week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                <div class="mcal-days" id="days" role="group" aria-label="Date"></div>
+              </div>
+              <p class="hint" style="margin: 8px 0 0">Closed on Sundays. You can book up to 3 months ahead.</p>
+            </div>
+            <div>
+              <h2 class="sec" id="time-title">Time</h2>
+              <p class="hint">Open times for this dentist and branch. Taken times are crossed out.</p>
+              <div class="chs" id="slots" role="group" aria-label="Time"></div>
+            </div>
+          </div>
+
+          <p class="err" id="err" role="alert"></p>
+          <div class="ac">
+            <button class="btn" type="button" id="next">Next: your details</button>
+            <a class="btn2" id="back" href="guest-book-1.html">Back</a>
+          </div>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      // Reschedule: "Reschedule" on the dashboard or appointment details
+      const rRef = PW.param("reschedule");
+      if (rRef) {
+        const a = PW.appointment(rRef);
+        if (a && PW.isUpcoming(a)) {
+          PW.clearBooking();
+          PW.setBooking({ reschedule: a.ref, service: a.service, branch: a.branch, dentist: a.dentist, concern: a.concern || "", title: a.title });
+        }
+      }
+      let bk = PW.booking();
+      if (!bk.service || !bk.branch) return location.replace("guest-book-1.html");
+
+      const svc = PW.service(bk.service);
+      const branch = PW.branch(bk.branch);
+      const ctx = document.getElementById("ctx");
+
+      if (bk.reschedule) {
+        const a = PW.appointment(bk.reschedule);
+        document.getElementById("title").textContent = "Reschedule appointment";
+        document.getElementById("sub").textContent = "Pick a new time. The clinic confirms it by text or email.";
+        document.querySelector(".stepper").innerHTML =
+          '<li class="on" aria-current="step">New time</li><li>Your details</li><li>Submitted</li>';
+        ctx.innerHTML =
+          "<span>Rescheduling <b>" + a.title + "</b>, now " + PW.longDate(a.date) + " at " + a.time +
+          " (" + a.ref + ")</span>";
+        const back = document.getElementById("back");
+        back.href = "patient-appointment-details.html?ref=" + a.ref;
+        back.textContent = "Keep current time";
+      } else {
+        ctx.innerHTML =
+          "<span><b>" + svc.name + "</b> at <b>" + branch.name + "</b> branch</span>" +
+          '<a href="guest-book-1.html">Change</a>';
+      }
+
+      // Dentists at this branch, specialists for the chosen service first
+      const here = PW.dentists
+        .filter((d) => d.branches.includes(branch.id))
+        .sort((a, b) => (b.spec === svc.id) - (a.spec === svc.id));
+      if (!here.some((d) => d.id === bk.dentist)) bk.dentist = here[0].id;
+
+      const dent = document.getElementById("dent");
+      here.forEach((d) => {
+        const specialist = d.spec === svc.id;
+        dent.insertAdjacentHTML(
+          "beforeend",
+          '<label class="choice"><input type="radio" name="dentist" value="' + d.id + '"' +
+            (bk.dentist === d.id ? " checked" : "") + ' /><span class="av">' + d.ini + "</span><b>" + d.name +
+            "</b><small>" + PW.service(d.spec).name + " · also general dentistry</small>" +
+            '<small class="bio">' + d.bio + " Sees patients at " + d.branches.map((b) => PW.branch(b).name).join(" and ") + ".</small>" +
+            (specialist ? "<em>Specialist for this</em>" : "") + "</label>",
+        );
+      });
+
+      // No specialist here? Say where to find one.
+      if (svc.id !== "general" && !here.some((d) => d.spec === svc.id)) {
+        const sp = PW.dentists.find((d) => d.spec === svc.id);
+        const note = document.getElementById("dnote");
+        note.hidden = false;
+        note.innerHTML =
+          "No " + svc.name.toLowerCase() + " specialist at " + branch.name + ". " + sp.name + " sees patients at " +
+          sp.branches.map((b) => PW.branch(b).name).join(" and ") +
+          (bk.reschedule ? "." : '. <a href="guest-book-1.html">Change branch</a>');
+      }
+
+      // Bookable range: tomorrow up to 3 months ahead, Monday to Saturday
+      const MONTHS_AHEAD = 3;
+      const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const first = new Date(now);
+      first.setDate(first.getDate() + 1);
+      const last = new Date(now);
+      last.setMonth(last.getMonth() + MONTHS_AHEAD);
+      const minIso = iso(first);
+      const maxIso = iso(last);
+
+      const daysEl = document.getElementById("days");
+      const slotsEl = document.getElementById("slots");
+      const dentistNow = () => document.querySelector("input[name=dentist]:checked").value;
+      const fullyBooked = (d) => PW.times.every((t, i) => PW.isTaken(branch.id, dentistNow(), d, i));
+      const bookable = (d) => d >= minIso && d <= maxIso && PW.toDate(d).getDay() !== 0 && !fullyBooked(d);
+
+      let date = bk.date && bookable(bk.date) ? bk.date : null;
+      let time = date ? bk.time : null;
+      let view = date ? PW.toDate(date) : new Date(first);
+      view.setDate(1);
+
+      function renderDays() {
+        const y = view.getFullYear();
+        const m = view.getMonth();
+        document.getElementById("m-title").textContent = view.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        document.getElementById("m-prev").disabled = y === first.getFullYear() && m === first.getMonth();
+        document.getElementById("m-next").disabled = y === last.getFullYear() && m === last.getMonth();
+        let html = "";
+        for (let i = 0; i < new Date(y, m, 1).getDay(); i++) html += "<span></span>";
+        const n = new Date(y, m + 1, 0).getDate();
+        for (let day = 1; day <= n; day++) {
+          const d = iso(new Date(y, m, day));
+          const ok = bookable(d);
+          const why = d < minIso ? "past" : d > maxIso ? "too far ahead" : PW.toDate(d).getDay() === 0 ? "closed on Sundays" : !ok ? "fully booked" : "";
+          html +=
+            '<button type="button" data-d="' + d + '" aria-pressed="' + (d === date) + '"' + (ok ? "" : " disabled") +
+            (d === iso(now) ? ' class="today"' : "") +
+            ' aria-label="' + PW.longDate(d) + (why ? ", " + why : "") + '">' + day + "</button>";
+        }
+        daysEl.innerHTML = html;
+        document.getElementById("time-title").textContent = date ? "Time on " + PW.toDate(date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Time";
+      }
+      function renderSlots() {
+        if (!date) {
+          slotsEl.innerHTML = '<p class="hint" style="margin: 0">Pick a date on the calendar first.</p>';
+          return;
+        }
+        const d = dentistNow();
+        slotsEl.innerHTML = PW.times
+          .map((t, i) => {
+            const taken = PW.isTaken(branch.id, d, date, i);
+            if (taken && t === time) time = null;
+            return (
+              '<button type="button" class="ch" data-t="' + t + '" aria-pressed="' + (t === time) + '"' +
+              (taken ? " disabled" : "") + ">" + t + "</button>"
+            );
+          })
+          .join("");
+      }
+
+      document.getElementById("m-prev").onclick = () => { view.setMonth(view.getMonth() - 1); renderDays(); };
+      document.getElementById("m-next").onclick = () => { view.setMonth(view.getMonth() + 1); renderDays(); };
+
+      daysEl.onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        date = b.dataset.d;
+        time = null;
+        renderDays();
+        renderSlots();
+      };
+      slotsEl.onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b || b.disabled) return;
+        time = b.dataset.t;
+        renderSlots();
+      };
+      dent.onchange = () => {
+        // A different dentist can be fully booked on the chosen day
+        if (date && !bookable(date)) { date = null; time = null; }
+        renderDays();
+        renderSlots();
+      };
+
+      renderDays();
+      renderSlots();
+
+      document.getElementById("next").onclick = () => {
+        const err = document.getElementById("err");
+        if (!date || !time) {
+          err.textContent = !date ? "Pick a date." : "Pick an open time.";
+          return;
+        }
+        PW.setBooking({ dentist: document.querySelector("input[name=dentist]:checked").value, date, time });
+        location.href = "guest-book-3.html";
+      };
+      })();
+    </script>
+  </body>
+</html>

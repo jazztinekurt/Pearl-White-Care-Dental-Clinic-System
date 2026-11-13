@@ -150,7 +150,8 @@
         box.innerHTML = open.length
           ? open.slice(0, 3).map((r) => {
               const p = ST.patient(r.patient);
-              return '<div class="li"><i></i><div><b>' + p.name + "</b> · " + r.service +
+              return '<div class="li"><i></i><div><b>' + ST.esc(p.name) + "</b> · " + r.service +
+                (p.status === "Guest" ? ' <span class="bd wa">Guest</span>' : "") +
                 "<small>" + ST.shortDate(r.date) + " · " + r.time + " · " + ST.dentist(r.dentist).name + " · " + ST.branch(r.branch).name + " · " + r.ref + "</small>" +
                 '<div class="ac" style="margin-top: 8px">' +
                 '<button type="button" class="btn sm" data-ok="' + r.ref + '">Confirm</button>' +

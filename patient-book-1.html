@@ -109,6 +109,9 @@
         }
       } catch (e) {}
 
+      // Coming from "Book this branch" on the landing page
+      if (PW.branch(PW.param("branch") || "")) PW.setBooking({ branch: PW.param("branch") });
+
       const bk = PW.booking();
       const svc = document.getElementById("svc");
       const br = document.getElementById("br");

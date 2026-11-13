@@ -80,7 +80,8 @@
             </div>
             <label class="ck"><input type="checkbox" id="agree" /><span><b>The patient read the notice and agrees</b> (required)</span></label>
             <label class="ck"><input type="checkbox" id="sms" checked /><span>Send SMS and email reminders before visits</span></label>
-            <label class="ck"><input type="checkbox" id="portal" checked /><span>Create a patient portal account (login details go to their email)</span></label>
+            <label class="ck"><input type="checkbox" id="portal" /><span><b>The patient wants a portal account</b> (optional; login details go to their email)</span></label>
+            <p class="hint" style="margin: -2px 0 10px 30px">Ask them. Without one, their records are still kept, and they can create an account later here or on the website.</p>
             <p class="lab" style="margin-top: 6px">Patient's signature</p>
             <canvas id="sig" class="sig" width="560" height="140" aria-label="Signature pad. The patient signs here with a finger or mouse."></canvas>
             <div class="ac" style="margin-top: 8px"><button type="button" class="btn2 sm" id="clear">Clear signature</button></div>
@@ -88,7 +89,7 @@
 
           <p class="err" id="err" role="alert"></p>
           <div class="ac" style="margin-top: 0">
-            <button class="btn" type="submit">Register patient</button>
+            <button class="btn" type="submit" id="submit">Register patient</button>
             <a class="btn2" href="staff-patients.html" id="cancel">Cancel</a>
           </div>
         </form>
@@ -104,6 +105,17 @@
       ST.branches.forEach((b) => $("branch").insertAdjacentHTML("beforeend", '<option value="' + b.id + '">' + b.name + "</option>"));
       $("dob").max = ST.today();
       const back = ST.param("back") === "appointment";
+      // Intake for someone who already has a record (a guest who booked online)
+      const existing = ST.patient(ST.param("id") || "");
+      if (existing) {
+        $("title").textContent = "Complete intake";
+        $("sub").textContent = existing.name + " booked online as a guest. Fill in the rest, take their consent and ask about a portal account.";
+        $("back").href = $("cancel").href = "staff-patient.html?id=" + existing.id;
+        $("back").innerHTML = "&larr; " + ST.esc(existing.name);
+        $("submit").textContent = "Save intake";
+        ["first", "last", "dob", "sex", "mobile", "email", "branch"].forEach((k) => existing[k] && ($(k).value = existing[k]));
+        if (existing.address) $("addr").value = existing.address;
+      }
       if (back) {
         $("back").href = $("cancel").href = "staff-appointment.html";
         $("back").innerHTML = "&larr; New appointment";
@@ -153,16 +165,24 @@
         else if (!signed) err = "Ask the patient to sign in the box.";
         $("err").textContent = err;
         if (err) return;
+        const fields = {
+          first: v("first"), last: v("last"), sex: $("sex").value, dob: v("dob"), mobile: v("mobile"), email: v("email"),
+          address: v("addr"), branch: $("branch").value, status: "New",
+          contact: v("ecname") ? v("ecname") + (v("ecmobile") ? ", " + v("ecmobile") : "") : "", sms: $("sms").checked,
+          portal: $("portal").checked && !!v("email"), consent: true,
+        };
+        const how = "(consent signed, " + (fields.portal ? "portal account created)" : "no portal account)");
+        if (existing) {
+          ST.updatePatient(existing.id, fields);
+          ST.log("front", "Account", "Completed intake for " + existing.id + " " + how);
+          location.href = "staff-patient.html?id=" + existing.id + "&intake=1";
+          return;
+        }
         const added = ST.load("st_patients", []);
         const id = "P-0" + (160 + added.length);
-        added.push({
-          id, first: v("first"), last: v("last"), sex: $("sex").value, dob: v("dob"), mobile: v("mobile"), email: v("email"),
-          address: v("addr"), branch: $("branch").value, since: ST.today(), status: "New",
-          contact: v("ecname") ? v("ecname") + (v("ecmobile") ? ", " + v("ecmobile") : "") : "", sms: $("sms").checked,
-          portal: $("portal").checked && !!v("email"),
-        });
+        added.push(Object.assign({ id, since: ST.today() }, fields));
         ST.save("st_patients", added);
-        ST.log("front", "Account", "Registered new patient " + id + " (consent signed" + ($("portal").checked && v("email") ? ", portal account created)" : ")"));
+        ST.log("front", "Account", "Registered new patient " + id + " " + how);
         location.href = back ? "staff-appointment.html?patient=" + id : "staff-patient.html?id=" + id + "&new=1";
       };
       })();

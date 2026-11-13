@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your details | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Guest booking</p>
+        <nav aria-label="Main">
+          <a class="nv" href="index.html">Home</a>
+          <a class="nv on" href="guest-book-1.html" aria-current="page">Book appointment</a>
+          <a class="nv" href="login.html">Log in</a>
+          <a class="nv" href="register.html">Create an account</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Book an appointment</h1>
+            <p id="sub">Step 3 of 4: tell us who you are, then send your request.</p>
+          </div>
+          <div class="me">
+            <span><b>Booking as a guest</b><small>No account needed</small></span>
+            <a href="login.html">Log in</a>
+          </div>
+        </header>
+        <ol class="stepper" aria-label="Booking steps">
+          <li class="done">Service and branch</li>
+          <li class="done">Dentist and time</li>
+          <li class="on" aria-current="step">Your details</li>
+          <li>Submitted</li>
+        </ol>
+
+        <div class="split">
+          <section class="cd">
+            <div class="hd">
+              <h2>Your appointment</h2>
+              <a href="guest-book-2.html">Change</a>
+            </div>
+            <dl class="kv" id="sum"></dl>
+          </section>
+          <form class="cd" id="form" novalidate>
+            <h2>Your details</h2>
+            <p class="hint" style="margin: -6px 0 12px">No account needed. The clinic uses these to confirm your booking.</p>
+            <div class="fg">
+              <label class="f"><span>First name</span><input id="first" autocomplete="given-name" /></label>
+              <label class="f"><span>Last name</span><input id="last" autocomplete="family-name" /></label>
+              <label class="f"><span>Mobile number</span><input id="mobile" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0917 123 4567" /></label>
+              <label class="f"><span>Email <i>(optional)</i></span><input id="email" type="email" autocomplete="email" placeholder="name@email.com" /></label>
+              <label class="f"><span>Date of birth <i>(optional)</i></span><input id="dob" type="date" /></label>
+            </div>
+            <div class="notice" style="margin-top: 14px">
+              <p>We use your name and contact details only to handle this appointment. At the clinic, the front desk
+              takes the rest of your details and your signed consent. Under the Data Privacy Act of 2012 (RA 10173),
+              you can ask to view, correct or delete your data.</p>
+            </div>
+            <label class="ck"><input type="checkbox" id="agree" /><span><b>I agree to the data privacy notice</b> (required)</span></label>
+            <label class="ck"><input type="checkbox" id="sms" checked /><span>Text me when it is confirmed, and the day before</span></label>
+            <p class="err" id="err" role="alert"></p>
+            <div class="ac">
+              <button class="btn" type="submit" id="send">Send request</button>
+              <a class="btn2" href="guest-book-2.html">Back</a>
+            </div>
+            <p class="hint" style="margin: 14px 0 0">Have an account? <a href="login.html">Log in</a> to keep this booking in your history.</p>
+          </form>
+        </div>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script src="patient.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      const bk = PW.booking();
+      if (!bk.service || !bk.branch || !bk.dentist || !bk.date || !bk.time) return location.replace("guest-book-1.html");
+      const s = PW.service(bk.service);
+      const b = PW.branch(bk.branch);
+      const d = PW.dentist(bk.dentist);
+      const rows = [
+        ["Service", s.name + (s.plan ? ' <span class="bd wa">Payment plan</span>' : "")],
+        ["Date", PW.longDate(bk.date)],
+        ["Time", bk.time],
+        ["Dentist", d.name + " (" + PW.service(d.spec).name + ")"],
+        ["Branch", b.name + "<br /><small style='font-weight:400;color:var(--muted)'>" + b.address + "</small>"],
+      ];
+      if (bk.concern) rows.push(["Your concern", PW.esc(bk.concern)]);
+      $("sum").innerHTML = rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>").join("");
+      $("dob").max = new Date().toISOString().slice(0, 10);
+
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        const v = (id) => $(id).value.trim();
+        const mobile = v("mobile").replace(/[\s-]/g, "").replace(/^\+?63/, "0");
+        let err = "";
+        if (!v("first") || !v("last")) err = "Enter your first and last name.";
+        else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
+        else if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) err = "Check your email address, or leave it blank.";
+        else if (!$("agree").checked) err = "Please agree to the data privacy notice so we can handle your booking.";
+        $("err").textContent = err;
+        if (err) return;
+        $("send").disabled = true;
+        const ref = PW.submitGuestBooking({
+          first: v("first"), last: v("last"), mobile: mobile.replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3"),
+          email: v("email"), dob: v("dob"), sms: $("sms").checked,
+        });
+        location.href = "guest-book-4.html?ref=" + ref;
+      };
+      })();
+    </script>
+  </body>
+</html>

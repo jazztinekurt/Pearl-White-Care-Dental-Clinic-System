@@ -118,9 +118,45 @@ const ST = (() => {
   const dentist = (id) => dentists.find((d) => d.id === id);
   function patients() {
     const added = load("st_patients", []);
-    return basePatients.concat(added).map((p) => Object.assign({}, p, { name: p.first + " " + p.last }));
+    const changes = load("st_pchanges", {}); // edits made at the front desk (intake, portal account)
+    return basePatients.concat(added).map((p) => {
+      const x = Object.assign({}, p, changes[p.id] || {});
+      return Object.assign(x, { name: x.first + " " + x.last });
+    });
   }
-  const patient = (id) => patients().find((p) => p.id === id);
+  // Online bookings from guests (no account). Written by guest-book-3.html.
+  const guestRequests = () => load("pw_guest_requests", []);
+  // A guest has no patient record until the front desk confirms the booking,
+  // so requests point to a stand-in "G-" record built from the booking form.
+  function guestPatient(id) {
+    const r = guestRequests().find((x) => "G-" + x.ref === id);
+    if (!r) return null;
+    const g = r.guest;
+    return { id, first: g.first, last: g.last, name: g.first + " " + g.last, mobile: g.mobile, email: g.email || "", dob: g.dob || "",
+      branch: r.branch, since: today(), status: "Guest", guest: true, portal: false };
+  }
+  const patient = (id) => patients().find((p) => p.id === id) || guestPatient(id);
+  // Base patients with an email have a portal account; others say so explicitly
+  const hasPortal = (p) => (p.portal !== undefined ? !!p.portal : !!p.email);
+  function updatePatient(id, patch) {
+    const changes = load("st_pchanges", {});
+    changes[id] = Object.assign({}, changes[id] || {}, patch);
+    save("st_pchanges", changes);
+  }
+  // Confirming a guest booking creates their patient record (no portal account).
+  // At the visit the front desk completes the intake, and the patient chooses
+  // whether to get a portal account.
+  function registerGuest(r) {
+    const g = guestPatient(r.patient);
+    if (!g) return r.patient;
+    const added = load("st_patients", []);
+    const id = "P-0" + (160 + added.length);
+    added.push({ id, first: g.first, last: g.last, sex: "", dob: g.dob, mobile: g.mobile, email: g.email, branch: r.branch,
+      since: today(), status: "Guest", guest: true, portal: false, sms: r.guest.sms !== false, fromRef: r.ref });
+    save("st_patients", added);
+    log("front", "Account", "Created a guest record " + id + " from online booking " + r.ref);
+    return id;
+  }
 
   /* ---------- Appointments ---------- */
   // Today, fixed so it matches the dashboards
@@ -233,7 +269,8 @@ const ST = (() => {
   /* ---------- Requests ---------- */
   function requests() {
     const handled = load("st_handled", {});
-    return baseRequests.map((r) => Object.assign({}, r, handled[r.ref] || {}));
+    const guests = guestRequests().map((r) => Object.assign({ patient: "G-" + r.ref }, r));
+    return baseRequests.concat(guests).map((r) => Object.assign({}, r, handled[r.ref] || {}));
   }
   const pending = () => requests().filter((r) => !r.state);
   function handle(ref, state, extra) {
@@ -246,12 +283,14 @@ const ST = (() => {
     const r = requests().find((x) => x.ref === ref);
     const c = conflict(r.dentist, r.date, r.time);
     if (c) return { ok: false, request: r, conflict: c };
+    const guest = String(r.patient).startsWith("G-");
+    const pid = guest ? registerGuest(r) : r.patient;
     const added = load("st_added", []);
-    added.push({ ref: r.ref, date: r.date, time: r.time, dentist: r.dentist, branch: r.branch, patient: r.patient, service: r.service, status: "Confirmed", source: "Online" });
+    added.push({ ref: r.ref, date: r.date, time: r.time, dentist: r.dentist, branch: r.branch, patient: pid, service: r.service, status: "Confirmed", source: "Online" });
     save("st_added", added);
-    handle(ref, "Confirmed");
-    log("front", "Booking", "Confirmed online request " + ref);
-    return { ok: true, request: r };
+    handle(ref, "Confirmed", { patient: pid });
+    log("front", "Booking", "Confirmed online request " + ref + (guest ? " (guest booking)" : ""));
+    return { ok: true, request: Object.assign({}, r, { patient: pid }) };
   }
   function rejectRequest(ref, reason) {
     handle(ref, "Rejected", { reason });
@@ -320,7 +359,7 @@ const ST = (() => {
   const payment = (or) => payments().find((p) => p.or === or);
 
   /* ---------- UI helpers ---------- */
-  const badgeClass = { Confirmed: "ok", Completed: "", Pending: "wa", Rejected: "no", Cancelled: "no", Missed: "no", New: "wa", Active: "ok", Inactive: "" };
+  const badgeClass = { Confirmed: "ok", Completed: "", Pending: "wa", Rejected: "no", Cancelled: "no", Missed: "no", New: "wa", Guest: "wa", Active: "ok", Inactive: "" };
   const badge = (s) => '<span class="bd' + (badgeClass[s] ? " " + badgeClass[s] : "") + '">' + s + "</span>";
 
   // Count of pending requests on the sidebar link; pages call it again after changes
@@ -336,7 +375,7 @@ const ST = (() => {
 
   return {
     branches, dentists, times, priceList,
-    branch, dentist, patients, patient,
+    branch, dentist, patients, patient, hasPortal, updatePatient, registerGuest,
     appointments, appointment, active, sortByTime, conflict, addAppointment, updateAppointment,
     requests, pending, confirmRequest, rejectRequest, refreshCount,
     charges, addCharge, markBilled, payments, payment, plan, setPlan, addPayment,
