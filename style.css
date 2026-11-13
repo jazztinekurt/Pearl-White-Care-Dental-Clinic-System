@@ -1913,6 +1913,62 @@ body.landing {
   flex-wrap: wrap;
 }
 
+/* Footer: contact info */
+.landing footer .foot {
+  align-items: flex-start;
+  gap: 32px;
+}
+.landing .foot-brand {
+  display: grid;
+  gap: 6px;
+  max-width: 340px;
+}
+.landing .foot-brand b {
+  font: 600 1.15rem var(--serif);
+  color: var(--ink);
+}
+.landing .foot-brand small {
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+.landing footer .foot-contact h2 {
+  font: 600 1.15rem var(--serif);
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+.landing .foot-contact ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.landing .foot-contact li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.landing .foot-contact svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  fill: none;
+  stroke: var(--lagoon);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.landing .foot-contact a {
+  color: var(--lagoon);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.landing .foot-contact a:hover {
+  text-decoration: underline;
+}
+
 /* Small screens: landing page */
 @media (max-width: 900px) {
   .landing nav ul {
@@ -4980,4 +5036,77 @@ td a:where(:not(.auth *, .landing *)) {
 }
 .app .hint a:hover {
   text-decoration: underline;
+}
+
+/* Cancel-with-a-reason panels (patient and front desk) */
+.app .notice.cxl {
+  max-height: none;
+  overflow: visible;
+}
+.app .notice.cxl .err {
+  color: var(--err);
+}
+
+/* Front desk: online sign-ups waiting for an ID check */
+.app .vf {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  padding: 20px 0;
+  border-top: 1.5px solid var(--line);
+}
+.app .vf:first-child {
+  border-top: 0;
+}
+.app .vf h3 {
+  font: 600 1.15rem var(--serif);
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.app .vf .ac {
+  margin-top: 14px;
+}
+.app .vf-img {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  cursor: zoom-in;
+}
+.app .vf-img img {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+}
+.app .vf-doc.big .vf-img {
+  cursor: zoom-out;
+}
+.app .vf-doc.big .vf-img img {
+  max-height: none;
+}
+.app .vf-pdf {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  text-align: center;
+  padding: 36px 16px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+}
+.app .vf-pdf b {
+  font: 600 1.4rem var(--serif);
+  color: var(--lagoon-d);
+}
+@media (max-width: 760px) {
+  .app .vf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app .vf-doc {
+    order: -1;
+  }
 }

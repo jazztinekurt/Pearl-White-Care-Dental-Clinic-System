@@ -26,6 +26,7 @@
           <a class="nv" href="staff-dashboard.html">Dashboard</a>
           <a class="nv" href="staff-calendar.html">Master calendar</a>
           <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv" href="staff-verify.html">Account sign-ups</a>
           <a class="nv on" href="staff-patients.html" aria-current="page">Patients</a>
           <a class="nv" href="staff-billing.html">Billing</a>
           <a class="nv" href="staff-sms.html">SMS reminders</a>
@@ -54,6 +55,7 @@
             <dl class="kv" id="details"></dl>
             <div id="portalbox" hidden style="margin-top: 14px">
               <label class="f"><span>Email for the portal account</span><input id="portal-email" type="email" placeholder="name@email.com" /></label>
+              <label class="ck" style="margin-top: 10px"><input type="checkbox" id="portal-id" /><span><b>I checked a valid ID or birth certificate</b></span></label>
               <p class="err" id="portal-err" role="alert"></p>
               <div class="ac" style="margin-top: 0"><button type="button" class="btn sm" id="portal-go">Create account</button></div>
             </div>
@@ -90,6 +92,7 @@
         : " No portal account. They can create one later here or on the website.";
       if (ST.param("new")) say("Registered " + p.name + " as " + p.id + ". Consent signed and saved." + portalLine());
       if (ST.param("intake")) say("Intake saved for " + p.name + ". Consent signed." + portalLine());
+      if (ST.param("edited") !== null) say(ST.param("edited") === "0" ? "No changes were made." : "Saved the changes " + p.name + " asked for. They now show in their patient portal.");
       if (p.status === "Guest") {
         say("Booked online as a guest (" + (p.fromRef || "online booking") + "). When they arrive, complete the intake form and consent, " +
           "and ask if they want a patient portal account.", "warn");
@@ -111,26 +114,28 @@
         (p.status === "Guest" ? '<a class="btn" href="staff-patient-new.html?id=' + p.id + '">Complete intake</a>' : "") +
         '<a class="' + (p.status === "Guest" ? "btn2" : "btn") + '" href="staff-appointment.html?patient=' + p.id + '">Book appointment</a>' +
         '<a class="btn2" href="staff-billing.html?patient=' + p.id + '">Billing</a>' +
+        (p.status !== "Guest" ? '<a class="btn2" href="staff-patient-new.html?id=' + p.id + '&edit=1">Edit details</a>' : "") +
         (p.status !== "Guest" && !ST.hasPortal(p) ? '<button type="button" class="btn2" id="portal">Create portal account</button>' : "");
 
       // A patient without an account can get one at the front desk at any time
       function createPortal(email) {
         ST.updatePatient(p.id, { email, portal: true });
-        ST.log("front", "Account", "Created a portal account for " + p.id);
+        ST.log("front", "Account", "Checked their ID and created a portal account for " + p.id);
         location.href = "staff-patient.html?id=" + p.id + "&portal=1";
       }
       if (ST.param("portal")) say("Portal account created for " + p.name + ". Login details were sent to " + p.email + ".");
       if ($("portal")) {
+        // Accounts are only created after checking an ID or birth certificate
         $("portal").onclick = () => {
-          if (p.email) return createPortal(p.email);
           $("portalbox").hidden = false;
+          $("portal-email").value = p.email || "";
           $("portal-email").focus();
         };
         $("portal-go").onclick = () => {
           const email = $("portal-email").value.trim();
           const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-          $("portal-err").textContent = ok ? "" : "Enter a valid email address.";
-          if (ok) createPortal(email);
+          $("portal-err").textContent = !ok ? "Enter a valid email address." : !$("portal-id").checked ? "Check a valid ID or birth certificate first." : "";
+          if (!$("portal-err").textContent) createPortal(email);
         };
       }
 
@@ -155,7 +160,8 @@
         const dt = ST.toDate(a.date);
         return '<a class="ap' + (up.includes(a) ? "" : " past") + '" href="staff-appointment.html?ref=' + a.ref + '"><span class="ad"><b>' +
           dt.getDate() + "</b>" + dt.toLocaleDateString("en-US", { month: "short" }) + '</span><span class="at"><b>' + a.service +
-          "</b><small>" + a.time + " · " + ST.dentist(a.dentist).name + " · " + ST.branch(a.branch).name + " · " + a.source + "</small></span>" +
+          "</b><small>" + a.time + " · " + ST.dentist(a.dentist).name + " · " + ST.branch(a.branch).name + " · " + a.source +
+          (a.cancelReason ? " · Reason: " + ST.esc(a.cancelReason) : "") + "</small></span>" +
           ST.badge(a.status) + "</a>";
       };
       $("appts").innerHTML =

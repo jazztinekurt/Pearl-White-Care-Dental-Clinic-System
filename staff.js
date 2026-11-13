@@ -262,7 +262,7 @@ const ST = (() => {
     changes[ref] = Object.assign({}, changes[ref] || {}, patch);
     save("st_changes", changes);
     if (patch.status === "Completed") log("dentist", "Booking", "Completed visit " + ref);
-    else if (patch.status) log("front", "Booking", patch.status + ": appointment " + ref);
+    else if (patch.status) log("front", "Booking", patch.status + ": appointment " + ref + (patch.cancelReason ? " (reason: " + patch.cancelReason + ")" : ""));
     else log("front", "Booking", "Changed appointment " + ref);
   }
 
@@ -295,6 +295,56 @@ const ST = (() => {
   function rejectRequest(ref, reason) {
     handle(ref, "Rejected", { reason });
     log("front", "Booking", "Rejected online request " + ref);
+  }
+
+  /* ---------- Online sign-ups waiting for an ID check ---------- */
+  // register.html + consent.html add sign-ups to "pw_signups". The front desk
+  // compares the uploaded birth certificate or ID with the details, then
+  // approves (the account becomes active) or rejects with a reason.
+  function sampleDoc(kind, name, dob) {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">' +
+      '<rect width="640" height="420" rx="18" fill="#f4f1e8"/><rect x="14" y="14" width="612" height="392" rx="12" fill="none" stroke="#b9ad8f" stroke-width="3" stroke-dasharray="10 6"/>' +
+      '<text x="320" y="62" font-family="Georgia,serif" font-size="26" text-anchor="middle" fill="#5b5140">' + kind + "</text>" +
+      '<text x="320" y="92" font-family="Arial" font-size="15" text-anchor="middle" fill="#9a8f78">SAMPLE DOCUMENT FOR THE PROTOTYPE</text>' +
+      '<rect x="48" y="130" width="150" height="180" rx="8" fill="#ddd6c5"/><circle cx="123" cy="196" r="34" fill="#c6bda8"/><rect x="78" y="244" width="90" height="46" rx="20" fill="#c6bda8"/>' +
+      '<text x="230" y="160" font-family="Arial" font-size="15" fill="#9a8f78">NAME</text><text x="230" y="188" font-family="Arial" font-size="24" fill="#3d3628">' + name + "</text>" +
+      '<text x="230" y="236" font-family="Arial" font-size="15" fill="#9a8f78">DATE OF BIRTH</text><text x="230" y="264" font-family="Arial" font-size="24" fill="#3d3628">' + dob + "</text>" +
+      '<rect x="230" y="300" width="300" height="10" rx="5" fill="#ddd6c5"/><rect x="230" y="322" width="220" height="10" rx="5" fill="#ddd6c5"/></svg>';
+    return "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+  const baseSignups = [
+    { ref: "S-0032", first: "Mark", last: "Dizon", dob: "1985-02-09", mobile: "0928 032 5511", email: "mark.dizon@email.com", branch: "Lagro",
+      idType: "Driver's license", idName: "license.jpg", idImage: sampleDoc("Driver's license", "MARK DIZON", "09 FEB 1985"), submitted: "This morning, 8:45 AM" },
+    { ref: "S-0031", first: "Paula", last: "Rivera", dob: "1998-07-21", mobile: "0917 031 2244", email: "paula.rivera@email.com", branch: "Amparo",
+      idType: "PSA birth certificate", idName: "birth-certificate.jpg", idImage: sampleDoc("Certificate of Live Birth", "PAULA RIVERA", "21 JUL 1998"), submitted: "Yesterday, 4:10 PM" },
+  ];
+  function signups() {
+    const handled = load("st_signups_handled", {});
+    return load("pw_signups", []).slice().reverse().concat(baseSignups).map((x) => Object.assign({}, x, handled[x.ref] || {}));
+  }
+  const pendingSignups = () => signups().filter((x) => !x.state);
+  function handleSignup(ref, patch) {
+    const handled = load("st_signups_handled", {});
+    handled[ref] = Object.assign({ at: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) }, patch);
+    save("st_signups_handled", handled);
+  }
+  function approveSignup(ref) {
+    const x = signups().find((s) => s.ref === ref);
+    const added = load("st_patients", []);
+    const id = "P-0" + (160 + added.length);
+    const br = branches.find((b) => x.branch && b.name.startsWith(x.branch.split(" ")[0])) || branches[0];
+    added.push({ id, first: x.first, last: x.last, sex: "", dob: x.dob, mobile: x.mobile, email: x.email, branch: br.id,
+      since: today(), status: "New", portal: true, verified: x.idType, sms: x.sms !== false });
+    save("st_patients", added);
+    handleSignup(ref, { state: "Approved", patient: id });
+    log("front", "Account", "Checked the ID (" + x.idType + ") and activated the account of " + x.first + " " + x.last + " (" + id + ")");
+    return id;
+  }
+  function rejectSignup(ref, reason) {
+    const x = signups().find((s) => s.ref === ref);
+    handleSignup(ref, { state: "Rejected", reason });
+    log("front", "Account", "Rejected the sign-up of " + x.first + " " + x.last + " (" + reason + ")");
   }
 
   /* ---------- Billing and payments ---------- */
@@ -364,12 +414,13 @@ const ST = (() => {
 
   // Count of pending requests on the sidebar link; pages call it again after changes
   function refreshCount() {
-    const link = document.querySelector('.sb .nv[href="staff-requests.html"]');
-    if (!link) return;
-    const old = link.querySelector(".count");
-    if (old) old.remove();
-    const n = pending().length;
-    if (n) link.insertAdjacentHTML("beforeend", ' <span class="count">' + n + "</span>");
+    [["staff-requests.html", pending().length], ["staff-verify.html", pendingSignups().length]].forEach(([href, n]) => {
+      const link = document.querySelector('.sb .nv[href="' + href + '"]');
+      if (!link) return;
+      const old = link.querySelector(".count");
+      if (old) old.remove();
+      if (n) link.insertAdjacentHTML("beforeend", ' <span class="count">' + n + "</span>");
+    });
   }
   document.addEventListener("DOMContentLoaded", refreshCount);
 
@@ -378,6 +429,7 @@ const ST = (() => {
     branch, dentist, patients, patient, hasPortal, updatePatient, registerGuest,
     appointments, appointment, active, sortByTime, conflict, addAppointment, updateAppointment,
     requests, pending, confirmRequest, rejectRequest, refreshCount,
+    signups, pendingSignups, approveSignup, rejectSignup,
     charges, addCharge, markBilled, payments, payment, plan, setPlan, addPayment,
     log, today, offsetIso, openDay, toDate, longDate, shortDate, peso, esc, param, badge, load, save,
   };

@@ -26,6 +26,7 @@
           <a class="nv" href="staff-dashboard.html">Dashboard</a>
           <a class="nv" href="staff-calendar.html">Master calendar</a>
           <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv" href="staff-verify.html">Account sign-ups</a>
           <a class="nv on" href="staff-patients.html" aria-current="page">Patients</a>
           <a class="nv" href="staff-billing.html">Billing</a>
           <a class="nv" href="staff-sms.html">SMS reminders</a>
@@ -71,7 +72,7 @@
             <p class="hint" style="margin: 10px 0 0">The dentist takes the medical and dental history in the chair.</p>
           </section>
 
-          <section class="cd">
+          <section class="cd" id="consentsec">
             <h2>Data privacy consent</h2>
             <div class="notice">
               <p>We collect the patient's name, birth date, contact details, appointments, treatment records, X-rays and payments,
@@ -82,6 +83,7 @@
             <label class="ck"><input type="checkbox" id="sms" checked /><span>Send SMS and email reminders before visits</span></label>
             <label class="ck"><input type="checkbox" id="portal" /><span><b>The patient wants a portal account</b> (optional; login details go to their email)</span></label>
             <p class="hint" style="margin: -2px 0 10px 30px">Ask them. Without one, their records are still kept, and they can create an account later here or on the website.</p>
+            <label class="ck" id="idcheckwrap" hidden><input type="checkbox" id="idcheck" /><span><b>I checked a valid ID or birth certificate</b> (needed for a portal account)</span></label>
             <p class="lab" style="margin-top: 6px">Patient's signature</p>
             <canvas id="sig" class="sig" width="560" height="140" aria-label="Signature pad. The patient signs here with a finger or mouse."></canvas>
             <div class="ac" style="margin-top: 8px"><button type="button" class="btn2 sm" id="clear">Clear signature</button></div>
@@ -107,7 +109,24 @@
       const back = ST.param("back") === "appointment";
       // Intake for someone who already has a record (a guest who booked online)
       const existing = ST.patient(ST.param("id") || "");
-      if (existing) {
+      const editMode = !!existing && ST.param("edit") === "1";
+      $("portal").onchange = () => ($("idcheckwrap").hidden = !$("portal").checked);
+      if (editMode) {
+        // Patients can't edit their own profile; the front desk does it at the clinic
+        $("title").textContent = "Edit patient details";
+        $("sub").textContent = "Changes " + existing.name + " asked for at the clinic. Check their ID before changing a name or birth date.";
+        $("back").href = $("cancel").href = "staff-patient.html?id=" + existing.id;
+        $("back").innerHTML = "&larr; " + ST.esc(existing.name);
+        $("submit").textContent = "Save changes";
+        $("consentsec").hidden = true;
+        ["first", "last", "dob", "sex", "mobile", "email", "branch"].forEach((k) => existing[k] && ($(k).value = existing[k]));
+        if (existing.address) $("addr").value = existing.address;
+        if (existing.contact) {
+          const [n, m] = existing.contact.split(", ");
+          $("ecname").value = n || "";
+          $("ecmobile").value = m || "";
+        }
+      } else if (existing) {
         $("title").textContent = "Complete intake";
         $("sub").textContent = existing.name + " booked online as a guest. Fill in the rest, take their consent and ask about a portal account.";
         $("back").href = $("cancel").href = "staff-patient.html?id=" + existing.id;
@@ -160,9 +179,10 @@
         else if (!v("dob")) err = "Enter the date of birth.";
         else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
         else if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) err = "Check the email address, or leave it blank.";
-        else if ($("portal").checked && !v("email")) err = "A portal account needs an email address. Add one, or untick the portal account.";
-        else if (!$("agree").checked) err = "The patient has to agree to the privacy notice before we can keep their records.";
-        else if (!signed) err = "Ask the patient to sign in the box.";
+        else if (!editMode && $("portal").checked && !v("email")) err = "A portal account needs an email address. Add one, or untick the portal account.";
+        else if (!editMode && $("portal").checked && !$("idcheck").checked) err = "Check a valid ID or birth certificate before creating a portal account.";
+        else if (!editMode && !$("agree").checked) err = "The patient has to agree to the privacy notice before we can keep their records.";
+        else if (!editMode && !signed) err = "Ask the patient to sign in the box.";
         $("err").textContent = err;
         if (err) return;
         const fields = {
@@ -171,7 +191,16 @@
           contact: v("ecname") ? v("ecname") + (v("ecmobile") ? ", " + v("ecmobile") : "") : "", sms: $("sms").checked,
           portal: $("portal").checked && !!v("email"), consent: true,
         };
-        const how = "(consent signed, " + (fields.portal ? "portal account created)" : "no portal account)");
+        const how = "(consent signed, " + (fields.portal ? "ID checked, portal account created)" : "no portal account)");
+        if (editMode) {
+          const changes = { first: fields.first, last: fields.last, sex: fields.sex, dob: fields.dob, mobile: fields.mobile,
+            email: fields.email, address: fields.address, branch: fields.branch, contact: fields.contact };
+          const what = Object.keys(changes).filter((k) => (existing[k] || "") !== (changes[k] || ""));
+          ST.updatePatient(existing.id, changes);
+          ST.log("front", "Record", "Updated the details of " + existing.id + " at the patient's request" + (what.length ? " (" + what.join(", ") + ")" : ""));
+          location.href = "staff-patient.html?id=" + existing.id + "&edited=" + (what.length ? what.length : 0);
+          return;
+        }
         if (existing) {
           ST.updatePatient(existing.id, fields);
           ST.log("front", "Account", "Completed intake for " + existing.id + " " + how);

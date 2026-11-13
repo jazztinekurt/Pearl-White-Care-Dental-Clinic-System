@@ -22,9 +22,9 @@
       <h1>Your data, your say.</h1>
       <p>We keep your records safe and only use them to care for you.</p>
       <ol class="next" aria-label="Sign-up steps">
-        <li class="done">Create your account</li>
+        <li class="done">Create your account and upload an ID</li>
         <li class="on">Accept the data privacy consent</li>
-        <li>Book your first visit</li>
+        <li>The front desk checks your ID</li>
       </ol>
     </div>
   </aside>
@@ -38,7 +38,7 @@
 
       <details name="notice" open>
         <summary>What we collect</summary>
-        <p>Your name, date of birth, mobile number, email, appointments, treatment records, X-rays and payment details. We ask only for what we need to treat and bill you.</p>
+        <p>Your name, date of birth, mobile number, email, the ID or birth certificate you upload, appointments, treatment records, X-rays and payment details. We ask only for what we need to treat and bill you.</p>
       </details>
       <details name="notice">
         <summary>Why we use it</summary>
@@ -82,8 +82,28 @@ agree.onchange=()=>{btn.disabled=!agree.checked};
 btn.onclick=()=>{
   if(!agree.checked)return;
   btn.disabled=true;
-  msg.textContent="Thank you. Taking you to your dashboard…";
-  setTimeout(()=>{location.href="patient-dashboard.html"},800);
+  // A new sign-up waits for the front desk to check the uploaded ID
+  let draft=null;
+  try{draft=JSON.parse(sessionStorage.getItem("pw_signup_draft")||"null")}catch(e){}
+  if(!draft){
+    msg.textContent="Thank you. Taking you to your dashboard…";
+    setTimeout(()=>{location.href="patient-dashboard.html"},800);
+    return;
+  }
+  const list=JSON.parse(sessionStorage.getItem("pw_signups")||"[]");
+  const now=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  list.push(Object.assign({ref:"S-0"+(40+list.length),submitted:"Today, "+now,sms:document.getElementById("sms").checked},draft));
+  try{sessionStorage.setItem("pw_signups",JSON.stringify(list))}
+  catch(e){list[list.length-1].idImage=null;sessionStorage.setItem("pw_signups",JSON.stringify(list))}
+  sessionStorage.removeItem("pw_signup_draft");
+  const esc=(t)=>String(t).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+  document.querySelector(".side .next").innerHTML='<li class="done">Create your account and upload an ID</li><li class="done">Accept the data privacy consent</li><li class="on">The front desk checks your ID</li>';
+  document.querySelector(".card").innerHTML=
+    '<h1>Thanks, '+esc(draft.first)+'. We are checking your ID.</h1>'+
+    '<p class="sub">The front desk will compare your '+esc(draft.idType.toLowerCase())+' with your details, usually within one working day. '+
+    'We will email <b>'+esc(draft.email)+'</b> once your account is active, and then you can log in.</p>'+
+    '<p class="sub">You don’t have to wait to see a dentist: you can book as a guest now.</p>'+
+    '<div class="actions"><a class="btn" href="guest-book-1.html">Book as a guest</a><a class="btn2" href="index.html">Back to home</a></div>';
 };
 </script>
 </body>

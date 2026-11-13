@@ -95,6 +95,15 @@ form.onsubmit=e=>{
   e.preventDefault();
   const u=email.value.trim().toLowerCase(),a=accounts[u];
   if(!u||!pw.value){msg.className="msg err";msg.textContent="Enter your email and password to continue.";return}
+  // Accounts made online wait for the front desk to check the uploaded ID
+  let sign=null;
+  try{
+    const handled=JSON.parse(sessionStorage.getItem("st_signups_handled")||"{}");
+    sign=JSON.parse(sessionStorage.getItem("pw_signups")||"[]").filter(x=>x.email.toLowerCase()===u).map(x=>Object.assign({},x,handled[x.ref]||{})).pop()||null;
+  }catch(err){}
+  if(sign&&!sign.state){msg.className="msg err";msg.textContent="Your account is still waiting for the front desk to check your ID. We will email you once it is active. You can book as a guest meanwhile.";return}
+  if(sign&&sign.state==="Rejected"){msg.className="msg err";msg.textContent="We could not verify your ID: "+sign.reason+". Sign up again with a clearer document, or visit any branch.";return}
+  if(sign&&sign.state==="Approved"){msg.className="msg ok";msg.textContent="Signing you in…";setTimeout(()=>{location.href="patient-dashboard.html"},700);return}
   if(!a||pw.value!==DEMO_PASSWORD){msg.className="msg err";msg.textContent="That email and password don’t match. Try again or reset your password.";return}
   msg.className="msg ok";msg.textContent="Signing you in as "+a.role+"…";
   setTimeout(()=>{location.href=a.to},700);

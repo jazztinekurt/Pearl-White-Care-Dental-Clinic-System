@@ -37,7 +37,7 @@
         <header class="tb">
           <div>
             <h1 id="title">My profile</h1>
-            <p id="sub">Keep your details up to date so your dentist is ready before your visit.</p>
+            <p id="sub">Your details as the clinic has them. Only the clinic can change them.</p>
           </div>
           <div class="me">
             <i data-user-ini>ML</i
@@ -46,115 +46,70 @@
           </div>
         </header>
 
+        <div class="banner warn">
+          <span><b>Your profile is locked.</b> To protect your records, only the clinic can change your details.
+          Visit any branch and ask the front desk.</span>
+        </div>
         <div class="banner">
           <span><b>Data privacy consent given</b> on Aug 6, 2026. You control who sees your records.</span>
           <a href="patient-privacy.html">Privacy settings</a>
         </div>
 
-        <form id="form" novalidate>
+        <div class="split">
           <section class="cd">
             <h2>Personal details</h2>
-            <div class="fg">
-              <label class="f"><span>First name</span><input id="first" value="Maria" autocomplete="given-name" required /></label>
-              <label class="f"><span>Last name</span><input id="last" value="Lopez" autocomplete="family-name" required /></label>
-              <label class="f"><span>Date of birth</span><input id="dob" type="date" value="2004-03-18" /></label>
-              <label class="f"><span>Sex</span>
-                <select id="sex"><option>Female</option><option>Male</option><option>Prefer not to say</option></select></label>
-              <label class="f"><span>Mobile number</span><input id="mobile" type="tel" inputmode="numeric" value="0917 123 4567" autocomplete="tel" /></label>
-              <label class="f"><span>Email</span><input id="email" type="email" value="maria.lopez@email.com" autocomplete="email" /></label>
-              <label class="f s2"><span>Home address</span><input id="addr" value="Blk 4 Lot 12, Amparo Subdivision, North Caloocan City" autocomplete="street-address" /></label>
-              <label class="f"><span>Preferred branch</span>
-                <select id="branch"><option>Amparo</option><option>Capitol Park</option><option>Lagro</option></select></label>
-            </div>
+            <dl class="kv" id="personal"></dl>
           </section>
+          <section class="cd">
+            <h2>Need to change something?</h2>
+            <div class="li"><i></i><div>Visit any branch: Amparo, Capitol Park or Lagro, Monday to Saturday, 9:00 AM to 6:00 PM.</div></div>
+            <div class="li"><i></i><div>Bring a valid ID or your birth certificate, especially if you are changing your name or birth date.</div></div>
+            <div class="li"><i></i><div>The front desk updates your record, and the change shows here right away.</div></div>
+          </section>
+        </div>
 
+        <div class="split">
           <section class="cd">
             <h2>Emergency contact</h2>
-            <div class="fg">
-              <label class="f"><span>Full name</span><input id="ecname" value="Rosa Lopez" /></label>
-              <label class="f"><span>Relationship</span><input id="ecrel" value="Mother" /></label>
-              <label class="f"><span>Mobile number</span><input id="ecmobile" type="tel" inputmode="numeric" value="0918 765 4321" /></label>
-            </div>
+            <dl class="kv" id="emergency"></dl>
           </section>
-
           <section class="cd">
-            <h2>Medical history</h2>
-            <p class="hint" style="margin: -6px 0 8px">Tick anything you have now or had before. Only your dentists see this.</p>
-            <div class="ckgrid" id="conditions"></div>
-            <div class="fg" style="margin-top: 12px">
-              <label class="f"><span>Allergies to medicine <i>(e.g. penicillin)</i></span><input id="allergy" placeholder="None" /></label>
-              <label class="f"><span>Medicines you take now</span><input id="meds" placeholder="None" /></label>
-              <label class="f"><span>Pregnant or breastfeeding?</span>
-                <select id="preg"><option value="">Choose</option><option>No</option><option>Yes</option><option>Not applicable</option></select></label>
-            </div>
+            <h2>Medical and dental history</h2>
+            <p class="hint" style="margin: -6px 0 8px">Your dentist records this with you at the clinic. Only your dentists see it.</p>
+            <dl class="kv" id="history"></dl>
           </section>
-
-          <section class="cd">
-            <h2>Dental history</h2>
-            <div class="fg">
-              <label class="f"><span>Last dental visit before Pearl White</span><input id="lastvisit" value="2024, cleaning" /></label>
-              <label class="f"><span>Do you wear dentures?</span>
-                <select id="dentures"><option>No</option><option>Complete denture</option><option>Partial denture</option><option>Crowns</option></select></label>
-              <label class="f s2"><span>Past procedures <i>(fillings, extractions, root canals)</i></span><input id="procs" value="Two fillings (2022)" /></label>
-            </div>
-          </section>
-
-          <div class="ac" style="margin-top: 0">
-            <button class="btn" type="submit">Save changes</button>
-            <a class="btn2" href="patient-dashboard.html">Cancel</a>
-          </div>
-          <p class="msg" id="msg" role="status"></p>
-        </form>
+        </div>
 
         <p class="ft">Prototype page with sample data.</p>
       </main>
     </div>
 
+    <script src="staff.js"></script>
     <script src="patient.js"></script>
     <script>
       (() => {
-      const conditions = [
-        "High blood pressure", "Low blood pressure", "Heart disease", "Diabetes", "Asthma", "Hepatitis",
-        "Bleeding problems", "Epilepsy", "Kidney or liver problems", "Thyroid problems", "Anemia", "Arthritis",
-      ];
-      document.getElementById("conditions").innerHTML = conditions
-        .map((c, i) => '<label class="ck"><input type="checkbox" value="' + c + '" /><span>' + c + "</span></label>")
-        .join("");
-
-      // Fill from what was saved this session
-      const saved = PW.load("pw_profile", null);
-      if (saved) {
-        Object.keys(saved.fields).forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.value = saved.fields[id];
-        });
-        document.querySelectorAll("#conditions input").forEach((c) => (c.checked = saved.conditions.includes(c.value)));
-      }
-
-      document.getElementById("form").onsubmit = (e) => {
-        e.preventDefault();
-        const msg = document.getElementById("msg");
-        const mobile = document.getElementById("mobile").value.replace(/[\s-]/g, "").replace(/^\+?63/, "0");
-        const email = document.getElementById("email").value.trim();
-        let err = "";
-        if (!document.getElementById("first").value.trim() || !document.getElementById("last").value.trim()) err = "Enter your first and last name.";
-        else if (!/^09\d{9}$/.test(mobile)) err = "Enter a valid mobile number, e.g. 0917 123 4567.";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = "Enter a valid email address.";
-        if (err) {
-          msg.style.color = "var(--err)";
-          msg.textContent = err;
-          return;
-        }
-        const fields = {};
-        document.querySelectorAll("#form input:not([type=checkbox]), #form select").forEach((el) => (fields[el.id] = el.value));
-        const picked = [...document.querySelectorAll("#conditions input:checked")].map((c) => c.value);
-        PW.save("pw_profile", { fields, conditions: picked });
-        try {
-          sessionStorage.setItem("pw_first_name", fields.first.trim());
-        } catch (x) {}
-        msg.style.color = "";
-        msg.textContent = "Saved. Your dentists will see the updated details at your next visit.";
-      };
+      // The clinic's record of this patient, including changes made at the front desk
+      const p = ST.patient("P-0142");
+      const kv = (rows) => rows.map((r) => "<dt>" + r[0] + "</dt><dd>" + (r[1] ? PW.esc(r[1]) : "—") + "</dd>").join("");
+      const [ecName, ecMobile] = (p.contact || "Rosa Lopez (mother), 0918 765 4321").split(", ");
+      document.getElementById("personal").innerHTML = kv([
+        ["Name", p.first + " " + p.last],
+        ["Date of birth", p.dob ? PW.longDate(p.dob) : ""],
+        ["Sex", { F: "Female", M: "Male" }[p.sex] || ""],
+        ["Mobile number", p.mobile],
+        ["Email", p.email],
+        ["Home address", p.address || "Blk 4 Lot 12, Amparo Subdivision, North Caloocan City"],
+        ["Home branch", ST.branch(p.branch).name],
+        ["Patient ID", p.id],
+      ]);
+      document.getElementById("emergency").innerHTML = kv([["Name", ecName], ["Mobile number", ecMobile]]);
+      document.getElementById("history").innerHTML = kv([
+        ["Conditions", "None reported"],
+        ["Allergies to medicine", "None"],
+        ["Medicines you take now", "None"],
+        ["Last dental visit before Pearl White", "2024, cleaning"],
+        ["Past procedures", "Two fillings (2022)"],
+      ]);
       })();
     </script>
   </body>

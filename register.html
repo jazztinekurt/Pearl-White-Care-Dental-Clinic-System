@@ -33,9 +33,9 @@
             bookings follow you.
           </p>
           <ol class="next" aria-label="Sign-up steps">
-            <li class="on">Create your account</li>
+            <li class="on">Create your account and upload an ID</li>
             <li>Accept the data privacy consent</li>
-            <li>Book your first visit</li>
+            <li>The front desk checks your ID</li>
           </ol>
         </div>
       </aside>
@@ -124,6 +124,35 @@
               </div>
               <p class="err" id="e-branch"></p>
             </div>
+            <div class="grid">
+              <div class="field">
+                <label for="idtype">Proof of identity</label>
+                <div class="input">
+                  <select id="idtype">
+                    <option value="" disabled selected>Choose a document</option>
+                    <option>PSA birth certificate</option>
+                    <option>PhilSys national ID</option>
+                    <option>Passport</option>
+                    <option>Driver's license</option>
+                    <option>UMID</option>
+                    <option>Postal ID</option>
+                    <option>Other government-issued ID</option>
+                  </select>
+                </div>
+                <p class="err" id="e-idtype"></p>
+              </div>
+              <div class="field">
+                <label for="idfile">Photo or scan of it</label>
+                <div class="input file">
+                  <input id="idfile" type="file" accept="image/jpeg,image/png,application/pdf" />
+                </div>
+                <p class="err" id="e-idfile"></p>
+              </div>
+            </div>
+            <p class="hint" style="margin: -4px 0 12px">
+              JPEG, PNG or PDF, up to 5 MB. The front desk checks it to confirm you are a real person,
+              then activates your account. Children can use their PSA birth certificate.
+            </p>
 
             <div class="grid">
               <div class="field">
@@ -190,6 +219,8 @@
         "mobile",
         "email",
         "branch",
+        "idtype",
+        "idfile",
         "pw",
         "confirm",
       ];
@@ -225,6 +256,14 @@
             : "Enter a valid number, e.g. 917 123 4567.";
         },
         branch: (v) => (v ? "" : "Choose your preferred branch."),
+        idtype: (v) => (v ? "" : "Choose the document you are uploading."),
+        idfile: () => {
+          const f = $("idfile").files[0];
+          if (!f) return "Upload a photo or scan of your document.";
+          if (!/^(image\/(jpeg|png)|application\/pdf)$/.test(f.type)) return "Use a JPEG, PNG or PDF file.";
+          if (f.size > 5 * 1024 * 1024) return "The file is over 5 MB. Try a smaller photo.";
+          return "";
+        },
         email: (v) =>
           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
             ? ""
@@ -250,6 +289,7 @@
             setErr(id, checks[id]($(id).value));
         });
       });
+      $("idfile").addEventListener("change", () => setErr("idfile", checks.idfile()));
       $("pw").addEventListener("input", (e) => {
         $("meter").dataset.s = strength(e.target.value);
       });
@@ -274,16 +314,48 @@
           $("msg").textContent = "";
           return;
         }
-        try {
-          sessionStorage.setItem("pw_first_name", $("first").value.trim());
-        } catch (_) {}
         $("msg").className = "msg ok";
-        $("msg").textContent =
-          "Account created. Taking you to the privacy consent…";
-        setTimeout(() => {
-          location.href = "consent.html";
-        }, 800);
+        $("msg").textContent = "Saving your details…";
+        readDocument($("idfile").files[0]).then((image) => {
+          // Kept until the consent step, then sent to the front desk for an ID check.
+          // (Prototype: stored in this browser tab only. The password is not stored.)
+          const mobile = $("mobile").value.replace(/[\s-]/g, "").replace(/^0/, "");
+          const draft = {
+            first: $("first").value.trim(), last: $("last").value.trim(), dob: $("dob").value,
+            mobile: "0" + mobile.slice(0, 3) + " " + mobile.slice(3, 6) + " " + mobile.slice(6),
+            email: $("email").value.trim(), branch: $("branch").value,
+            idType: $("idtype").value, idName: $("idfile").files[0].name, idImage: image,
+          };
+          try {
+            sessionStorage.setItem("pw_signup_draft", JSON.stringify(draft));
+            sessionStorage.setItem("pw_first_name", draft.first);
+          } catch (_) {
+            draft.idImage = null; // too big for the prototype's storage: keep the file name only
+            sessionStorage.setItem("pw_signup_draft", JSON.stringify(draft));
+          }
+          $("msg").textContent = "Almost done. Taking you to the privacy consent…";
+          setTimeout(() => (location.href = "consent.html"), 700);
+        });
       };
+
+      // Photos are shrunk so the front desk can view them; PDFs keep only their name here.
+      function readDocument(file) {
+        return new Promise((resolve) => {
+          if (!file || !file.type.startsWith("image/")) return resolve(null);
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, 1400 / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.width * scale);
+            c.height = Math.round(img.height * scale);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(img.src);
+            resolve(c.toDataURL("image/jpeg", 0.8));
+          };
+          img.onerror = () => resolve(null);
+          img.src = URL.createObjectURL(file);
+        });
+      }
     </script>
   </body>
 </html>

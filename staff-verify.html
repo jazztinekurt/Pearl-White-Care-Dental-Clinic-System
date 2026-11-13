@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Account sign-ups | Pearl White Dental Clinic</title>
+    <link rel="icon" href="images/pearl-white-logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sb">
+        <a class="lk" href="index.html"
+          ><span class="tl"
+            ><img src="images/pearl-white-logo.png" alt="" height="28" /></span
+          ><span><b>Pearl White</b><small>Dental Clinic</small></span></a
+        >
+        <p class="rl">Front desk</p>
+        <nav aria-label="Main">
+          <a class="nv" href="staff-dashboard.html">Dashboard</a>
+          <a class="nv" href="staff-calendar.html">Master calendar</a>
+          <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv on" href="staff-verify.html" aria-current="page">Account sign-ups</a>
+          <a class="nv" href="staff-patients.html">Patients</a>
+          <a class="nv" href="staff-billing.html">Billing</a>
+          <a class="nv" href="staff-sms.html">SMS reminders</a>
+        </nav>
+      </aside>
+
+      <main class="mn">
+        <header class="tb">
+          <div>
+            <h1 id="title">Account sign-ups</h1>
+            <p id="sub">People who signed up online. Check their document, then activate the account or reject it.</p>
+          </div>
+          <div class="me">
+            <i>LM</i
+            ><span><b>Liza Mendoza</b><small>Receptionist</small></span>
+            <a href="login.html">Log out</a>
+          </div>
+        </header>
+
+        <div class="banner" id="msg" role="status" hidden></div>
+        <section class="cd">
+          <div class="chs" id="tabs" role="group" aria-label="Show" style="margin-bottom: 8px">
+            <button type="button" class="ch" aria-pressed="true" data-v="pending">Waiting</button>
+            <button type="button" class="ch" aria-pressed="false" data-v="handled">Handled</button>
+          </div>
+          <p class="hint" style="margin: 0 0 6px">Check that the name and date of birth on the document match the sign-up, and that the document looks genuine.</p>
+          <div id="list"></div>
+        </section>
+
+        <p class="ft">Prototype page with sample data.</p>
+      </main>
+    </div>
+
+    <script src="staff.js"></script>
+    <script>
+      (() => {
+      const $ = (id) => document.getElementById(id);
+      let view = "pending";
+
+      function say(text, kind) {
+        $("msg").hidden = false;
+        $("msg").className = "banner " + (kind || "ok");
+        $("msg").innerHTML = text;
+      }
+      const age = (dob) => Math.floor((Date.now() - ST.toDate(dob)) / 31557600000);
+
+      function render() {
+        ST.refreshCount();
+        const all = ST.signups();
+        $("tabs").querySelector('[data-v="pending"]').textContent = "Waiting (" + all.filter((x) => !x.state).length + ")";
+        $("tabs").querySelector('[data-v="handled"]').textContent = "Handled (" + all.filter((x) => x.state).length + ")";
+        const items = all.filter((x) => (view === "pending" ? !x.state : x.state));
+        if (!items.length) {
+          $("list").innerHTML = '<p class="empty">' + (view === "pending" ? "No sign-ups waiting. All caught up." : "Nothing handled yet.") + "</p>";
+          return;
+        }
+        $("list").innerHTML = items.map((x) => {
+          const doc = x.idImage
+            ? '<button type="button" class="vf-img" data-zoom aria-label="Enlarge the document"><img src="' + x.idImage + '" alt="' + ST.esc(x.idType) + ' uploaded by ' + ST.esc(x.first + " " + x.last) + '" /></button>'
+            : '<div class="vf-pdf"><b>PDF</b><span>' + ST.esc(x.idName || "document.pdf") + "</span><small>PDF preview is not available in the prototype.</small></div>";
+          return '<article class="vf" data-ref="' + x.ref + '">' +
+            '<div class="vf-info"><h3>' + ST.esc(x.first + " " + x.last) + (x.state ? " " + ST.badge(x.state === "Approved" ? "Active" : "Rejected") : "") + "</h3>" +
+            '<dl class="kv">' +
+            "<dt>Date of birth</dt><dd>" + ST.longDate(x.dob) + " (" + age(x.dob) + ")</dd>" +
+            "<dt>Mobile</dt><dd>" + ST.esc(x.mobile) + "</dd>" +
+            "<dt>Email</dt><dd>" + ST.esc(x.email) + "</dd>" +
+            "<dt>Preferred branch</dt><dd>" + ST.esc(x.branch) + "</dd>" +
+            "<dt>Document</dt><dd>" + ST.esc(x.idType) + "</dd>" +
+            "<dt>Signed up</dt><dd>" + ST.esc(x.submitted) + " · " + x.ref + "</dd></dl>" +
+            (x.state === "Approved"
+              ? '<p class="hint" style="margin: 10px 0 0">Activated at ' + x.at + '. <a href="staff-patient.html?id=' + x.patient + '">Open patient record</a></p>'
+              : x.state === "Rejected"
+                ? '<p class="hint" style="margin: 10px 0 0">Rejected at ' + x.at + ": " + ST.esc(x.reason) + "</p>"
+                : '<div class="ac" data-acts><button type="button" class="btn sm" data-ok>Approve and activate</button>' +
+                  '<button type="button" class="btn2 sm danger" data-no>Reject</button></div>' +
+                  '<div class="notice cxl" data-reject hidden style="margin-top: 12px">' +
+                  '<label class="f"><span>Reason sent to them by email</span><select data-reason>' +
+                  '<option value="">Choose a reason</option>' +
+                  "<option>The document is blurry or cut off</option>" +
+                  "<option>The name or birth date does not match</option>" +
+                  "<option>This is not an accepted document</option>" +
+                  "<option>The document looks altered</option>" +
+                  '<option value="Other">Other</option></select></label>' +
+                  '<label class="f" data-otherwrap hidden style="margin-top: 10px"><span>Describe the reason</span><input data-other maxlength="120" autocomplete="off" /></label>' +
+                  '<p class="err" role="alert" data-err></p>' +
+                  '<div class="ac" style="margin-top: 4px"><button type="button" class="btn sm danger-fill" data-reject-go>Reject and email them</button>' +
+                  '<button type="button" class="btn2 sm" data-back>Go back</button></div></div>') +
+            "</div>" +
+            '<div class="vf-doc">' + doc + "</div></article>";
+        }).join("");
+      }
+
+      $("tabs").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        view = b.dataset.v;
+        $("tabs").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        render();
+      };
+
+      $("list").onclick = (e) => {
+        const card = e.target.closest(".vf");
+        if (!card) return;
+        const ref = card.dataset.ref;
+        const q = (sel) => card.querySelector(sel);
+        if (e.target.closest("[data-zoom]")) q(".vf-doc").classList.toggle("big");
+        else if (e.target.closest("[data-ok]")) {
+          const x = ST.signups().find((s) => s.ref === ref);
+          const id = ST.approveSignup(ref);
+          say("Activated " + ST.esc(x.first + " " + x.last) + "'s account (" + id + "). They got an email that they can now log in. " +
+            '<a href="staff-patient.html?id=' + id + '">Open patient record</a>');
+          render();
+        } else if (e.target.closest("[data-no]")) {
+          q("[data-reject]").hidden = false;
+          q("[data-acts]").hidden = true;
+          q("[data-reason]").focus();
+        } else if (e.target.closest("[data-back]")) {
+          q("[data-reject]").hidden = true;
+          q("[data-acts]").hidden = false;
+        } else if (e.target.closest("[data-reject-go]")) {
+          const pick = q("[data-reason]").value;
+          const other = q("[data-other]").value.trim();
+          q("[data-err]").textContent = !pick ? "Choose a reason." : pick === "Other" && !other ? "Describe the reason." : "";
+          if (q("[data-err]").textContent) return;
+          const x = ST.signups().find((s) => s.ref === ref);
+          ST.rejectSignup(ref, pick === "Other" ? other : pick);
+          say("Rejected the sign-up of " + ST.esc(x.first + " " + x.last) + ". They got an email with the reason, and can sign up again or come to the clinic.");
+          render();
+        }
+      };
+      $("list").onchange = (e) => {
+        const sel = e.target.closest("[data-reason]");
+        if (sel) e.target.closest(".vf").querySelector("[data-otherwrap]").hidden = sel.value !== "Other";
+      };
+      render();
+      })();
+    </script>
+  </body>
+</html>

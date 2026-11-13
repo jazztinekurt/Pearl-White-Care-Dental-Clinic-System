@@ -26,6 +26,7 @@
           <a class="nv" href="staff-dashboard.html">Dashboard</a>
           <a class="nv on" href="staff-calendar.html" aria-current="page">Master calendar</a>
           <a class="nv" href="staff-requests.html">Appointment requests</a>
+          <a class="nv" href="staff-verify.html">Account sign-ups</a>
           <a class="nv" href="staff-patients.html">Patients</a>
           <a class="nv" href="staff-billing.html">Billing</a>
           <a class="nv" href="staff-sms.html">SMS reminders</a>
@@ -97,6 +98,26 @@
             <button class="btn" type="submit" id="save">Book appointment</button>
             <a class="btn2" href="staff-calendar.html" id="cancel-link">Cancel</a>
             <button type="button" class="btn2 danger" id="cancel-appt" hidden>Cancel this appointment</button>
+          </div>
+          <div class="notice cxl" id="cancelbox" role="alertdialog" aria-labelledby="cb-q" hidden style="margin-top: 14px">
+            <p id="cb-q"><b>Cancel this appointment?</b> The patient gets an SMS with the reason.</p>
+            <label class="f"><span>Reason for cancelling</span>
+              <select id="c-reason">
+                <option value="">Choose a reason</option>
+                <option>Patient asked to cancel</option>
+                <option>Patient could not be reached to confirm</option>
+                <option>Dentist is unavailable</option>
+                <option>Clinic closed (holiday or emergency)</option>
+                <option>Duplicate booking</option>
+                <option value="Other">Other</option>
+              </select></label>
+            <label class="f" id="c-otherwrap" hidden style="margin-top: 10px"><span>Describe the reason</span>
+              <input id="c-other" maxlength="120" autocomplete="off" /></label>
+            <p class="err" id="c-err" role="alert"></p>
+            <div class="ac" style="margin-top: 4px">
+              <button type="button" class="btn sm danger-fill" id="c-yes">Cancel and send SMS</button>
+              <button type="button" class="btn2 sm" id="c-no">Keep it</button>
+            </div>
           </div>
         </form>
 
@@ -208,9 +229,22 @@
       $("slots").onclick = (e) => { const b = e.target.closest("button"); if (b && !b.disabled) { st.time = b.dataset.t; $("e-time").textContent = ""; render(); } };
       $("date").onchange = () => { st.date = $("date").value || ST.today(); render(); };
 
+      // Cancelling needs a reason (stored as the appointment's cancellation reason)
       $("cancel-appt").onclick = () => {
-        if (!confirm("Cancel this appointment? The patient gets an SMS.")) return;
-        ST.updateAppointment(editing.ref, { status: "Cancelled" });
+        $("cancelbox").hidden = false;
+        $("c-reason").focus();
+      };
+      $("c-no").onclick = () => ($("cancelbox").hidden = true);
+      $("c-reason").onchange = () => {
+        $("c-otherwrap").hidden = $("c-reason").value !== "Other";
+        $("c-err").textContent = "";
+      };
+      $("c-yes").onclick = () => {
+        const pick = $("c-reason").value;
+        const other = $("c-other").value.trim();
+        $("c-err").textContent = !pick ? "Choose a reason." : pick === "Other" && !other ? "Describe the reason." : "";
+        if ($("c-err").textContent) return;
+        ST.updateAppointment(editing.ref, { status: "Cancelled", cancelReason: pick === "Other" ? other : pick });
         location.href = "staff-calendar.html?date=" + editing.date;
       };
 

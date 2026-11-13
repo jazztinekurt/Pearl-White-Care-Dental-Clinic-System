@@ -55,12 +55,26 @@
             </div>
             <dl class="kv" id="sum"></dl>
             <div class="ac" id="actions"></div>
-            <div class="banner warn" id="confirm" role="alertdialog" aria-labelledby="cq" hidden style="margin: 16px 0 0">
-              <span id="cq">Cancel this appointment? The time goes back to other patients.</span>
-              <span class="ac" style="margin: 0">
-                <button type="button" class="btn sm" id="yes">Yes, cancel it</button>
+            <div class="notice cxl" id="confirm" role="alertdialog" aria-labelledby="cq" hidden style="margin: 16px 0 0">
+              <p id="cq"><b>Cancel this appointment?</b> The time goes back to other patients.</p>
+              <label class="f"><span>Why are you cancelling?</span>
+                <select id="c-reason">
+                  <option value="">Choose a reason</option>
+                  <option>Schedule conflict</option>
+                  <option>Feeling unwell</option>
+                  <option>Transportation or travel problem</option>
+                  <option>Financial reasons</option>
+                  <option>Going to another clinic</option>
+                  <option>No longer needed</option>
+                  <option value="Other">Other</option>
+                </select></label>
+              <label class="f" id="c-otherwrap" hidden style="margin-top: 10px"><span>Tell us the reason</span>
+                <input id="c-other" maxlength="120" autocomplete="off" /></label>
+              <p class="err" id="c-err" role="alert"></p>
+              <div class="ac" style="margin-top: 4px">
+                <button type="button" class="btn sm danger-fill" id="yes">Cancel appointment</button>
                 <button type="button" class="btn2 sm" id="no">Keep it</button>
-              </span>
+              </div>
             </div>
           </section>
           <section class="cd" id="side"></section>
@@ -107,14 +121,25 @@
           '<div class="li"><i></i><div>Bring a valid ID' + (s.id === "ortho" ? " and your retainer case" : "") + ".</div></div>" +
           '<div class="li"><i></i><div>You can pay by ' + b.pay.toLowerCase() + ".</div></div>" +
           '<div class="li"><i></i><div>Can\'t make it? Cancel or reschedule at least 24 hours before.</div></div>';
-        document.getElementById("cancel").onclick = () => {
-          document.getElementById("confirm").hidden = false;
-          document.getElementById("yes").focus();
+        const $ = (id) => document.getElementById(id);
+        $("cancel").onclick = () => {
+          $("confirm").hidden = false;
+          $("c-reason").focus();
         };
-        document.getElementById("no").onclick = () => (document.getElementById("confirm").hidden = true);
-        document.getElementById("yes").onclick = () => {
+        $("no").onclick = () => ($("confirm").hidden = true);
+        $("c-reason").onchange = () => {
+          $("c-otherwrap").hidden = $("c-reason").value !== "Other";
+          $("c-err").textContent = "";
+        };
+        $("yes").onclick = () => {
+          // A reason is required for every cancellation (Cancellation_Reason)
+          const pick = $("c-reason").value;
+          const other = $("c-other").value.trim();
+          $("c-err").textContent = !pick ? "Choose a reason." : pick === "Other" && !other ? "Tell us the reason." : "";
+          if ($("c-err").textContent) return;
+          const reason = pick === "Other" ? other : pick;
           const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          PW.changeAppointment(a.ref, { status: "Cancelled", note: "Cancelled by you on " + today + "." });
+          PW.changeAppointment(a.ref, { status: "Cancelled", cancelReason: reason, note: "Cancelled by you on " + today + ". Reason: " + PW.esc(reason) + "." });
           location.href = "patient-appointments.html?cancelled=" + a.ref + "&view=past";
         };
       } else if (a.status === "Completed") {
